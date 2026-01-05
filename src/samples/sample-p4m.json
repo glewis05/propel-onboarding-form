@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0",
+  "submitted_at": "2025-01-05T14:30:00Z",
+  "program": "P4M",
+
+  "clinic_information": {
+    "clinic_name": "Montana Breast Care Center",
+    "epic_department_id": "Montana Breast Surgery (4000099001)",
+    "address": {
+      "street": "123 Healthcare Blvd",
+      "city": "Helena",
+      "state": "MT",
+      "zip": "59601"
+    },
+    "timezone": "MT",
+    "hours_of_operation": "Monday–Friday, 8:00 AM–5:00 PM",
+    "website_main": "www.montanabreastcare.org",
+    "website_patient_facing": "www.montanabreastcare.org/patients",
+    "satellite_locations": [
+      {
+        "name": "Montana Breast Care - Bozeman",
+        "epic_department_id": "Montana Bozeman (4000099002)",
+        "address": {
+          "street": "456 Mountain View Dr",
+          "city": "Bozeman",
+          "state": "MT",
+          "zip": "59715"
+        },
+        "hours_of_operation": "Monday–Friday, 8:30 AM–4:30 PM",
+        "phone": "406-555-2000"
+      }
+    ]
+  },
+
+  "contacts": {
+    "primary": {
+      "name": "Jane Smith",
+      "title": "Clinical Director",
+      "email": "jane.smith@montanabreastcare.org",
+      "phone": "406-555-1234",
+      "preferred_channel": "EMAIL",
+      "preferred_time": "MORNING"
+    },
+    "secondary": {
+      "name": "John Doe",
+      "title": "Nurse Manager",
+      "email": "john.doe@montanabreastcare.org",
+      "phone": "406-555-5678",
+      "preferred_channel": "TEAMS",
+      "preferred_time": "AFTERNOON"
+    },
+    "marketing": {
+      "name": "Sarah Johnson",
+      "title": "Marketing Coordinator",
+      "email": "sarah.johnson@montanabreastcare.org"
+    },
+    "project_manager": {
+      "name": "Mike Williams",
+      "title": "IT Project Manager",
+      "email": "mike.williams@montanabreastcare.org",
+      "preferred_channel": "TEAMS",
+      "preferred_tools": ["JIRA"]
+    },
+    "workflow_lead": {
+      "name": "Dr. Emily Chen",
+      "title": "Medical Director",
+      "email": "emily.chen@montanabreastcare.org",
+      "notes": "Responsible for evaluating provider workflows"
+    }
+  },
+
+  "stakeholders": [
+    {
+      "name": "Dr. Robert Brown",
+      "title": "Chief Medical Officer",
+      "email": "robert.brown@montanabreastcare.org",
+      "display_name": "Dr. Robert Brown, MD"
+    },
+    {
+      "name": "Lisa Anderson",
+      "title": "Genetic Counselor",
+      "email": "lisa.anderson@montanabreastcare.org",
+      "display_name": "Lisa Anderson, CGC"
+    }
+  ],
+
+  "program_customization": {
+    "modules": {
+      "tc_enabled": true,
+      "nccn_enabled": true
+    },
+    "helpdesk": {
+      "email": "breastcare@montanabreastcare.org",
+      "phone": "406-555-9000"
+    },
+    "invitation_signature": "Montana Breast Care Center"
+  },
+
+  "lab_order_configuration": {
+    "test_provider": "AMBRY",
+    "test_products": [
+      {
+        "test_code": "8874",
+        "test_name": "CancerNext-Expanded",
+        "is_default": true,
+        "modifications": {
+          "type": "LIMITED_EVIDENCE_GENES",
+          "option": "STANDARD",
+          "genes_removed": null
+        }
+      },
+      {
+        "test_code": "9510-R",
+        "test_name": "CustomNext-Cancer 86 Gene + RNA Insight",
+        "is_default": false,
+        "modifications": {
+          "type": "GENE_REMOVAL",
+          "genes_removed": ["PRSS1"]
+        }
+      }
+    ],
+    "specimen_type": {
+      "available": ["SALIVA", "BLOOD"],
+      "default": "SALIVA"
+    },
+    "send_kit_to_patient": {
+      "available": ["YES", "NO", "SITUATION_DEPENDENT"],
+      "default": "YES"
+    },
+    "billing_method": {
+      "available": ["INSURANCE", "SELF_PAY"],
+      "default": "INSURANCE"
+    },
+    "indication": {
+      "available": ["DIAGNOSTIC", "DIAGNOSTIC_FAMILY_HISTORY", "CARRIER_SCREENING", "CARRIER_SCREENING_FAMILY_HISTORY", "FAMILY_HISTORY"],
+      "default": "DIAGNOSTIC_FAMILY_HISTORY"
+    },
+    "criteria_for_testing": {
+      "available": ["HBOC", "LYNCH", "HEREDITARY_POLYPOSIS", "NONE"],
+      "default": "HBOC"
+    }
+  },
+
+  "ordering_providers": [
+    {
+      "name": "Dr. Emily Chen",
+      "title": "Medical Director",
+      "email": "emily.chen@montanabreastcare.org",
+      "phone": "406-555-1111",
+      "npi": "1234567890",
+      "display_name": "Dr. Emily Chen, MD, FACS",
+      "locations": ["Montana Breast Care Center", "Montana Breast Care - Bozeman"]
+    },
+    {
+      "name": "Sarah Miller",
+      "title": "Nurse Practitioner",
+      "email": "sarah.miller@montanabreastcare.org",
+      "phone": "406-555-2222",
+      "npi": "0987654321",
+      "display_name": "Sarah Miller, NP",
+      "locations": ["Montana Breast Care Center"]
+    },
+    {
+      "name": "Dr. James Wilson",
+      "title": "Oncologist",
+      "email": "james.wilson@montanabreastcare.org",
+      "phone": "406-555-3333",
+      "npi": "1122334455",
+      "display_name": "Dr. James Wilson, MD",
+      "locations": ["Montana Breast Care - Bozeman"]
+    }
+  ],
+
+  "branding": {
+    "style_guide_received": true,
+    "logo_received": true,
+    "compliance_docs_received": false,
+    "notes": "Logo files sent via email on 2025-01-03"
+  },
+
+  "metadata": {
+    "form_version": "1.0",
+    "responder_name": "Jane Smith",
+    "responder_email": "jane.smith@montanabreastcare.org"
+  }
+}

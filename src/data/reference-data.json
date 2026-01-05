@@ -1,0 +1,113 @@
+{
+  "programs": [
+    {"value": "P4M", "display_name": "Prevention4ME", "description": "Cancer prevention"},
+    {"value": "PR4M", "display_name": "Precision4ME", "description": "Precision medicine"},
+    {"value": "GRX", "display_name": "GenoRx", "description": "Pharmacogenomics"}
+  ],
+  "labs": [
+    {"value": "AMBRY", "display_name": "Ambry Genetics"},
+    {"value": "HELIX", "display_name": "Helix"}
+  ],
+  "specimen_types": [
+    {"value": "SALIVA", "display_name": "Saliva"},
+    {"value": "BLOOD", "display_name": "Blood"}
+  ],
+  "billing_methods": [
+    {"value": "INSURANCE", "display_name": "Bill insurance"},
+    {"value": "SELF_PAY", "display_name": "Patient self-pay"}
+  ],
+  "send_kit_options": [
+    {"value": "YES", "display_name": "Yes"},
+    {"value": "NO", "display_name": "No"},
+    {"value": "SITUATION_DEPENDENT", "display_name": "Situation dependent"}
+  ],
+  "indications": [
+    {"value": "DIAGNOSTIC", "display_name": "Diagnostic"},
+    {"value": "DIAGNOSTIC_FAMILY_HISTORY", "display_name": "Diagnostic/Family History"},
+    {"value": "CARRIER_SCREENING", "display_name": "Carrier Screening"},
+    {"value": "CARRIER_SCREENING_FAMILY_HISTORY", "display_name": "Carrier Screening/Family History"},
+    {"value": "FAMILY_HISTORY", "display_name": "Family History"}
+  ],
+  "criteria_for_testing": [
+    {"value": "HBOC", "display_name": "Hereditary Breast and Ovarian Cancer"},
+    {"value": "LYNCH", "display_name": "Lynch Syndrome"},
+    {"value": "HEREDITARY_POLYPOSIS", "display_name": "Hereditary Polyposis"},
+    {"value": "NONE", "display_name": "None of the Above"}
+  ],
+  "contact_types": [
+    {"value": "PRIMARY", "display_name": "Primary Contact"},
+    {"value": "SECONDARY", "display_name": "Secondary Contact"},
+    {"value": "MARKETING", "display_name": "Marketing"},
+    {"value": "PM", "display_name": "Project Manager"},
+    {"value": "WORKFLOW", "display_name": "Workflow Lead"},
+    {"value": "STAKEHOLDER", "display_name": "Stakeholder"}
+  ],
+  "communication_channels": [
+    {"value": "EMAIL", "display_name": "Email"},
+    {"value": "TEAMS", "display_name": "Microsoft Teams"},
+    {"value": "SLACK", "display_name": "Slack"},
+    {"value": "ZOOM", "display_name": "Zoom"}
+  ],
+  "preferred_times": [
+    {"value": "MORNING", "display_name": "Morning"},
+    {"value": "AFTERNOON", "display_name": "Afternoon"}
+  ],
+  "timezones": [
+    {"value": "PT", "display_name": "Pacific Time"},
+    {"value": "MT", "display_name": "Mountain Time"},
+    {"value": "CT", "display_name": "Central Time"},
+    {"value": "ET", "display_name": "Eastern Time"}
+  ],
+  "us_states": [
+    {"value": "AL", "display_name": "Alabama"},
+    {"value": "AK", "display_name": "Alaska"},
+    {"value": "AZ", "display_name": "Arizona"},
+    {"value": "AR", "display_name": "Arkansas"},
+    {"value": "CA", "display_name": "California"},
+    {"value": "CO", "display_name": "Colorado"},
+    {"value": "CT", "display_name": "Connecticut"},
+    {"value": "DE", "display_name": "Delaware"},
+    {"value": "FL", "display_name": "Florida"},
+    {"value": "GA", "display_name": "Georgia"},
+    {"value": "HI", "display_name": "Hawaii"},
+    {"value": "ID", "display_name": "Idaho"},
+    {"value": "IL", "display_name": "Illinois"},
+    {"value": "IN", "display_name": "Indiana"},
+    {"value": "IA", "display_name": "Iowa"},
+    {"value": "KS", "display_name": "Kansas"},
+    {"value": "KY", "display_name": "Kentucky"},
+    {"value": "LA", "display_name": "Louisiana"},
+    {"value": "ME", "display_name": "Maine"},
+    {"value": "MD", "display_name": "Maryland"},
+    {"value": "MA", "display_name": "Massachusetts"},
+    {"value": "MI", "display_name": "Michigan"},
+    {"value": "MN", "display_name": "Minnesota"},
+    {"value": "MS", "display_name": "Mississippi"},
+    {"value": "MO", "display_name": "Missouri"},
+    {"value": "MT", "display_name": "Montana"},
+    {"value": "NE", "display_name": "Nebraska"},
+    {"value": "NV", "display_name": "Nevada"},
+    {"value": "NH", "display_name": "New Hampshire"},
+    {"value": "NJ", "display_name": "New Jersey"},
+    {"value": "NM", "display_name": "New Mexico"},
+    {"value": "NY", "display_name": "New York"},
+    {"value": "NC", "display_name": "North Carolina"},
+    {"value": "ND", "display_name": "North Dakota"},
+    {"value": "OH", "display_name": "Ohio"},
+    {"value": "OK", "display_name": "Oklahoma"},
+    {"value": "OR", "display_name": "Oregon"},
+    {"value": "PA", "display_name": "Pennsylvania"},
+    {"value": "RI", "display_name": "Rhode Island"},
+    {"value": "SC", "display_name": "South Carolina"},
+    {"value": "SD", "display_name": "South Dakota"},
+    {"value": "TN", "display_name": "Tennessee"},
+    {"value": "TX", "display_name": "Texas"},
+    {"value": "UT", "display_name": "Utah"},
+    {"value": "VT", "display_name": "Vermont"},
+    {"value": "VA", "display_name": "Virginia"},
+    {"value": "WA", "display_name": "Washington"},
+    {"value": "WV", "display_name": "West Virginia"},
+    {"value": "WI", "display_name": "Wisconsin"},
+    {"value": "WY", "display_name": "Wyoming"}
+  ]
+}

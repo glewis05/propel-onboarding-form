@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.0",
+  "submitted_at": "2025-01-05T15:00:00Z",
+  "program": "GRX",
+
+  "clinic_information": {
+    "clinic_name": "Facey Burbank Primary Care",
+    "epic_department_id": "Facey Burbank (5000012001)",
+    "address": {
+      "street": "789 Burbank Blvd",
+      "city": "Burbank",
+      "state": "CA",
+      "zip": "91502"
+    },
+    "timezone": "PT",
+    "hours_of_operation": "Monday–Friday, 7:30 AM–6:00 PM",
+    "website_main": "www.facey.com",
+    "website_patient_facing": "www.facey.com/burbank",
+    "satellite_locations": []
+  },
+
+  "contacts": {
+    "primary": {
+      "name": "Dr. Hesam Hekmatjou",
+      "title": "Medical Director",
+      "email": "hesam.hekmatjou@facey.com",
+      "phone": "818-555-1000",
+      "preferred_channel": "EMAIL",
+      "preferred_time": "MORNING"
+    },
+    "secondary": {
+      "name": "Maria Garcia",
+      "title": "Practice Manager",
+      "email": "maria.garcia@facey.com",
+      "phone": "818-555-1001",
+      "preferred_channel": "TEAMS",
+      "preferred_time": "AFTERNOON"
+    }
+  },
+
+  "stakeholders": [],
+
+  "program_customization": {
+    "helpdesk": {
+      "email": "genomics@facey.com",
+      "phone": "818-555-9999"
+    },
+    "invitation_signature": "Facey Medical Group - Burbank"
+  },
+
+  "lab_order_configuration": {
+    "test_provider": "HELIX",
+    "test_products": [
+      {
+        "test_code": "PLVA1",
+        "test_name": "Pharmacogenomics (PGx) Level A Panel",
+        "is_default": true,
+        "modifications": null
+      }
+    ],
+    "specimen_type": {
+      "available": ["SALIVA"],
+      "default": "SALIVA"
+    },
+    "send_kit_to_patient": {
+      "available": ["YES", "NO"],
+      "default": "YES"
+    },
+    "billing_method": {
+      "available": ["INSURANCE", "SELF_PAY"],
+      "default": "INSURANCE"
+    }
+  },
+
+  "ordering_providers": [
+    {
+      "name": "Dr. Hesam Hekmatjou",
+      "title": "Medical Director",
+      "email": "hesam.hekmatjou@facey.com",
+      "phone": "818-555-1000",
+      "npi": "5566778899",
+      "display_name": "Hesam Hekmatjou, MD",
+      "locations": ["Facey Burbank Primary Care"]
+    }
+  ],
+
+  "branding": {
+    "style_guide_received": false,
+    "logo_received": true,
+    "compliance_docs_received": false,
+    "notes": ""
+  },
+
+  "metadata": {
+    "form_version": "1.0",
+    "responder_name": "Dr. Hesam Hekmatjou",
+    "responder_email": "hesam.hekmatjou@facey.com"
+  }
+}
