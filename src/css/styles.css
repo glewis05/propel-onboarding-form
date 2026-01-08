@@ -1,0 +1,248 @@
+/**
+ * PROPEL HEALTH ONBOARDING QUESTIONNAIRE
+ * Custom Styles
+ *
+ * These styles complement Tailwind CSS for specific UI patterns
+ * that are unique to this questionnaire form.
+ *
+ * Brand Colors:
+ * - Navy: #1a365d (primary headers, buttons)
+ * - Teal: #4a9aba (accents, active states)
+ * - Light: #e8f4f8 (backgrounds, highlights)
+ */
+
+/* ==========================================================================
+   CSS CUSTOM PROPERTIES
+   ========================================================================== */
+
+:root {
+    --propel-navy: #1a365d;
+    --propel-teal: #4a9aba;
+    --propel-light: #e8f4f8;
+    --transition-fast: 150ms ease-in-out;
+    --transition-normal: 300ms ease-in-out;
+}
+
+/* ==========================================================================
+   BASE STYLES
+   ========================================================================== */
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+    outline: 2px solid var(--propel-teal);
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   FORM ELEMENTS
+   ========================================================================== */
+
+/* Enhanced input focus states */
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--propel-teal) !important;
+    box-shadow: 0 0 0 3px rgba(74, 154, 186, 0.15);
+}
+
+/* Error state styling */
+.input-error {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2;
+}
+
+.input-error:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+/* ==========================================================================
+   STEP CONTENT ANIMATION
+   ========================================================================== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.step-content {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ==========================================================================
+   RADIO CARD STYLES
+   ========================================================================== */
+
+/* Radio button cards (program selection, etc.) */
+label:has(input[type="radio"]) {
+    transition: all var(--transition-fast);
+}
+
+label:has(input[type="radio"]:checked) {
+    border-color: var(--propel-teal);
+    background-color: var(--propel-light);
+}
+
+/* ==========================================================================
+   REPEATABLE ITEM ANIMATION
+   ========================================================================== */
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Repeatable item containers */
+.bg-gray-50.border.border-gray-200.rounded-lg {
+    animation: slideIn 0.2s ease-out;
+}
+
+/* ==========================================================================
+   BUTTON TRANSITIONS
+   ========================================================================== */
+
+button {
+    transition: all var(--transition-fast);
+}
+
+button:not(:disabled):hover {
+    transform: translateY(-1px);
+}
+
+button:not(:disabled):active {
+    transform: translateY(0);
+}
+
+/* ==========================================================================
+   PROGRESS BAR
+   ========================================================================== */
+
+/* Smooth progress bar transitions */
+.bg-propel-teal {
+    transition: width 0.3s ease-out;
+}
+
+/* ==========================================================================
+   CARD SHADOWS
+   ========================================================================== */
+
+/* Main form card */
+.bg-white.rounded-xl.shadow-lg {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* ==========================================================================
+   COMPOSITE FIELD GROUPS
+   ========================================================================== */
+
+/* Address, contact, stakeholder field groups */
+.bg-gray-50.rounded-lg.border.border-gray-200 {
+    transition: border-color var(--transition-fast);
+}
+
+.bg-gray-50.rounded-lg.border.border-gray-200:focus-within {
+    border-color: var(--propel-teal);
+}
+
+/* ==========================================================================
+   LOADING SPINNER
+   ========================================================================== */
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* ==========================================================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    /* Stack form grids on mobile */
+    .grid-cols-2 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .grid-cols-6 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .grid-cols-6 > .col-span-3,
+    .grid-cols-6 > .col-span-2,
+    .grid-cols-6 > .col-span-1 {
+        grid-column: span 1 !important;
+    }
+
+    /* Full width buttons on mobile */
+    .flex.justify-between button {
+        flex: 1;
+    }
+}
+
+/* ==========================================================================
+   PRINT STYLES
+   ========================================================================== */
+
+@media print {
+    /* Hide navigation elements */
+    .flex.justify-between.mt-8 {
+        display: none;
+    }
+
+    /* Remove shadows and colors */
+    .shadow-lg {
+        box-shadow: none;
+    }
+
+    .bg-gray-100 {
+        background: white;
+    }
+}
+
+/* ==========================================================================
+   ACCESSIBILITY
+   ========================================================================== */
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+    input,
+    select,
+    textarea {
+        border-width: 2px;
+    }
+
+    button {
+        border: 2px solid currentColor;
+    }
+}

@@ -1,0 +1,407 @@
+{
+  "form_id": "onboarding-questionnaire",
+  "version": "1.0",
+  "title": "Propel Health Onboarding Questionnaire",
+  "description": "Client onboarding questionnaire for Prevention4ME, Precision4ME, and GenoRx programs",
+
+  "steps": [
+    {
+      "step_id": "program_selection",
+      "title": "Program Selection",
+      "description": "Select the program this clinic will participate in",
+      "order": 1,
+      "questions": [
+        {
+          "question_id": "program",
+          "type": "radio",
+          "label": "Select Program",
+          "required": true,
+          "options_ref": "programs",
+          "help_text": "This determines which lab and test options are available"
+        }
+      ]
+    },
+    {
+      "step_id": "clinic_info",
+      "title": "Clinic Information",
+      "description": "Basic information about the primary clinic location",
+      "order": 2,
+      "questions": [
+        {
+          "question_id": "clinic_name",
+          "type": "text",
+          "label": "Clinic Name",
+          "required": true,
+          "max_length": 200,
+          "placeholder": "e.g., Montana Breast Care Center"
+        },
+        {
+          "question_id": "epic_department_id",
+          "type": "text",
+          "label": "Epic Department ID",
+          "required": false,
+          "placeholder": "e.g., 4000099001",
+          "help_text": "Your Epic system department identifier"
+        },
+        {
+          "question_id": "clinic_address",
+          "type": "address",
+          "label": "Clinic Address",
+          "required": true
+        },
+        {
+          "question_id": "timezone",
+          "type": "select",
+          "label": "Timezone",
+          "required": true,
+          "options_ref": "timezones"
+        },
+        {
+          "question_id": "hours_of_operation",
+          "type": "text",
+          "label": "Hours of Operation",
+          "required": false,
+          "placeholder": "e.g., Monday-Friday, 8:00 AM - 5:00 PM"
+        },
+        {
+          "question_id": "website_main",
+          "type": "text",
+          "label": "Main Website",
+          "required": false,
+          "placeholder": "https://www.example.org"
+        },
+        {
+          "question_id": "website_patient_facing",
+          "type": "text",
+          "label": "Patient-Facing Website",
+          "required": false,
+          "placeholder": "https://www.example.org/breast-care",
+          "help_text": "URL patients will see in communications"
+        }
+      ]
+    },
+    {
+      "step_id": "satellite_locations",
+      "title": "Satellite Locations",
+      "description": "Additional clinic locations (if any)",
+      "order": 3,
+      "repeatable": true,
+      "repeatable_config": {
+        "min_items": 0,
+        "max_items": 20,
+        "add_button_text": "Add Satellite Location",
+        "item_title_template": "Location {{index}}"
+      },
+      "questions": [
+        {
+          "question_id": "location_name",
+          "type": "text",
+          "label": "Location Name",
+          "required": true,
+          "placeholder": "e.g., Bozeman Clinic"
+        },
+        {
+          "question_id": "location_epic_id",
+          "type": "text",
+          "label": "Epic Department ID",
+          "required": false
+        },
+        {
+          "question_id": "location_address",
+          "type": "address",
+          "label": "Address",
+          "required": true
+        },
+        {
+          "question_id": "location_phone",
+          "type": "text",
+          "label": "Phone",
+          "required": false,
+          "placeholder": "406-555-1234"
+        },
+        {
+          "question_id": "location_hours",
+          "type": "text",
+          "label": "Hours of Operation",
+          "required": false
+        }
+      ]
+    },
+    {
+      "step_id": "contacts",
+      "title": "Contacts",
+      "description": "Key contacts for implementation and ongoing support",
+      "order": 4,
+      "questions": [
+        {
+          "question_id": "contact_primary",
+          "type": "contact_group",
+          "label": "Primary Contact",
+          "required": true,
+          "help_text": "Main point of contact for implementation"
+        },
+        {
+          "question_id": "contact_secondary",
+          "type": "contact_group",
+          "label": "Secondary Contact",
+          "required": false
+        },
+        {
+          "question_id": "contact_it",
+          "type": "contact_group",
+          "label": "IT Contact",
+          "required": false,
+          "help_text": "For Epic integration and technical questions"
+        },
+        {
+          "question_id": "contact_lab",
+          "type": "contact_group",
+          "label": "Lab Contact",
+          "required": false,
+          "help_text": "For specimen collection coordination"
+        }
+      ]
+    },
+    {
+      "step_id": "stakeholders",
+      "title": "Key Stakeholders",
+      "description": "Leadership and champions for the program",
+      "order": 5,
+      "questions": [
+        {
+          "question_id": "stakeholder_champion",
+          "type": "stakeholder_group",
+          "label": "Program Champion",
+          "required": true,
+          "help_text": "Clinical leader driving program adoption"
+        },
+        {
+          "question_id": "stakeholder_executive",
+          "type": "stakeholder_group",
+          "label": "Executive Sponsor",
+          "required": false
+        },
+        {
+          "question_id": "stakeholder_it_director",
+          "type": "stakeholder_group",
+          "label": "IT Director",
+          "required": false
+        }
+      ]
+    },
+    {
+      "step_id": "lab_config",
+      "title": "Lab Configuration",
+      "description": "Laboratory and specimen collection settings",
+      "order": 6,
+      "questions": [
+        {
+          "question_id": "lab_partner",
+          "type": "select",
+          "label": "Lab Partner",
+          "required": true,
+          "options_ref": "labs",
+          "conditional_options": {
+            "depends_on": "program",
+            "mapping": {
+              "P4M": ["AMBRY"],
+              "PR4M": ["AMBRY"],
+              "GRX": ["HELIX"]
+            }
+          }
+        },
+        {
+          "question_id": "specimen_type",
+          "type": "select_with_alternates",
+          "label": "Specimen Collection Type",
+          "required": true,
+          "options_ref": "specimen_types",
+          "help_text": "Select the standard collection method. Enable additional options if the clinic needs flexibility."
+        },
+        {
+          "question_id": "billing_method",
+          "type": "select",
+          "label": "Billing Method",
+          "required": true,
+          "options_ref": "billing_methods"
+        },
+        {
+          "question_id": "send_kit_to_patient",
+          "type": "radio",
+          "label": "Send Kit to Patient's Home?",
+          "required": true,
+          "options_ref": "send_kit_options"
+        },
+        {
+          "question_id": "indication",
+          "type": "select",
+          "label": "Indication",
+          "required": true,
+          "options_ref": "indications",
+          "show_when": {
+            "question_id": "program",
+            "operator": "in",
+            "value": ["P4M", "PR4M"]
+          }
+        },
+        {
+          "question_id": "criteria_for_testing",
+          "type": "select",
+          "label": "Criteria for Testing",
+          "required": true,
+          "options_ref": "criteria_for_testing",
+          "show_when": {
+            "question_id": "program",
+            "operator": "in",
+            "value": ["P4M", "PR4M"]
+          }
+        }
+      ]
+    },
+    {
+      "step_id": "test_products",
+      "title": "Test Products",
+      "description": "Genetic tests to be ordered",
+      "order": 7,
+      "repeatable": true,
+      "repeatable_config": {
+        "min_items": 1,
+        "max_items": 10,
+        "add_button_text": "Add Test Product",
+        "item_title_template": "Test {{index}}"
+      },
+      "questions": [
+        {
+          "question_id": "test_code",
+          "type": "select",
+          "label": "Test",
+          "required": true,
+          "options_ref": "test_catalog",
+          "help_text": "Select a test from the lab catalog"
+        },
+        {
+          "question_id": "is_default",
+          "type": "checkbox",
+          "label": "Set as default test",
+          "required": false
+        },
+        {
+          "question_id": "test_modifications",
+          "type": "textarea",
+          "label": "Modifications / Notes",
+          "required": false,
+          "placeholder": "Any customizations or special instructions for this test",
+          "rows": 3
+        }
+      ]
+    },
+    {
+      "step_id": "ordering_providers",
+      "title": "Ordering Providers",
+      "description": "Healthcare providers who will order tests",
+      "order": 8,
+      "repeatable": true,
+      "repeatable_config": {
+        "min_items": 1,
+        "max_items": 50,
+        "add_button_text": "Add Provider",
+        "item_title_template": "Provider {{index}}"
+      },
+      "questions": [
+        {
+          "question_id": "provider_name",
+          "type": "text",
+          "label": "Provider Name",
+          "required": true,
+          "placeholder": "Dr. Jane Smith"
+        },
+        {
+          "question_id": "provider_title",
+          "type": "text",
+          "label": "Title",
+          "required": false,
+          "placeholder": "e.g., Medical Director"
+        },
+        {
+          "question_id": "provider_email",
+          "type": "text",
+          "label": "Email",
+          "required": true,
+          "pattern": "^[^@]+@[^@]+\\.[^@]+$",
+          "placeholder": "jane.smith@clinic.org"
+        },
+        {
+          "question_id": "provider_phone",
+          "type": "text",
+          "label": "Phone",
+          "required": false,
+          "placeholder": "406-555-1234"
+        },
+        {
+          "question_id": "provider_npi",
+          "type": "text",
+          "label": "NPI",
+          "required": true,
+          "pattern": "^[0-9]{10}$",
+          "placeholder": "1234567890",
+          "help_text": "10-digit National Provider Identifier"
+        },
+        {
+          "question_id": "provider_specialty",
+          "type": "select",
+          "label": "Specialty",
+          "required": false,
+          "options_ref": "specialties"
+        }
+      ]
+    },
+    {
+      "step_id": "review",
+      "title": "Review & Download",
+      "description": "Review your responses and download the JSON file",
+      "order": 9,
+      "is_review_step": true
+    }
+  ],
+
+  "composite_types": {
+    "address": {
+      "fields": [
+        {"field_id": "street", "label": "Street Address", "type": "text", "required": true, "placeholder": "123 Main Street"},
+        {"field_id": "city", "label": "City", "type": "text", "required": true, "placeholder": "Helena"},
+        {"field_id": "state", "label": "State", "type": "select", "options_ref": "us_states", "required": true},
+        {"field_id": "zip", "label": "ZIP Code", "type": "text", "pattern": "^[0-9]{5}(-[0-9]{4})?$", "required": true, "placeholder": "59601"}
+      ]
+    },
+    "contact_group": {
+      "fields": [
+        {"field_id": "name", "label": "Name", "type": "text", "required": true, "placeholder": "Jane Smith"},
+        {"field_id": "title", "label": "Title", "type": "text", "required": false, "placeholder": "Clinical Director"},
+        {"field_id": "email", "label": "Email", "type": "text", "pattern": "^[^@]+@[^@]+\\.[^@]+$", "required": true, "placeholder": "jane.smith@clinic.org"},
+        {"field_id": "phone", "label": "Phone", "type": "text", "required": false, "placeholder": "406-555-1234"},
+        {"field_id": "preferred_channel", "label": "Preferred Contact Method", "type": "select", "options_ref": "communication_channels", "required": false},
+        {"field_id": "preferred_time", "label": "Best Time to Reach", "type": "select", "options_ref": "preferred_times", "required": false}
+      ]
+    },
+    "stakeholder_group": {
+      "fields": [
+        {"field_id": "name", "label": "Name", "type": "text", "required": true, "placeholder": "Dr. Robert Brown"},
+        {"field_id": "title", "label": "Title", "type": "text", "required": false, "placeholder": "Chief Medical Officer"},
+        {"field_id": "email", "label": "Email", "type": "text", "pattern": "^[^@]+@[^@]+\\.[^@]+$", "required": true, "placeholder": "robert.brown@clinic.org"}
+      ]
+    },
+    "select_with_alternates": {
+      "description": "Select a default value with optional additional choices",
+      "value_structure": {
+        "default": "string - the primary/default selection",
+        "offer_alternates": "boolean - whether additional options are enabled",
+        "alternates": "array of strings - additional options to offer"
+      },
+      "fields": [
+        {"field_id": "default", "label_suffix": "(Default)", "type": "select", "required": true},
+        {"field_id": "offer_alternates", "label": "Offer additional options?", "type": "checkbox"},
+        {"field_id": "alternates", "label": "Additional options to offer:", "type": "multi_select", "show_when_checked": "offer_alternates"}
+      ]
+    }
+  }
+}
