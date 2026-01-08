@@ -252,8 +252,9 @@ function generateOutputJson(formData, formDefinition) {
             address: formData.clinic_address || null,
             timezone: formData.timezone,
             hours_of_operation: formData.hours_of_operation || null,
+            use_hours_in_emails: formData.hours_in_emails || false,
             website_main: formData.website_main || null,
-            website_patient_facing: formData.website_patient_facing || null,
+            website_clinic: formData.website_patient_facing || null,
             satellite_locations: (formData.satellite_locations || []).map(loc => ({
                 name: loc.location_name,
                 epic_department_id: loc.location_epic_id || null,
@@ -422,14 +423,16 @@ const RadioGroup = React.memo(function RadioGroup({ question, value, onChange, o
                 {question.label}
                 {question.required && <span className="text-red-500 ml-1">*</span>}
             </label>
-            <div className="space-y-2">
+            <div className={`space-y-2 ${error ? 'p-3 border-2 border-red-500 rounded-lg bg-red-50' : ''}`}>
                 {options.map(opt => (
                     <label
                         key={opt.value}
                         className={`flex items-start p-4 border rounded-lg cursor-pointer transition-all ${
                             value === opt.value
                                 ? 'border-propel-teal bg-propel-light ring-2 ring-propel-teal'
-                                : 'border-gray-200 hover:border-propel-teal hover:bg-gray-50'
+                                : error
+                                    ? 'border-red-300 bg-white hover:border-propel-teal hover:bg-gray-50'
+                                    : 'border-gray-200 hover:border-propel-teal hover:bg-gray-50'
                         }`}
                     >
                         <input
@@ -571,7 +574,7 @@ const SelectWithAlternates = React.memo(function SelectWithAlternates({ question
                     htmlFor={`${question.question_id}_offer_alternates`}
                     className="ml-2 text-sm text-gray-700"
                 >
-                    Offer additional options to patients/staff
+                    Offer additional options to staff
                 </label>
             </div>
 
@@ -621,7 +624,6 @@ const SelectWithAlternates = React.memo(function SelectWithAlternates({ question
  * Renders street, city, state, zip as a group
  */
 function AddressGroup({ question, value, onChange, errors, referenceData }) {
-    const { useContext } = React;
     const addressValue = value || {};
 
     const handleFieldChange = (fieldId, fieldValue) => {
@@ -633,13 +635,17 @@ function AddressGroup({ question, value, onChange, errors, referenceData }) {
 
     const stateOptions = referenceData.us_states || [];
 
+    // Check for errors using the correct key pattern: question_id_field_id
+    const getFieldError = (fieldId) => errors?.[`${question.question_id}_${fieldId}`];
+    const hasAnyError = ['street', 'city', 'state', 'zip'].some(f => getFieldError(f));
+
     return (
         <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
                 {question.label}
                 {question.required && <span className="text-red-500 ml-1">*</span>}
             </label>
-            <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className={`space-y-3 p-4 bg-gray-50 rounded-lg border ${hasAnyError ? 'border-red-500' : 'border-gray-200'}`}>
                 <div>
                     <input
                         type="text"
@@ -647,7 +653,7 @@ function AddressGroup({ question, value, onChange, errors, referenceData }) {
                         onChange={(e) => handleFieldChange('street', e.target.value)}
                         placeholder="Street Address"
                         className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal ${
-                            errors?.street ? 'border-red-500' : 'border-gray-300'
+                            getFieldError('street') ? 'border-red-500 bg-red-50' : 'border-gray-300'
                         }`}
                     />
                 </div>
@@ -659,7 +665,7 @@ function AddressGroup({ question, value, onChange, errors, referenceData }) {
                             onChange={(e) => handleFieldChange('city', e.target.value)}
                             placeholder="City"
                             className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal ${
-                                errors?.city ? 'border-red-500' : 'border-gray-300'
+                                getFieldError('city') ? 'border-red-500 bg-red-50' : 'border-gray-300'
                             }`}
                         />
                     </div>
@@ -668,7 +674,7 @@ function AddressGroup({ question, value, onChange, errors, referenceData }) {
                             value={addressValue.state || ''}
                             onChange={(e) => handleFieldChange('state', e.target.value)}
                             className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal ${
-                                errors?.state ? 'border-red-500' : 'border-gray-300'
+                                getFieldError('state') ? 'border-red-500 bg-red-50' : 'border-gray-300'
                             }`}
                         >
                             <option value="">State</option>
@@ -684,12 +690,15 @@ function AddressGroup({ question, value, onChange, errors, referenceData }) {
                             onChange={(e) => handleFieldChange('zip', e.target.value)}
                             placeholder="ZIP Code"
                             className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal ${
-                                errors?.zip ? 'border-red-500' : 'border-gray-300'
+                                getFieldError('zip') ? 'border-red-500 bg-red-50' : 'border-gray-300'
                             }`}
                         />
                     </div>
                 </div>
             </div>
+            {hasAnyError && (
+                <p className="mt-1 text-sm text-red-600">Please complete all required address fields</p>
+            )}
         </div>
     );
 }
@@ -711,6 +720,10 @@ function ContactGroup({ question, value, onChange, errors, referenceData }) {
     const channelOptions = referenceData.communication_channels || [];
     const timeOptions = referenceData.preferred_times || [];
 
+    // Check for errors using the correct key pattern: question_id_field_id
+    const getFieldError = (fieldId) => errors?.[`${question.question_id}_${fieldId}`];
+    const hasAnyError = ['name', 'email'].some(f => getFieldError(f));
+
     return (
         <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -720,7 +733,7 @@ function ContactGroup({ question, value, onChange, errors, referenceData }) {
             {question.help_text && (
                 <p className="text-sm text-gray-500 mb-2">{question.help_text}</p>
             )}
-            <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className={`space-y-3 p-4 bg-gray-50 rounded-lg border ${hasAnyError ? 'border-red-500' : 'border-gray-200'}`}>
                 <div className="grid grid-cols-2 gap-3">
                     <div>
                         <label className="block text-xs text-gray-500 mb-1">Name {question.required && <span className="text-red-500">*</span>}</label>
@@ -729,7 +742,9 @@ function ContactGroup({ question, value, onChange, errors, referenceData }) {
                             value={contactValue.name || ''}
                             onChange={(e) => handleFieldChange('name', e.target.value)}
                             placeholder="Jane Smith"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal"
+                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal ${
+                                getFieldError('name') ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
                         />
                     </div>
                     <div>
@@ -751,7 +766,9 @@ function ContactGroup({ question, value, onChange, errors, referenceData }) {
                             value={contactValue.email || ''}
                             onChange={(e) => handleFieldChange('email', e.target.value)}
                             placeholder="jane.smith@clinic.org"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal"
+                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal ${
+                                getFieldError('email') ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
                         />
                     </div>
                     <div>
@@ -794,6 +811,9 @@ function ContactGroup({ question, value, onChange, errors, referenceData }) {
                     </div>
                 </div>
             </div>
+            {hasAnyError && (
+                <p className="mt-1 text-sm text-red-600">Please complete all required contact fields</p>
+            )}
         </div>
     );
 }

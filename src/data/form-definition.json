@@ -64,19 +64,26 @@
           "placeholder": "e.g., Monday-Friday, 8:00 AM - 5:00 PM"
         },
         {
+          "question_id": "hours_in_emails",
+          "type": "checkbox",
+          "label": "Use these hours in patient invitation/reminder emails and texts",
+          "required": false
+        },
+        {
           "question_id": "website_main",
           "type": "text",
-          "label": "Main Website",
+          "label": "Main Hospital Website",
           "required": false,
-          "placeholder": "https://www.example.org"
+          "placeholder": "https://www.providence.org",
+          "help_text": "Example: providence.org"
         },
         {
           "question_id": "website_patient_facing",
           "type": "text",
-          "label": "Patient-Facing Website",
+          "label": "Clinic Website",
           "required": false,
-          "placeholder": "https://www.example.org/breast-care",
-          "help_text": "URL patients will see in communications"
+          "placeholder": "https://www.mammoclinic.providence.org",
+          "help_text": "We use clinic websites to understand your branding, tone, etc."
         }
       ]
     },
@@ -235,7 +242,7 @@
         {
           "question_id": "indication",
           "type": "select",
-          "label": "Indication",
+          "label": "Default Indication",
           "required": true,
           "options_ref": "indications",
           "show_when": {
@@ -247,7 +254,7 @@
         {
           "question_id": "criteria_for_testing",
           "type": "select",
-          "label": "Criteria for Testing",
+          "label": "Default Criteria",
           "required": true,
           "options_ref": "criteria_for_testing",
           "show_when": {
