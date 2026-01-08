@@ -39,6 +39,13 @@ function debugLog(...args) {
 }
 
 // ============================================================================
+// STORAGE CONFIGURATION
+// ============================================================================
+// LocalStorage key for auto-save functionality
+
+const STORAGE_KEY = 'propel_onboarding_draft';
+
+// ============================================================================
 // REACT CONTEXT
 // ============================================================================
 // We use React Context to share form definition and reference data across components
@@ -313,6 +320,165 @@ function generateOutputJson(formData, formDefinition) {
     };
 
     return output;
+}
+
+// ============================================================================
+// SAVE/RESTORE COMPONENTS
+// ============================================================================
+// Components for auto-save status and restore prompt
+
+/**
+ * RestorePrompt - Modal shown when saved data is found on load
+ */
+function RestorePrompt({ savedData, onRestore, onDiscard }) {
+    const savedDate = savedData?.savedAt ? new Date(savedData.savedAt) : null;
+    const formattedDate = savedDate ? savedDate.toLocaleString() : 'Unknown';
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
+                <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-propel-light rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-propel-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </div>
+                    <h3 className="text-xl font-semibold text-propel-navy mb-2">
+                        Resume Previous Session?
+                    </h3>
+                    <p className="text-gray-600">
+                        We found a saved draft from {formattedDate}. Would you like to continue where you left off?
+                    </p>
+                </div>
+
+                <div className="flex gap-3">
+                    <button
+                        onClick={onDiscard}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                        Start Fresh
+                    </button>
+                    <button
+                        onClick={onRestore}
+                        className="flex-1 px-4 py-2 bg-propel-teal text-white rounded-lg hover:bg-opacity-90 transition-colors"
+                    >
+                        Resume Draft
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * SaveStatusBar - Shows auto-save status with save/load/clear buttons and help section
+ */
+function SaveStatusBar({ lastSaved, onSaveDraft, onLoadDraft, onStartOver }) {
+    const [showHelp, setShowHelp] = React.useState(false);
+
+    const formatTime = (date) => {
+        if (!date) return null;
+        return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    return (
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6">
+            {/* Main status bar */}
+            <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                {/* Auto-save status */}
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                    {lastSaved ? (
+                        <>
+                            <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Auto-saved at {formatTime(lastSaved)}</span>
+                        </>
+                    ) : (
+                        <>
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
+                            <span>Your progress will be saved automatically</span>
+                        </>
+                    )}
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={onSaveDraft}
+                        className="px-3 py-1.5 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1"
+                        title="Download draft as file"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Save Draft
+                    </button>
+
+                    <label className="px-3 py-1.5 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1 cursor-pointer">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        Load Draft
+                        <input
+                            type="file"
+                            accept=".json"
+                            onChange={onLoadDraft}
+                            className="hidden"
+                        />
+                    </label>
+
+                    <button
+                        onClick={onStartOver}
+                        className="px-3 py-1.5 text-sm border border-red-200 rounded-md text-red-600 hover:bg-red-50 transition-colors flex items-center gap-1"
+                        title="Clear all data and start over"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Start Over
+                    </button>
+
+                    <button
+                        onClick={() => setShowHelp(!showHelp)}
+                        className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors"
+                        title="Help with saving"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            {/* Help section (expandable) */}
+            {showHelp && (
+                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 text-sm text-gray-600">
+                    <h4 className="font-medium text-gray-700 mb-2">Saving Your Progress</h4>
+                    <ul className="space-y-1.5">
+                        <li className="flex items-start gap-2">
+                            <span className="text-propel-teal font-bold">Auto-save:</span>
+                            Your responses are automatically saved to this browser. If you close the tab, you can resume later on the same device.
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-propel-teal font-bold">Save Draft:</span>
+                            Downloads a file you can store or share. Use this to transfer your draft to another device or send to a colleague.
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-propel-teal font-bold">Load Draft:</span>
+                            Upload a previously saved draft file to continue editing.
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-propel-teal font-bold">Start Over:</span>
+                            Clears all saved data and starts fresh. This cannot be undone.
+                        </li>
+                    </ul>
+                </div>
+            )}
+        </div>
+    );
 }
 
 // ============================================================================
@@ -1412,6 +1578,11 @@ function FormWizard({ formDefinition }) {
     const [errors, setErrors] = React.useState({});
     const [attemptedNext, setAttemptedNext] = React.useState(false);
 
+    // Save/restore state
+    const [lastSaved, setLastSaved] = React.useState(null);
+    const [showRestorePrompt, setShowRestorePrompt] = React.useState(false);
+    const [pendingSavedData, setPendingSavedData] = React.useState(null);
+
     const { steps, composite_types } = formDefinition;
     const currentStepDef = steps[currentStep];
     const isFirstStep = currentStep === 0;
@@ -1419,6 +1590,113 @@ function FormWizard({ formDefinition }) {
     const isReviewStep = currentStepDef.is_review_step;
 
     debugLog(`[FormWizard] Current step: ${currentStep} (${currentStepDef.title})`);
+
+    // Check for saved data on mount
+    React.useEffect(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.formData && Object.keys(parsed.formData).length > 0) {
+                    setPendingSavedData(parsed);
+                    setShowRestorePrompt(true);
+                }
+            }
+        } catch (e) {
+            console.error('[FormWizard] Error loading saved data:', e);
+        }
+    }, []);
+
+    // Auto-save on form data or step change
+    React.useEffect(() => {
+        // Don't save if form is empty
+        if (Object.keys(formData).length === 0) return;
+
+        try {
+            const saveData = {
+                formData,
+                currentStep,
+                savedAt: new Date().toISOString()
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
+            setLastSaved(saveData.savedAt);
+            debugLog('[FormWizard] Auto-saved:', saveData.savedAt);
+        } catch (e) {
+            console.error('[FormWizard] Error auto-saving:', e);
+        }
+    }, [formData, currentStep]);
+
+    // Restore handlers
+    const handleRestore = () => {
+        if (pendingSavedData) {
+            setFormData(pendingSavedData.formData || {});
+            setCurrentStep(pendingSavedData.currentStep || 0);
+            setLastSaved(pendingSavedData.savedAt);
+        }
+        setShowRestorePrompt(false);
+        setPendingSavedData(null);
+    };
+
+    const handleDiscard = () => {
+        localStorage.removeItem(STORAGE_KEY);
+        setShowRestorePrompt(false);
+        setPendingSavedData(null);
+    };
+
+    // Save draft to file
+    const handleSaveDraft = () => {
+        const saveData = {
+            formData,
+            currentStep,
+            savedAt: new Date().toISOString(),
+            version: formDefinition.version
+        };
+        const blob = new Blob([JSON.stringify(saveData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `propel-draft-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    // Load draft from file
+    const handleLoadDraft = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (data.formData) {
+                    setFormData(data.formData);
+                    setCurrentStep(data.currentStep || 0);
+                    setLastSaved(new Date().toISOString());
+                    setAttemptedNext(false);
+                    setErrors({});
+                }
+            } catch (err) {
+                alert('Invalid draft file. Please select a valid JSON file.');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = ''; // Reset input
+    };
+
+    // Start over - clear all data
+    const handleStartOver = () => {
+        if (confirm('Are you sure you want to start over? All your progress will be lost.')) {
+            localStorage.removeItem(STORAGE_KEY);
+            setFormData({});
+            setCurrentStep(0);
+            setLastSaved(null);
+            setAttemptedNext(false);
+            setErrors({});
+        }
+    };
 
     const handleNext = () => {
         setAttemptedNext(true);
@@ -1467,6 +1745,15 @@ function FormWizard({ formDefinition }) {
 
     return (
         <div className="max-w-3xl mx-auto px-4 py-8">
+            {/* Restore prompt modal */}
+            {showRestorePrompt && (
+                <RestorePrompt
+                    savedData={pendingSavedData}
+                    onRestore={handleRestore}
+                    onDiscard={handleDiscard}
+                />
+            )}
+
             {/* Header */}
             <div className="text-center mb-8">
                 <h1 className="text-2xl font-bold text-propel-navy mb-2">
@@ -1474,6 +1761,14 @@ function FormWizard({ formDefinition }) {
                 </h1>
                 <p className="text-gray-600">{formDefinition.description}</p>
             </div>
+
+            {/* Save status bar */}
+            <SaveStatusBar
+                lastSaved={lastSaved}
+                onSaveDraft={handleSaveDraft}
+                onLoadDraft={handleLoadDraft}
+                onStartOver={handleStartOver}
+            />
 
             {/* Progress indicator */}
             <ProgressIndicator
