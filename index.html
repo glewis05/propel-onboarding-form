@@ -5,7 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Propel Health - Onboarding Questionnaire</title>
 
-    <!-- Tailwind CSS via CDN -->
+    <!-- =======================================================================
+         SECURITY: Content Security Policy
+         =======================================================================
+         Restricts which sources can load scripts, styles, and other resources.
+         This prevents malicious code injection attacks (XSS).
+
+         - script-src: Only allow scripts from trusted CDNs and self
+         - style-src: Allow Tailwind-generated inline styles
+         - 'unsafe-eval': Required for Babel JSX transpilation
+    ======================================================================== -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://unpkg.com https://cdn.tailwindcss.com 'unsafe-inline' 'unsafe-eval';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data:;
+        font-src 'self';
+        connect-src 'self';
+        frame-ancestors 'none';
+        base-uri 'self';
+        form-action 'self';
+    ">
+
+    <!-- Tailwind CSS via CDN (dynamic - cannot use SRI) -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Configure Tailwind with Propel Health brand colors -->
@@ -27,12 +49,30 @@
     <!-- Custom styles -->
     <link rel="stylesheet" href="src/css/styles.css">
 
-    <!-- React 18 via CDN -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- =======================================================================
+         SECURITY: Pinned Versions with Subresource Integrity (SRI)
+         =======================================================================
+         SRI hashes verify that CDN files haven't been tampered with.
+         If a file is modified, the browser will refuse to load it.
 
-    <!-- Babel standalone for JSX transpilation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+         To update versions:
+         1. Change the version number in the URL
+         2. Run: curl -s [URL] | openssl dgst -sha384 -binary | openssl base64 -A
+         3. Update the integrity hash below
+    ======================================================================== -->
+
+    <!-- React 18.3.1 via CDN with SRI -->
+    <script crossorigin="anonymous"
+            src="https://unpkg.com/react@18.3.1/umd/react.development.js"
+            integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L"></script>
+    <script crossorigin="anonymous"
+            src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"
+            integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm"></script>
+
+    <!-- Babel 7.28.5 standalone for JSX transpilation with SRI -->
+    <script crossorigin="anonymous"
+            src="https://unpkg.com/@babel/standalone@7.28.5/babel.min.js"
+            integrity="sha384-mP9sW+eK08VvAmlxEkn9Kn6egvKFtnFEfW7/u9feUWAIoTvnYAzT4NwsskP+uWUd"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <!--
