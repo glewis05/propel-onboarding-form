@@ -273,12 +273,13 @@ function generateOutputJson(formData, formDefinition, referenceData) {
     // BUILD TEST PANEL OUTPUT STRUCTURE
     // =========================================================================
     // The test_panel field needs to include test_code and test_name from
-    // reference data, plus handle the special case of CustomNext-Cancer
-    // which includes selected genes.
+    // reference data, plus handle:
+    // 1. The RNAinsight checkbox - uses test_code_rna instead of test_code
+    // 2. The special case of CustomNext-Cancer which includes selected genes.
     let testPanelOutput = null;
 
     if (formData.test_panel && referenceData?.test_panels) {
-        // Look up the selected test panel in reference data to get test_code and display_name
+        // Look up the selected test panel in reference data to get test codes and display_name
         const selectedPanel = referenceData.test_panels.find(
             p => p.value === formData.test_panel
         );
@@ -288,12 +289,30 @@ function generateOutputJson(formData, formDefinition, referenceData) {
             const isCustomPanel = selectedPanel.is_custom === true;
             const selectedGenes = isCustomPanel ? (formData.custom_genes || []) : null;
 
+            // Check if RNAinsight is included
+            // When true, use the RNA test code and append +RNAinsight® to the name
+            const includeRna = formData.include_rna_insight === true;
+
+            // Determine which test code to use based on RNA checkbox
+            // Each test panel has both test_code (base) and test_code_rna (with RNA)
+            const testCode = includeRna
+                ? (selectedPanel.test_code_rna || selectedPanel.test_code)
+                : selectedPanel.test_code;
+
+            // Build the test name - append +RNAinsight® when RNA is included
+            // Example: "CancerNext-Expanded®" becomes "CancerNext-Expanded® +RNAinsight®"
+            const testName = includeRna
+                ? `${selectedPanel.display_name} +RNAinsight®`
+                : selectedPanel.display_name;
+
             // Build the test_panel output object
             // For CustomNext-Cancer: includes selected_genes array and gene_count
             // For pre-defined panels: selected_genes is null, gene_count is from reference data
             testPanelOutput = {
-                test_name: selectedPanel.display_name,
-                test_code: selectedPanel.test_code,
+                test_name: testName,
+                test_code: testCode,
+                // Track whether RNA analysis was included for downstream processing
+                include_rna_insight: includeRna,
                 selected_genes: selectedGenes,
                 gene_count: isCustomPanel
                     ? (selectedGenes ? selectedGenes.length : 0)

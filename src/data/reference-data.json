@@ -7,45 +7,33 @@
     {"value": "GRX", "display_name": "GenoRx", "description": "Pharmacogenomics program"}
   ],
 
-  "_comment_test_panels": "Ambry Genetics test panel options with test codes for auto-population in output",
+  "_comment_test_panels": "Ambry Genetics test panel options - 3 base tests with separate RNA checkbox",
+  "_comment_test_codes": "Each test has a base code and RNA code. RNA checkbox adds RNAinsight® and uses test_code_rna",
   "test_panels": [
     {
       "value": "customnext_cancer",
       "display_name": "CustomNext-Cancer®",
-      "test_code": "9511",
+      "test_code": "8824",
+      "test_code_rna": "8824-R",
       "description": "Build a custom panel from 90 available cancer-related genes",
       "gene_count": null,
       "is_custom": true
     },
     {
-      "value": "cancernext_expanded_rna",
-      "display_name": "CancerNext-Expanded® +RNAinsight®",
-      "test_code": "8875-R",
-      "description": "Comprehensive cancer panel with RNA analysis",
-      "gene_count": 77,
-      "is_custom": false
-    },
-    {
       "value": "cancernext_expanded",
       "display_name": "CancerNext-Expanded®",
       "test_code": "8875",
-      "description": "Comprehensive hereditary cancer panel",
+      "test_code_rna": "8875-R",
+      "description": "Comprehensive hereditary cancer panel (77 genes)",
       "gene_count": 77,
-      "is_custom": false
-    },
-    {
-      "value": "cancernext_expanded_leg_rna",
-      "display_name": "CancerNext-Expanded® + Limited Evidence Genes +RNAinsight®",
-      "test_code": "8875-R-LEG",
-      "description": "Expanded panel with limited evidence genes and RNA analysis",
-      "gene_count": 92,
       "is_custom": false
     },
     {
       "value": "cancernext_expanded_leg",
       "display_name": "CancerNext-Expanded® + Limited Evidence Genes",
       "test_code": "8875-LEG",
-      "description": "Expanded panel including genes with limited clinical evidence",
+      "test_code_rna": "8875-R-LEG",
+      "description": "Expanded panel including genes with limited clinical evidence (92 genes)",
       "gene_count": 92,
       "is_custom": false
     }

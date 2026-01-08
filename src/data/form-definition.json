@@ -252,6 +252,17 @@
           "help_text": "Select the genetic test panel for this program. CustomNext-Cancer allows you to select specific genes."
         },
         {
+          "question_id": "include_rna_insight",
+          "type": "checkbox",
+          "label": "Include RNAinsight®",
+          "required": false,
+          "show_when": {
+            "question_id": "test_panel",
+            "operator": "not_empty"
+          },
+          "help_text": "Add RNAinsight® RNA analysis to the selected test panel for enhanced variant interpretation"
+        },
+        {
           "question_id": "custom_genes",
           "type": "gene_selector",
           "label": "Select Genes for CustomNext-Cancer Panel",
