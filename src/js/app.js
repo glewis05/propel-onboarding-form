@@ -382,46 +382,49 @@ function SaveStatusBar({ lastSaved, onSaveDraft, onLoadDraft, onStartOver }) {
     };
 
     return (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6">
-            {/* Main status bar */}
-            <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-                {/* Auto-save status */}
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-4 sm:mb-6">
+            {/* Main status bar - stack on mobile, row on desktop */}
+            <div className="px-3 sm:px-4 py-2 sm:py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+                {/* Auto-save status - always visible */}
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                     {lastSaved ? (
                         <>
-                            <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                             </svg>
                             <span>Auto-saved at {formatTime(lastSaved)}</span>
                         </>
                     ) : (
                         <>
-                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                             </svg>
-                            <span>Your progress will be saved automatically</span>
+                            <span className="hidden sm:inline">Your progress will be saved automatically</span>
+                            <span className="sm:hidden">Auto-save enabled</span>
                         </>
                     )}
                 </div>
 
-                {/* Action buttons */}
-                <div className="flex items-center gap-2">
+                {/* Action buttons - wrap on mobile, smaller sizing */}
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <button
                         onClick={onSaveDraft}
-                        className="px-3 py-1.5 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1"
+                        className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1"
                         title="Download draft as file"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
-                        Save Draft
+                        <span className="hidden xs:inline">Save</span>
+                        <span className="hidden sm:inline"> Draft</span>
                     </button>
 
-                    <label className="px-3 py-1.5 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1 cursor-pointer">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <label className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1 cursor-pointer">
+                        <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                         </svg>
-                        Load Draft
+                        <span className="hidden xs:inline">Load</span>
+                        <span className="hidden sm:inline"> Draft</span>
                         <input
                             type="file"
                             accept=".json"
@@ -432,47 +435,48 @@ function SaveStatusBar({ lastSaved, onSaveDraft, onLoadDraft, onStartOver }) {
 
                     <button
                         onClick={onStartOver}
-                        className="px-3 py-1.5 text-sm border border-red-200 rounded-md text-red-600 hover:bg-red-50 transition-colors flex items-center gap-1"
+                        className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-red-200 rounded-md text-red-600 hover:bg-red-50 transition-colors flex items-center gap-1"
                         title="Clear all data and start over"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        Start Over
+                        <span className="hidden sm:inline">Start Over</span>
+                        <span className="sm:hidden">Reset</span>
                     </button>
 
                     <button
                         onClick={() => setShowHelp(!showHelp)}
-                        className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors"
+                        className="p-1 sm:p-1.5 text-gray-500 hover:text-gray-700 transition-colors"
                         title="Help with saving"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </button>
                 </div>
             </div>
 
-            {/* Help section (expandable) */}
+            {/* Help section (expandable) - full width */}
             {showHelp && (
-                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 text-sm text-gray-600">
+                <div className="px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 border-t border-gray-200 text-xs sm:text-sm text-gray-600">
                     <h4 className="font-medium text-gray-700 mb-2">Saving Your Progress</h4>
                     <ul className="space-y-1.5">
-                        <li className="flex items-start gap-2">
-                            <span className="text-propel-teal font-bold">Auto-save:</span>
-                            Your responses are automatically saved to this browser. If you close the tab, you can resume later on the same device.
+                        <li className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
+                            <span className="text-propel-teal font-bold whitespace-nowrap">Auto-save:</span>
+                            <span>Your responses are automatically saved to this browser. Resume later on the same device.</span>
                         </li>
-                        <li className="flex items-start gap-2">
-                            <span className="text-propel-teal font-bold">Save Draft:</span>
-                            Downloads a file you can store or share. Use this to transfer your draft to another device or send to a colleague.
+                        <li className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
+                            <span className="text-propel-teal font-bold whitespace-nowrap">Save Draft:</span>
+                            <span>Downloads a file to transfer to another device or share with a colleague.</span>
                         </li>
-                        <li className="flex items-start gap-2">
-                            <span className="text-propel-teal font-bold">Load Draft:</span>
-                            Upload a previously saved draft file to continue editing.
+                        <li className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
+                            <span className="text-propel-teal font-bold whitespace-nowrap">Load Draft:</span>
+                            <span>Upload a previously saved draft file to continue editing.</span>
                         </li>
-                        <li className="flex items-start gap-2">
-                            <span className="text-propel-teal font-bold">Start Over:</span>
-                            Clears all saved data and starts fresh. This cannot be undone.
+                        <li className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
+                            <span className="text-propel-teal font-bold whitespace-nowrap">Start Over:</span>
+                            <span>Clears all saved data and starts fresh. This cannot be undone.</span>
                         </li>
                     </ul>
                 </div>
@@ -811,7 +815,8 @@ function AddressGroup({ question, value, onChange, errors, referenceData }) {
                 {question.label}
                 {question.required && <span className="text-red-500 ml-1">*</span>}
             </label>
-            <div className={`space-y-3 p-4 bg-gray-50 rounded-lg border ${hasAnyError ? 'border-red-500' : 'border-gray-200'}`}>
+            <div className={`space-y-3 p-3 sm:p-4 bg-gray-50 rounded-lg border ${hasAnyError ? 'border-red-500' : 'border-gray-200'}`}>
+                {/* Street - always full width */}
                 <div>
                     <input
                         type="text"
@@ -823,8 +828,9 @@ function AddressGroup({ question, value, onChange, errors, referenceData }) {
                         }`}
                     />
                 </div>
-                <div className="grid grid-cols-6 gap-3">
-                    <div className="col-span-3">
+                {/* City/State/ZIP - stack on mobile, row on desktop */}
+                <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
+                    <div className="sm:col-span-3">
                         <input
                             type="text"
                             value={addressValue.city || ''}
@@ -835,7 +841,7 @@ function AddressGroup({ question, value, onChange, errors, referenceData }) {
                             }`}
                         />
                     </div>
-                    <div className="col-span-1">
+                    <div className="sm:col-span-1">
                         <select
                             value={addressValue.state || ''}
                             onChange={(e) => handleFieldChange('state', e.target.value)}
@@ -849,7 +855,7 @@ function AddressGroup({ question, value, onChange, errors, referenceData }) {
                             ))}
                         </select>
                     </div>
-                    <div className="col-span-2">
+                    <div className="sm:col-span-2">
                         <input
                             type="text"
                             value={addressValue.zip || ''}
@@ -1229,57 +1235,62 @@ function RepeatableSection({ step, items, onChange, errors, formData }) {
     };
 
     return (
-        <div>
+        <div className="space-y-4">
             {errors._section && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
                     <p className="text-sm text-red-600">{errors._section}</p>
                 </div>
             )}
 
             {items.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                    <p>No items added yet. Click the button below to add one.</p>
+                <div className="text-center py-6 sm:py-8 text-gray-500">
+                    <p className="text-sm sm:text-base">No items added yet. Tap the button below to add one.</p>
                 </div>
             )}
 
             {items.map((item, index) => (
-                <div key={index} className="relative p-4 mb-4 bg-gray-50 border border-gray-200 rounded-lg">
-                    <div className="flex justify-between items-center mb-4">
-                        <h4 className="font-medium text-gray-700">{getItemTitle(index)}</h4>
+                <div key={index} className="relative p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    {/* Header with title and remove button */}
+                    <div className="flex justify-between items-center mb-3 sm:mb-4">
+                        <h4 className="font-medium text-gray-700 text-sm sm:text-base">{getItemTitle(index)}</h4>
                         {items.length > min_items && (
                             <button
                                 type="button"
                                 onClick={() => handleRemoveItem(index)}
-                                className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
-                                title="Remove"
+                                className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-red-600 border border-red-300 rounded hover:bg-red-50 transition-colors flex items-center gap-1"
                             >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
+                                <span className="hidden sm:inline">Remove</span>
                             </button>
                         )}
                     </div>
 
-                    {questions.map(question => (
-                        <QuestionRenderer
-                            key={question.question_id}
-                            question={question}
-                            value={item[question.question_id]}
-                            onChange={(value) => handleItemChange(index, question.question_id, value)}
-                            errors={errors}
-                            formData={{ ...formData, ...item }}
-                        />
-                    ))}
+                    {/* Question fields */}
+                    <div className="space-y-3">
+                        {questions.map(question => (
+                            <QuestionRenderer
+                                key={question.question_id}
+                                question={question}
+                                value={item[question.question_id]}
+                                onChange={(value) => handleItemChange(index, question.question_id, value)}
+                                errors={errors}
+                                formData={{ ...formData, ...item }}
+                            />
+                        ))}
+                    </div>
                 </div>
             ))}
 
+            {/* Add button - full width */}
             {items.length < max_items && (
                 <button
                     type="button"
                     onClick={handleAddItem}
-                    className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-propel-teal hover:text-propel-teal hover:bg-propel-light transition-colors"
+                    className="w-full py-3 sm:py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-propel-teal hover:text-propel-teal hover:bg-propel-light transition-colors"
                 >
-                    <span className="flex items-center justify-center">
+                    <span className="flex items-center justify-center text-sm sm:text-base">
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
@@ -1423,29 +1434,29 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
         if (step.is_review_step) return null;
 
         return (
-            <div key={step.step_id} className="mb-6 pb-6 border-b border-gray-200 last:border-0">
-                <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-lg font-semibold text-propel-navy">{step.title}</h3>
+            <div key={step.step_id} className="mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-gray-200 last:border-0">
+                <div className="flex justify-between items-center mb-2 sm:mb-3">
+                    <h3 className="text-base sm:text-lg font-semibold text-propel-navy">{step.title}</h3>
                     <button
                         type="button"
                         onClick={() => onEdit(index)}
-                        className="text-sm text-propel-teal hover:text-propel-navy font-medium"
+                        className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-propel-teal hover:text-propel-navy font-medium border border-propel-teal rounded hover:bg-propel-light transition-colors"
                     >
                         Edit
                     </button>
                 </div>
 
                 {step.repeatable ? (
-                    <div>
+                    <div className="space-y-2 sm:space-y-3">
                         {(formData[step.step_id] || []).map((item, itemIndex) => (
-                            <div key={itemIndex} className="mb-3 p-3 bg-gray-50 rounded">
-                                <p className="font-medium text-gray-700 mb-2">
+                            <div key={itemIndex} className="p-2 sm:p-3 bg-gray-50 rounded">
+                                <p className="font-medium text-gray-700 mb-2 text-sm sm:text-base">
                                     {step.repeatable_config.item_title_template.replace('{{index}}', itemIndex + 1)}
                                 </p>
                                 {step.questions.map(q => (
-                                    <div key={q.question_id} className="flex py-1">
-                                        <span className="w-1/3 text-sm text-gray-500">{q.label}:</span>
-                                        <span className="w-2/3 text-sm text-gray-900">
+                                    <div key={q.question_id} className="flex flex-col sm:flex-row py-1">
+                                        <span className="sm:w-1/3 text-xs sm:text-sm text-gray-500">{q.label}:</span>
+                                        <span className="sm:w-2/3 text-xs sm:text-sm text-gray-900 mt-0.5 sm:mt-0">
                                             {getDisplayValue(item[q.question_id], q.options_ref, q.type)}
                                         </span>
                                     </div>
@@ -1453,7 +1464,7 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                             </div>
                         ))}
                         {(formData[step.step_id] || []).length === 0 && (
-                            <p className="text-gray-400 text-sm">None added</p>
+                            <p className="text-gray-400 text-xs sm:text-sm">None added</p>
                         )}
                     </div>
                 ) : (
@@ -1464,9 +1475,9 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                                 return null;
                             }
                             return (
-                                <div key={q.question_id} className="flex py-1">
-                                    <span className="w-1/3 text-sm text-gray-500">{q.label}:</span>
-                                    <span className="w-2/3 text-sm text-gray-900">
+                                <div key={q.question_id} className="flex flex-col sm:flex-row py-1">
+                                    <span className="sm:w-1/3 text-xs sm:text-sm text-gray-500">{q.label}:</span>
+                                    <span className="sm:w-2/3 text-xs sm:text-sm text-gray-900 mt-0.5 sm:mt-0">
                                         {getDisplayValue(formData[q.question_id], q.options_ref, q.type)}
                                     </span>
                                 </div>
@@ -1480,19 +1491,19 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
 
     return (
         <div className="step-content">
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-green-700 font-medium">
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-green-700 font-medium text-sm sm:text-base">
                     Ready to submit! Review your responses below and download the JSON file.
                 </p>
             </div>
 
             {formDefinition.steps.map((step, index) => renderSection(step, index))}
 
-            <div className="mt-8 text-center">
+            <div className="mt-6 sm:mt-8 text-center">
                 <button
                     type="button"
                     onClick={handleDownload}
-                    className="inline-flex items-center px-6 py-3 bg-propel-navy text-white font-medium rounded-lg hover:bg-opacity-90 transition-colors"
+                    className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-propel-navy text-white font-medium rounded-lg hover:bg-opacity-90 transition-colors"
                 >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -1510,18 +1521,28 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
 // Shows the current step and overall progress
 
 function ProgressIndicator({ steps, currentStep, onStepClick }) {
+    const currentStepTitle = steps[currentStep]?.title || '';
+
     return (
-        <div className="mb-8">
-            {/* Step counter */}
-            <div className="text-center mb-4">
+        <div className="mb-4 sm:mb-8">
+            {/* Mobile: Simple text indicator with current step title */}
+            <div className="sm:hidden text-center py-3 px-4 bg-gray-50 rounded-lg mb-3">
+                <span className="text-xs text-gray-500 uppercase tracking-wide">
+                    Step {currentStep + 1} of {steps.length}
+                </span>
+                <h2 className="text-base font-semibold text-propel-navy mt-1">{currentStepTitle}</h2>
+            </div>
+
+            {/* Desktop: Step counter above progress bar */}
+            <div className="hidden sm:block text-center mb-4">
                 <span className="text-sm text-gray-500">
                     Step {currentStep + 1} of {steps.length}
                 </span>
             </div>
 
-            {/* Progress bar */}
+            {/* Progress bar - visible on all sizes */}
             <div className="relative">
-                <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+                <div className="overflow-hidden h-2 mb-2 sm:mb-4 text-xs flex rounded bg-gray-200">
                     <div
                         style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
                         className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-propel-teal transition-all duration-300"
@@ -1529,7 +1550,7 @@ function ProgressIndicator({ steps, currentStep, onStepClick }) {
                 </div>
             </div>
 
-            {/* Step labels - horizontal on desktop, hidden on mobile */}
+            {/* Step labels - horizontal on desktop (md+), hidden on mobile/tablet */}
             <div className="hidden md:flex justify-between">
                 {steps.map((step, index) => (
                     <button
@@ -1744,7 +1765,7 @@ function FormWizard({ formDefinition }) {
     };
 
     return (
-        <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
             {/* Restore prompt modal */}
             {showRestorePrompt && (
                 <RestorePrompt
@@ -1754,12 +1775,12 @@ function FormWizard({ formDefinition }) {
                 />
             )}
 
-            {/* Header */}
-            <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold text-propel-navy mb-2">
+            {/* Header - compact on mobile */}
+            <div className="text-center mb-4 sm:mb-8">
+                <h1 className="text-lg sm:text-2xl font-bold text-propel-navy mb-1 sm:mb-2">
                     {formDefinition.title}
                 </h1>
-                <p className="text-gray-600">{formDefinition.description}</p>
+                <p className="text-xs sm:text-base text-gray-600 hidden sm:block">{formDefinition.description}</p>
             </div>
 
             {/* Save status bar */}
@@ -1778,9 +1799,9 @@ function FormWizard({ formDefinition }) {
             />
 
             {/* Current step card */}
-            <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
-                {/* Step header */}
-                <div className="mb-6">
+            <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 mobile-content-padding">
+                {/* Step header - hidden on mobile since ProgressIndicator shows it */}
+                <div className="hidden sm:block mb-6">
                     <h2 className="text-xl font-semibold text-propel-navy">
                         {currentStepDef.title}
                     </h2>
@@ -1788,6 +1809,12 @@ function FormWizard({ formDefinition }) {
                         <p className="text-gray-600 mt-1">{currentStepDef.description}</p>
                     )}
                 </div>
+                {/* Mobile: Show description only (title shown in progress indicator) */}
+                {currentStepDef.description && (
+                    <div className="sm:hidden mb-4">
+                        <p className="text-sm text-gray-600">{currentStepDef.description}</p>
+                    </div>
+                )}
 
                 {/* Step content */}
                 {isReviewStep ? (
@@ -1804,14 +1831,16 @@ function FormWizard({ formDefinition }) {
                         errors={errors}
                     />
                 )}
+            </div>
 
-                {/* Navigation buttons */}
-                <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
+            {/* Navigation buttons - fixed on mobile, relative on desktop */}
+            <div className="mobile-bottom-nav">
+                <div className="flex gap-3">
                     <button
                         type="button"
                         onClick={handlePrevious}
                         disabled={isFirstStep}
-                        className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                        className={`flex-1 sm:flex-none px-4 sm:px-6 py-3 sm:py-2 rounded-lg font-medium text-base sm:text-sm transition-colors ${
                             isFirstStep
                                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1824,7 +1853,7 @@ function FormWizard({ formDefinition }) {
                         <button
                             type="button"
                             onClick={handleNext}
-                            className="px-6 py-2 bg-propel-teal text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors"
+                            className="flex-1 sm:flex-none px-4 sm:px-6 py-3 sm:py-2 bg-propel-teal text-white rounded-lg font-medium text-base sm:text-sm hover:bg-opacity-90 transition-colors"
                         >
                             {isLastStep ? 'Review' : 'Next'}
                         </button>
