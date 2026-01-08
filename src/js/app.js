@@ -37,7 +37,7 @@ const DEBUG = (() => {
 })();
 
 function debugLog(...args) {
-    if (DEBUG) debugLog(...args);
+    if (DEBUG) console.log('[DEBUG]', ...args);
 }
 
 // ============================================================================
