@@ -68,8 +68,20 @@
     {"value": "HELIX", "display_name": "Helix"}
   ],
   "specimen_types": [
-    {"value": "SALIVA", "display_name": "Saliva"},
-    {"value": "BLOOD", "display_name": "Blood"}
+    {"value": "BLOOD", "display_name": "Blood"},
+    {"value": "BUCCAL_SWAB", "display_name": "Buccal Swab"},
+    {"value": "SALIVA", "display_name": "Saliva"}
+  ],
+
+  "_comment_extract_filters": "Options for extract filtering configuration",
+  "extract_patient_status_options": [
+    {"value": "new_only", "display_name": "New patients only"},
+    {"value": "all", "display_name": "All patients (no filter)"}
+  ],
+  "extract_procedure_type_options": [
+    {"value": "screening_only", "display_name": "Screening only"},
+    {"value": "screening_diagnostic", "display_name": "Screening and Diagnostic"},
+    {"value": "all", "display_name": "All procedure types"}
   ],
   "billing_methods": [
     {"value": "INSURANCE", "display_name": "Bill insurance"},

@@ -141,11 +141,30 @@
       "order": 4,
       "questions": [
         {
+          "question_id": "clinic_champion",
+          "type": "contact_group",
+          "label": "Clinic Champion",
+          "required": true,
+          "help_text": "The champion is the final decision maker for implementation"
+        },
+        {
+          "question_id": "champion_is_primary",
+          "type": "checkbox",
+          "label": "Clinic Champion is also the Primary Point of Contact",
+          "required": false,
+          "help_text": "Check if the champion should receive all implementation communications"
+        },
+        {
           "question_id": "contact_primary",
           "type": "contact_group",
           "label": "Primary Contact",
           "required": true,
-          "help_text": "Main point of contact for implementation"
+          "help_text": "Main point of contact for implementation",
+          "show_when": {
+            "question_id": "champion_is_primary",
+            "operator": "equals",
+            "value": false
+          }
         },
         {
           "question_id": "genetic_counselor",
@@ -259,6 +278,21 @@
           "label": "Billing Method",
           "required": true,
           "options_ref": "billing_methods"
+        },
+        {
+          "question_id": "helpdesk_phone",
+          "type": "text",
+          "label": "Helpdesk Phone Number",
+          "required": false,
+          "placeholder": "1-800-555-1234",
+          "help_text": "Phone number patients can call for questions about their genetic testing"
+        },
+        {
+          "question_id": "helpdesk_phone_in_emails",
+          "type": "checkbox",
+          "label": "Include this phone number in invitation and reminder emails",
+          "required": false,
+          "help_text": "If checked, this helpdesk number will appear in patient communications"
         },
         {
           "question_id": "send_kit_to_patient",
@@ -382,6 +416,13 @@
           "help_text": "10-digit National Provider Identifier"
         },
         {
+          "question_id": "provider_office_address",
+          "type": "address",
+          "label": "Office Address",
+          "required": true,
+          "help_text": "Provider's office address for lab order documentation"
+        },
+        {
           "question_id": "provider_specialty",
           "type": "select",
           "label": "Specialty",
@@ -391,10 +432,55 @@
       ]
     },
     {
+      "step_id": "extract_filtering",
+      "title": "Extract Filtering",
+      "description": "Configure which patients and appointments are included in daily extracts",
+      "order": 9,
+      "questions": [
+        {
+          "question_id": "extract_patient_status",
+          "type": "select",
+          "label": "Patient Status Filter",
+          "required": true,
+          "options_ref": "extract_patient_status_options",
+          "help_text": "Which patients should be included in the daily extract?"
+        },
+        {
+          "question_id": "extract_procedure_type",
+          "type": "select",
+          "label": "Procedure Type Filter",
+          "required": true,
+          "options_ref": "extract_procedure_type_options",
+          "help_text": "Which appointment types should be included?"
+        },
+        {
+          "question_id": "extract_filter_by_provider",
+          "type": "checkbox",
+          "label": "Filter extracts to specific provider(s)",
+          "required": false,
+          "help_text": "Check if only appointments for certain providers should be extracted"
+        },
+        {
+          "question_id": "extract_providers",
+          "type": "textarea",
+          "label": "Provider Names for Extract",
+          "required": false,
+          "placeholder": "Enter provider names, one per line (e.g., Dr. Jane Smith)",
+          "rows": 4,
+          "show_when": {
+            "question_id": "extract_filter_by_provider",
+            "operator": "equals",
+            "value": true
+          },
+          "help_text": "List the ordering providers whose appointments should be included in extracts. These should match names entered in the Ordering Providers section."
+        }
+      ]
+    },
+    {
       "step_id": "review",
       "title": "Review & Download",
       "description": "Review your responses and download the JSON file",
-      "order": 9,
+      "order": 10,
       "is_review_step": true
     }
   ],

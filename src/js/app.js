@@ -333,9 +333,22 @@ function generateOutputJson(formData, formDefinition, referenceData) {
         // =====================================================================
         // CONTACTS SECTION
         // =====================================================================
-        // Includes the new genetic_counselor field (required) after primary contact
+        // Handles the clinic_champion and champion_is_primary logic:
+        // - If champion_is_primary is checked, copy clinic_champion data to primary
+        // - Otherwise, use the separate contact_primary data
         contacts: {
-            primary: formData.contact_primary || null,
+            // Clinic champion is the decision maker for implementation
+            clinic_champion: formData.clinic_champion || null,
+            // Track if champion is also the primary contact
+            champion_is_primary: formData.champion_is_primary || false,
+            // Primary contact: either copied from champion or separate entry
+            // If champion_is_primary is true, copy champion data with a flag
+            primary: formData.champion_is_primary
+                ? {
+                    ...formData.clinic_champion,
+                    is_also_champion: true
+                }
+                : (formData.contact_primary || null),
             genetic_counselor: formData.genetic_counselor || null,
             secondary: formData.contact_secondary || null,
             it: formData.contact_it || null,
@@ -379,14 +392,67 @@ function generateOutputJson(formData, formDefinition, referenceData) {
             }))
         },
 
+        // =====================================================================
+        // ORDERING PROVIDERS
+        // =====================================================================
+        // Each provider now includes an optional office_address composite field.
+        // The office_address contains street, city, state, zip from the address
+        // composite type added to the ordering_providers repeatable section.
         ordering_providers: (formData.ordering_providers || []).map(provider => ({
             name: provider.provider_name,
             title: provider.provider_title || null,
             email: provider.provider_email,
             phone: provider.provider_phone || null,
             npi: provider.provider_npi,
-            specialty: provider.provider_specialty || null
+            specialty: provider.provider_specialty || null,
+            // Office address is an address composite type (street, city, state, zip)
+            // Returns null if not provided, otherwise returns the full address object
+            office_address: provider.provider_office_address || null
         })),
+
+        // =====================================================================
+        // HELPDESK CONFIGURATION
+        // =====================================================================
+        // Clinic-specific helpdesk phone number that can optionally be included
+        // in patient communications. The helpdesk_phone_in_emails checkbox
+        // controls whether this number appears in automated emails to patients.
+        helpdesk: {
+            // Direct phone line for patients to call with questions
+            phone: formData.helpdesk_phone || null,
+            // When true, the helpdesk phone will be included in patient-facing
+            // email templates. When false, emails use default contact info.
+            include_in_emails: formData.helpdesk_phone_in_emails || false
+        },
+
+        // =====================================================================
+        // EXTRACT FILTERING CONFIGURATION
+        // =====================================================================
+        // Controls how patient data is filtered when extracting from the EHR.
+        // These settings determine which patients are included in the extract
+        // based on their status, procedure type, and ordering provider.
+        extract_filtering: {
+            // Patient status filter:
+            // - "new_only": Only include patients new to the program
+            // - "all": Include all patients regardless of status
+            patient_status: formData.extract_patient_status || null,
+
+            // Procedure type filter:
+            // - "screening_only": Only screening procedures
+            // - "screening_diagnostic": Both screening and diagnostic
+            // - "all": All procedure types included
+            procedure_type: formData.extract_procedure_type || null,
+
+            // When true, enables provider-based filtering using the list below
+            filter_by_provider: formData.extract_filter_by_provider || false,
+
+            // Comma-separated list of provider names or NPIs to include.
+            // Only used when filter_by_provider is true.
+            // This allows clinics to limit extracts to specific ordering providers
+            // rather than including all providers at the clinic.
+            provider_list: formData.extract_filter_by_provider
+                ? (formData.extract_providers || null)
+                : null
+        },
 
         metadata: {
             form_version: formDefinition.version,
