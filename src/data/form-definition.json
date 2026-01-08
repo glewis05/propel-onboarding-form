@@ -148,6 +148,13 @@
           "help_text": "Main point of contact for implementation"
         },
         {
+          "question_id": "genetic_counselor",
+          "type": "contact_group",
+          "label": "Genetic Counselor",
+          "required": true,
+          "help_text": "Primary genetic counselor for the program"
+        },
+        {
           "question_id": "contact_secondary",
           "type": "contact_group",
           "label": "Secondary Contact",
@@ -216,6 +223,27 @@
               "GRX": ["HELIX"]
             }
           }
+        },
+        {
+          "question_id": "test_panel",
+          "type": "select",
+          "label": "Test Panel",
+          "required": true,
+          "options_ref": "test_panels",
+          "help_text": "Select the genetic test panel for this program. CustomNext-Cancer allows you to select specific genes."
+        },
+        {
+          "question_id": "custom_genes",
+          "type": "gene_selector",
+          "label": "Select Genes for CustomNext-Cancer Panel",
+          "required": true,
+          "options_ref": "customnext_cancer_genes",
+          "show_when": {
+            "question_id": "test_panel",
+            "operator": "equals",
+            "value": "customnext_cancer"
+          },
+          "help_text": "Select the specific genes to include in your custom panel (up to 90 genes available)"
         },
         {
           "question_id": "specimen_type",

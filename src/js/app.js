@@ -17,6 +17,8 @@
  *
  * Question Types:
  * - text, textarea, select, radio, checkbox
+ * - select_with_alternates: Default selection with optional alternate choices
+ * - gene_selector: Multi-select searchable gene panel (for CustomNext-Cancer)
  * - Composite types: address, contact_group, stakeholder_group
  */
 
@@ -132,6 +134,15 @@ function validateField(value, question) {
         if (value === undefined || value === null || value === '') {
             return `${question.label} is required`;
         }
+        // =====================================================================
+        // GENE SELECTOR VALIDATION
+        // =====================================================================
+        // For gene_selector, value is an array - check that at least one gene is selected
+        if (question.type === 'gene_selector') {
+            if (!Array.isArray(value) || value.length === 0) {
+                return `${question.label}: Please select at least one gene`;
+            }
+        }
         // For select_with_alternates, check if default value is selected
         if (question.type === 'select_with_alternates') {
             if (typeof value === 'object' && !value.default) {
@@ -243,11 +254,59 @@ function validateStep(step, formData, compositeTypes) {
 
 /**
  * Generate the final JSON output matching the expected schema.
+ *
+ * This function transforms the raw form data into a structured output format
+ * suitable for downstream systems. It handles special cases like:
+ * - Test panel with conditional gene selection (CustomNext-Cancer)
+ * - Contact groupings including genetic counselor
+ * - Select-with-alternates specimen type configuration
+ *
+ * @param {Object} formData - Raw form data from user inputs
+ * @param {Object} formDefinition - Form structure definition
+ * @param {Object} referenceData - Reference data for lookups (test panels, etc.)
+ * @returns {Object} - Structured output JSON
  */
-function generateOutputJson(formData, formDefinition) {
+function generateOutputJson(formData, formDefinition, referenceData) {
     debugLog('[Output] Generating JSON from form data:', formData);
 
-    // Transform form data to match the expected output schema
+    // =========================================================================
+    // BUILD TEST PANEL OUTPUT STRUCTURE
+    // =========================================================================
+    // The test_panel field needs to include test_code and test_name from
+    // reference data, plus handle the special case of CustomNext-Cancer
+    // which includes selected genes.
+    let testPanelOutput = null;
+
+    if (formData.test_panel && referenceData?.test_panels) {
+        // Look up the selected test panel in reference data to get test_code and display_name
+        const selectedPanel = referenceData.test_panels.find(
+            p => p.value === formData.test_panel
+        );
+
+        if (selectedPanel) {
+            // Check if this is the custom panel (has selected genes)
+            const isCustomPanel = selectedPanel.is_custom === true;
+            const selectedGenes = isCustomPanel ? (formData.custom_genes || []) : null;
+
+            // Build the test_panel output object
+            // For CustomNext-Cancer: includes selected_genes array and gene_count
+            // For pre-defined panels: selected_genes is null, gene_count is from reference data
+            testPanelOutput = {
+                test_name: selectedPanel.display_name,
+                test_code: selectedPanel.test_code,
+                selected_genes: selectedGenes,
+                gene_count: isCustomPanel
+                    ? (selectedGenes ? selectedGenes.length : 0)
+                    : selectedPanel.gene_count
+            };
+
+            debugLog('[Output] Test panel output:', testPanelOutput);
+        }
+    }
+
+    // =========================================================================
+    // BUILD MAIN OUTPUT STRUCTURE
+    // =========================================================================
     const output = {
         schema_version: "1.0",
         submitted_at: new Date().toISOString(),
@@ -271,8 +330,13 @@ function generateOutputJson(formData, formDefinition) {
             }))
         },
 
+        // =====================================================================
+        // CONTACTS SECTION
+        // =====================================================================
+        // Includes the new genetic_counselor field (required) after primary contact
         contacts: {
             primary: formData.contact_primary || null,
+            genetic_counselor: formData.genetic_counselor || null,
             secondary: formData.contact_secondary || null,
             it: formData.contact_it || null,
             lab: formData.contact_lab || null
@@ -284,18 +348,29 @@ function generateOutputJson(formData, formDefinition) {
             formData.stakeholder_it_director
         ].filter(s => s && s.name),
 
+        // =====================================================================
+        // LAB ORDER CONFIGURATION
+        // =====================================================================
+        // Now includes test_panel with proper structure instead of test_products
         lab_order_configuration: {
             test_provider: formData.lab_partner,
+
             // Transform select_with_alternates specimen_type to proper output format
             specimen_collection: formData.specimen_type ? {
                 default: formData.specimen_type.default || formData.specimen_type,
                 additional_options_enabled: formData.specimen_type.offer_alternates || false,
                 additional_options: formData.specimen_type.alternates || []
             } : null,
+
             billing_method: formData.billing_method,
             send_kit_to_patient: formData.send_kit_to_patient,
             indication: formData.indication || null,
             criteria_for_testing: formData.criteria_for_testing || null,
+
+            // New test_panel structure with test_code, test_name, selected_genes, gene_count
+            test_panel: testPanelOutput,
+
+            // Keep test_products for backward compatibility (legacy format)
             test_products: (formData.test_products || []).map(test => ({
                 test_code: test.test_code,
                 test_name: test.test_code, // Will be looked up
@@ -790,6 +865,255 @@ const SelectWithAlternates = React.memo(function SelectWithAlternates({ question
 });
 
 /**
+ * GeneSelector - Custom gene selection component for CustomNext-Cancer panel
+ *
+ * This component provides a sophisticated UI for selecting genes from the 90
+ * available CustomNext-Cancer genes. It includes:
+ * - Searchable filter input to find specific genes
+ * - Checkbox list with all genes (filtered by search)
+ * - "Selected Genes" chip display for easy removal
+ * - Running count of selected genes
+ * - Select All / Clear All bulk actions
+ *
+ * Value structure: Array of selected gene strings, e.g., ["BRCA1", "BRCA2", "ATM"]
+ *
+ * Mobile responsive:
+ * - Gene list scrolls when too many genes (max-height with overflow)
+ * - Chips wrap naturally on smaller screens
+ * - Touch-friendly chip removal buttons
+ */
+const GeneSelector = React.memo(function GeneSelector({ question, value, onChange, options, error }) {
+    // -------------------------------------------------------------------------
+    // STATE MANAGEMENT
+    // -------------------------------------------------------------------------
+    // searchTerm: The current filter text entered by the user
+    // Genes are displayed in alphabetical order (already sorted in reference-data.json)
+    const [searchTerm, setSearchTerm] = React.useState('');
+
+    // Ensure value is always an array (handles initial undefined state)
+    const selectedGenes = value || [];
+
+    // Total number of available genes for the "X of Y" counter display
+    const totalGenes = options.length;
+
+    // -------------------------------------------------------------------------
+    // FILTERED GENE LIST
+    // -------------------------------------------------------------------------
+    // Filter genes based on search term (case-insensitive matching)
+    // The options array contains gene strings like "BRCA1", "ATM", etc.
+    const filteredGenes = React.useMemo(() => {
+        if (!searchTerm.trim()) {
+            // No search term - return all genes
+            return options;
+        }
+        // Filter genes that contain the search term (case-insensitive)
+        const term = searchTerm.toLowerCase();
+        return options.filter(gene =>
+            gene.toLowerCase().includes(term)
+        );
+    }, [options, searchTerm]);
+
+    // -------------------------------------------------------------------------
+    // EVENT HANDLERS
+    // -------------------------------------------------------------------------
+
+    /**
+     * Handle toggling a single gene's selection state
+     * If currently selected, remove it; if not selected, add it
+     */
+    const handleGeneToggle = (gene) => {
+        if (selectedGenes.includes(gene)) {
+            // Remove the gene from selection
+            onChange(selectedGenes.filter(g => g !== gene));
+        } else {
+            // Add the gene to selection (maintain alphabetical order)
+            const newSelection = [...selectedGenes, gene].sort();
+            onChange(newSelection);
+        }
+    };
+
+    /**
+     * Handle removing a gene chip (called when user clicks X on a chip)
+     * This is separate from toggle to make the intent clearer
+     */
+    const handleRemoveGene = (gene) => {
+        onChange(selectedGenes.filter(g => g !== gene));
+    };
+
+    /**
+     * Select All - Add all currently filtered genes to the selection
+     * Note: Only selects genes visible in the current filter view
+     */
+    const handleSelectAll = () => {
+        // Merge current selection with filtered genes, avoiding duplicates
+        const combined = [...new Set([...selectedGenes, ...filteredGenes])];
+        // Sort alphabetically for consistent ordering
+        onChange(combined.sort());
+    };
+
+    /**
+     * Clear All - Remove all selected genes
+     * This clears the entire selection, not just filtered genes
+     */
+    const handleClearAll = () => {
+        onChange([]);
+    };
+
+    // -------------------------------------------------------------------------
+    // RENDER
+    // -------------------------------------------------------------------------
+    return (
+        <div className="mb-4">
+            {/* Question Label with required indicator */}
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+                {question.label}
+                {question.required && <span className="text-red-500 ml-1">*</span>}
+            </label>
+
+            {/* Help text explaining the selector */}
+            {question.help_text && (
+                <p className="text-sm text-gray-500 mb-3">{question.help_text}</p>
+            )}
+
+            {/* Main container with border and rounded corners */}
+            <div className={`border rounded-lg ${error ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}>
+
+                {/* ============================================================
+                    SEARCH AND BULK ACTIONS BAR
+                    Contains the search input and Select All/Clear All buttons
+                    ============================================================ */}
+                <div className="p-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                        {/* Search input with magnifying glass icon */}
+                        <div className="relative flex-grow">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Search genes..."
+                                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal"
+                            />
+                        </div>
+
+                        {/* Bulk action buttons - smaller on mobile */}
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={handleSelectAll}
+                                className="px-3 py-2 text-xs sm:text-sm font-medium text-propel-teal border border-propel-teal rounded-md hover:bg-propel-light transition-colors whitespace-nowrap"
+                            >
+                                Select All
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleClearAll}
+                                className="px-3 py-2 text-xs sm:text-sm font-medium text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors whitespace-nowrap"
+                            >
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Gene count display - shows "X of Y genes selected" */}
+                    <div className="mt-2 text-sm text-gray-600">
+                        <span className="font-medium text-propel-teal">{selectedGenes.length}</span>
+                        {' '}of{' '}
+                        <span className="font-medium">{totalGenes}</span>
+                        {' '}genes selected
+                    </div>
+                </div>
+
+                {/* ============================================================
+                    SELECTED GENES CHIPS AREA
+                    Shows removable chips for all currently selected genes
+                    Only visible when at least one gene is selected
+                    ============================================================ */}
+                {selectedGenes.length > 0 && (
+                    <div className="p-3 border-b border-gray-200 bg-blue-50">
+                        <p className="text-xs font-medium text-gray-600 mb-2">Selected Genes:</p>
+                        {/* Flex wrap container for gene chips */}
+                        <div className="flex flex-wrap gap-1.5">
+                            {selectedGenes.map(gene => (
+                                <span
+                                    key={gene}
+                                    className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-md"
+                                >
+                                    {gene}
+                                    {/* Remove button (X) - larger touch target for mobile */}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveGene(gene)}
+                                        className="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-blue-600 hover:text-blue-800 hover:bg-blue-200 rounded-full transition-colors"
+                                        aria-label={`Remove ${gene}`}
+                                    >
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* ============================================================
+                    GENE CHECKBOX LIST
+                    Scrollable list of all genes with checkboxes
+                    Filtered based on search term
+                    Max height prevents the list from taking over the page
+                    ============================================================ */}
+                <div className="max-h-64 sm:max-h-80 overflow-y-auto p-3">
+                    {filteredGenes.length === 0 ? (
+                        /* No results message when search doesn't match any genes */
+                        <div className="text-center py-4 text-gray-500">
+                            <p className="text-sm">No genes match "{searchTerm}"</p>
+                        </div>
+                    ) : (
+                        /* Grid of gene checkboxes - 2 columns on mobile, 3 on desktop */
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {filteredGenes.map(gene => {
+                                const isSelected = selectedGenes.includes(gene);
+                                return (
+                                    <label
+                                        key={gene}
+                                        className={`flex items-center p-2 rounded cursor-pointer transition-colors ${
+                                            isSelected
+                                                ? 'bg-propel-light border border-propel-teal'
+                                                : 'hover:bg-gray-50 border border-transparent'
+                                        }`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={isSelected}
+                                            onChange={() => handleGeneToggle(gene)}
+                                            className="h-4 w-4 text-propel-teal focus:ring-propel-teal border-gray-300 rounded"
+                                        />
+                                        {/* Gene name - uses monospace for consistent width */}
+                                        <span className={`ml-2 text-sm font-mono ${isSelected ? 'font-medium text-propel-navy' : 'text-gray-700'}`}>
+                                            {gene}
+                                        </span>
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Error message display */}
+            {error && (
+                <p className="mt-1 text-sm text-red-600">{error}</p>
+            )}
+        </div>
+    );
+});
+
+/**
  * AddressGroup - Composite address fields
  * Renders street, city, state, zip as a group
  */
@@ -1187,6 +1511,23 @@ function QuestionRenderer({ question, value, onChange, errors, formData }) {
                 />
             );
 
+        // =====================================================================
+        // GENE SELECTOR TYPE
+        // =====================================================================
+        // Used for the CustomNext-Cancer panel gene selection.
+        // The options array contains gene name strings (not objects).
+        // Value is an array of selected gene strings.
+        case 'gene_selector':
+            return (
+                <GeneSelector
+                    question={question}
+                    value={value}
+                    onChange={onChange}
+                    options={options}
+                    error={errors[question.question_id]}
+                />
+            );
+
         default:
             console.warn(`[QuestionRenderer] Unknown question type: ${question.type}`);
             return (
@@ -1365,7 +1706,8 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
     const { referenceData } = React.useContext(FormContext);
 
     const handleDownload = () => {
-        const output = generateOutputJson(formData, formDefinition);
+        // Pass referenceData to generateOutputJson for test_panel lookup
+        const output = generateOutputJson(formData, formDefinition, referenceData);
         const json = JSON.stringify(output, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -1387,6 +1729,31 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
     const getDisplayValue = (value, optionsRef, questionType) => {
         if (!value) return <span className="text-gray-400">Not provided</span>;
 
+        // =====================================================================
+        // GENE SELECTOR TYPE
+        // =====================================================================
+        // gene_selector returns an array of gene names, display as comma-separated
+        // with a count indicator for better readability
+        if (questionType === 'gene_selector' && Array.isArray(value)) {
+            if (value.length === 0) {
+                return <span className="text-gray-400">No genes selected</span>;
+            }
+            // Show gene count and first few genes with ellipsis if too many
+            const maxDisplay = 10;
+            const displayGenes = value.slice(0, maxDisplay).join(', ');
+            const remaining = value.length - maxDisplay;
+            return (
+                <span>
+                    <span className="font-medium">{value.length} genes:</span>{' '}
+                    {displayGenes}
+                    {remaining > 0 && <span className="text-gray-500"> ...and {remaining} more</span>}
+                </span>
+            );
+        }
+
+        // =====================================================================
+        // SELECT WITH ALTERNATES TYPE
+        // =====================================================================
         // Handle select_with_alternates type
         if (questionType === 'select_with_alternates' && typeof value === 'object' && 'default' in value) {
             const options = optionsRef && referenceData[optionsRef] ? referenceData[optionsRef] : [];
@@ -1410,11 +1777,17 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
             );
         }
 
+        // =====================================================================
+        // STANDARD SELECT/RADIO WITH OPTIONS_REF
+        // =====================================================================
         if (optionsRef && referenceData[optionsRef]) {
             const option = referenceData[optionsRef].find(o => o.value === value);
             return option ? option.display_name : value;
         }
 
+        // =====================================================================
+        // COMPOSITE OBJECT TYPES
+        // =====================================================================
         if (typeof value === 'object') {
             if (value.street) {
                 // Address
