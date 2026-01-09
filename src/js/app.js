@@ -1893,6 +1893,14 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
     const [submitError, setSubmitError] = React.useState(null);
 
     // =========================================================================
+    // HONEYPOT SPAM PROTECTION
+    // =========================================================================
+    // Bots auto-fill all form fields including hidden ones
+    // Humans never see or fill this field (it's hidden via CSS)
+    // Formspree rejects any submission where _gotcha has a value
+    const [honeypot, setHoneypot] = React.useState('');
+
+    // =========================================================================
     // GENERATE OUTPUT DATA
     // =========================================================================
     // Creates the final JSON structure that will be submitted/downloaded
@@ -1928,6 +1936,10 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                 body: JSON.stringify({
                     // Formspree fields for email subject/display
                     _subject: `New Onboarding Submission: ${outputData.clinic_name}`,
+
+                    // Honeypot spam protection - should always be empty
+                    // Bots fill this hidden field, Formspree rejects if it has a value
+                    _gotcha: honeypot,
 
                     // Key fields shown at top of email for quick reference
                     clinic_name: outputData.clinic_name,
@@ -2144,6 +2156,26 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                 ================================================================ */}
             {!submitted ? (
                 <div className="mt-6 sm:mt-8 space-y-4">
+                    {/* ============================================================
+                        HONEYPOT SPAM PROTECTION
+                        ============================================================
+                        This hidden field catches bots that auto-fill all inputs.
+                        - Hidden via inline style (display: none)
+                        - tabIndex=-1 prevents keyboard navigation to it
+                        - autoComplete=off prevents browser from filling it
+                        - Humans never see it, but bots fill it automatically
+                        - Formspree rejects submissions where _gotcha has a value
+                    */}
+                    <input
+                        type="text"
+                        name="_gotcha"
+                        style={{ display: 'none' }}
+                        tabIndex="-1"
+                        autoComplete="off"
+                        value={honeypot}
+                        onChange={(e) => setHoneypot(e.target.value)}
+                    />
+
                     {/* Primary action: Submit to Propel Health */}
                     <button
                         type="button"
