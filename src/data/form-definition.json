@@ -36,21 +36,13 @@
           "placeholder": "e.g., Montana Breast Care Center"
         },
         {
-          "_comment": "EPIC ID - Required identifier for integration with EPIC EHR system",
+          "_comment": "FIX 1: Removed epic_department_id - only clinic_epic_id is needed",
           "question_id": "clinic_epic_id",
           "type": "text",
           "label": "Clinic EPIC ID",
           "required": true,
           "help_text": "Your clinic's identifier in the EPIC system",
           "placeholder": "e.g., 12345"
-        },
-        {
-          "question_id": "epic_department_id",
-          "type": "text",
-          "label": "Epic Department ID",
-          "required": false,
-          "placeholder": "e.g., 4000099001",
-          "help_text": "Your Epic system department identifier"
         },
         {
           "question_id": "clinic_address",
@@ -253,12 +245,13 @@
           }
         },
         {
+          "_comment": "FIX 2a: Renamed 'Test Panel' → 'Default Test Panel' for clarity",
           "question_id": "test_panel",
           "type": "select",
-          "label": "Test Panel",
+          "label": "Default Test Panel",
           "required": true,
           "options_ref": "test_panels",
-          "help_text": "Select the genetic test panel for this program. CustomNext-Cancer allows you to select specific genes."
+          "help_text": "Select the primary genetic test panel for this program. Additional panels can be added on the next page."
         },
         {
           "question_id": "include_rna_insight",
@@ -285,12 +278,15 @@
           "help_text": "Select the specific genes to include in your custom panel (up to 90 genes available)"
         },
         {
+          "_comment": "FIX 2b: Renamed to 'Default Specimen Collection Type' and clarified alternates help text",
           "question_id": "specimen_type",
           "type": "select_with_alternates",
-          "label": "Specimen Collection Type",
+          "label": "Default Specimen Collection Type",
           "required": true,
           "options_ref": "specimen_types",
-          "help_text": "Select the standard collection method. Enable additional options if the clinic needs flexibility."
+          "help_text": "Select the primary collection method. You can enable alternative options below.",
+          "alternates_label": "Offer alternative specimen collection options?",
+          "alternates_help_text": "Select additional collection methods staff can offer patients (e.g., blood draw, buccal swab)"
         },
         {
           "question_id": "billing_method",
@@ -300,6 +296,14 @@
           "options_ref": "billing_methods"
         },
         {
+          "question_id": "send_kit_to_patient",
+          "type": "radio",
+          "label": "Send Kit to Patient's Home?",
+          "required": true,
+          "options_ref": "send_kit_options"
+        },
+        {
+          "_comment": "FIX 3: Moved helpdesk phone fields after send_kit_to_patient",
           "question_id": "helpdesk_phone",
           "type": "text",
           "label": "Helpdesk Phone Number",
@@ -313,13 +317,6 @@
           "label": "Include this phone number in invitation and reminder emails",
           "required": false,
           "help_text": "If checked, this helpdesk number will appear in patient communications"
-        },
-        {
-          "question_id": "send_kit_to_patient",
-          "type": "radio",
-          "label": "Send Kit to Patient's Home?",
-          "required": true,
-          "options_ref": "send_kit_options"
         },
         {
           "question_id": "indication",
@@ -348,31 +345,41 @@
       ]
     },
     {
-      "step_id": "test_products",
-      "title": "Test Products",
-      "description": "Genetic tests to be ordered",
+      "_comment": "FIX 4: Renamed from 'Test Products' to 'Additional Test Panels', made optional",
+      "step_id": "additional_test_panels",
+      "title": "Additional Test Panels",
+      "description": "Optional. Add panels here only if you want to offer tests beyond the default panel selected above.",
       "order": 7,
       "repeatable": true,
       "repeatable_config": {
-        "min_items": 1,
+        "min_items": 0,
         "max_items": 10,
-        "add_button_text": "Add Test Product",
-        "item_title_template": "Test {{index}}"
+        "add_button_text": "Add Test Panel",
+        "item_title_template": "Panel {{index}}"
       },
       "questions": [
         {
+          "_comment": "FIX 4d: Shows ALL 5 Ambry tests, not filtered by Page 6 selection",
           "question_id": "test_code",
           "type": "select",
-          "label": "Test",
+          "label": "Test Panel",
           "required": true,
-          "options_ref": "test_catalog",
-          "help_text": "Select a test from the lab catalog"
+          "options_ref": "all_test_panels",
+          "help_text": "Select an additional test panel to offer"
         },
         {
-          "question_id": "is_default",
-          "type": "checkbox",
-          "label": "Set as default test",
-          "required": false
+          "_comment": "FIX 4e: Gene selector for CustomNext-Cancer (same as Page 6)",
+          "question_id": "panel_custom_genes",
+          "type": "gene_selector",
+          "label": "Select Genes for CustomNext-Cancer Panel",
+          "required": true,
+          "options_ref": "customnext_cancer_genes",
+          "show_when": {
+            "question_id": "test_code",
+            "operator": "equals",
+            "value": "customnext_cancer"
+          },
+          "help_text": "Select the specific genes to include in this custom panel"
         },
         {
           "question_id": "test_modifications",
@@ -420,11 +427,13 @@
           "placeholder": "jane.smith@clinic.org"
         },
         {
+          "_comment": "FIX 5: Made provider phone mandatory",
           "question_id": "provider_phone",
           "type": "text",
-          "label": "Phone",
-          "required": false,
-          "placeholder": "406-555-1234"
+          "label": "Phone Number",
+          "required": true,
+          "placeholder": "406-555-1234",
+          "help_text": "Provider's contact phone number"
         },
         {
           "question_id": "provider_npi",

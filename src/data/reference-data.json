@@ -39,6 +39,41 @@
     }
   ],
 
+  "_comment_all_test_panels": "FIX 4d: Complete list of ALL available tests for Additional Test Panels (Page 7)",
+  "all_test_panels": [
+    {
+      "value": "customnext_cancer",
+      "display_name": "CustomNext-Cancer®",
+      "test_code": "8824",
+      "description": "Build a custom panel from 90 available cancer-related genes",
+      "is_custom": true
+    },
+    {
+      "value": "cancernext_expanded",
+      "display_name": "CancerNext-Expanded®",
+      "test_code": "8875",
+      "description": "Comprehensive hereditary cancer panel (77 genes)"
+    },
+    {
+      "value": "cancernext_expanded_rna",
+      "display_name": "CancerNext-Expanded® +RNAinsight®",
+      "test_code": "8875-R",
+      "description": "CancerNext-Expanded with RNA analysis for enhanced variant interpretation"
+    },
+    {
+      "value": "cancernext_expanded_leg",
+      "display_name": "CancerNext-Expanded® + Limited Evidence Genes",
+      "test_code": "8875-LEG",
+      "description": "Expanded panel including genes with limited clinical evidence (92 genes)"
+    },
+    {
+      "value": "cancernext_expanded_leg_rna",
+      "display_name": "CancerNext-Expanded® + Limited Evidence Genes +RNAinsight®",
+      "test_code": "8875-R-LEG",
+      "description": "Full expanded panel with RNA analysis"
+    }
+  ],
+
   "_comment_genes": "90 genes available for CustomNext-Cancer® custom panel selection (alphabetical order)",
   "customnext_cancer_genes": [
     "AIP", "ALK", "APC", "ATM", "ATRIP", "AXIN2", "BAP1", "BARD1", "BMPR1A", "BRCA1",

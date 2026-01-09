@@ -486,12 +486,13 @@ function generateOutputJson(formData, formDefinition, referenceData) {
             // New test_panel structure with test_code, test_name, selected_genes, gene_count
             test_panel: testPanelOutput,
 
-            // Keep test_products for backward compatibility (legacy format)
-            test_products: (formData.test_products || []).map(test => ({
-                test_code: test.test_code,
-                test_name: test.test_code, // Will be looked up
-                is_default: test.is_default || false,
-                modifications: test.test_modifications || null
+            // FIX 4: Renamed from test_products to additional_test_panels
+            // These are optional additional panels beyond the default selected above
+            additional_test_panels: (formData.additional_test_panels || []).map(panel => ({
+                test_code: panel.test_code,
+                // Include selected genes if this is a CustomNext-Cancer panel
+                selected_genes: panel.panel_custom_genes || null,
+                modifications: panel.test_modifications || null
             }))
         },
 
@@ -1778,17 +1779,40 @@ function RepeatableSection({ step, items, onChange, errors, formData }) {
                     </div>
 
                     {/* Question fields */}
+                    {/* ================================================================
+                        FIX 6: Transform errors for repeatable sections
+                        ================================================================
+                        Validation creates error keys with index prefix:
+                          "0_provider_phone" or "0_provider_office_address_street"
+                        But QuestionRenderer/AddressGroup look for keys without index:
+                          "provider_phone" or "provider_office_address_street"
+
+                        Solution: Create item-specific errors object by stripping
+                        the index prefix from matching error keys.
+                    */}
                     <div className="space-y-3">
-                        {questions.map(question => (
-                            <QuestionRenderer
-                                key={question.question_id}
-                                question={question}
-                                value={item[question.question_id]}
-                                onChange={(value) => handleItemChange(index, question.question_id, value)}
-                                errors={errors}
-                                formData={{ ...formData, ...item }}
-                            />
-                        ))}
+                        {questions.map(question => {
+                            // Transform errors: filter to this item's errors and strip index prefix
+                            const itemErrors = {};
+                            const prefix = `${index}_`;
+                            Object.keys(errors).forEach(key => {
+                                if (key.startsWith(prefix)) {
+                                    // Strip the index prefix (e.g., "0_provider_phone" -> "provider_phone")
+                                    itemErrors[key.substring(prefix.length)] = errors[key];
+                                }
+                            });
+
+                            return (
+                                <QuestionRenderer
+                                    key={question.question_id}
+                                    question={question}
+                                    value={item[question.question_id]}
+                                    onChange={(value) => handleItemChange(index, question.question_id, value)}
+                                    errors={itemErrors}
+                                    formData={{ ...formData, ...item }}
+                                />
+                            );
+                        })}
                     </div>
                 </div>
             ))}
