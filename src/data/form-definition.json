@@ -71,6 +71,54 @@
           "required": false
         },
         {
+          "_comment": "REDUNDANCY FIX: Added checkbox to distinguish main clinic phone from separate patient helpline",
+          "question_id": "has_helpdesk_phone",
+          "type": "checkbox",
+          "label": "Does this clinic have a separate patient-facing helpline?",
+          "required": false,
+          "help_text": "Check this if patients call a different number than the main clinic line for program-related questions"
+        },
+        {
+          "_comment": "REDUNDANCY FIX: Helpdesk phone is now conditional - only shown if clinic has separate helpline",
+          "question_id": "helpdesk_phone",
+          "type": "text",
+          "label": "Patient Helpline Phone Number",
+          "required": false,
+          "placeholder": "555-123-4567",
+          "show_when": {
+            "question_id": "has_helpdesk_phone",
+            "operator": "equals",
+            "value": true
+          },
+          "help_text": "The phone number patients will call for program-related questions"
+        },
+        {
+          "_comment": "REDUNDANCY FIX: Added helpdesk hours field (separate from main clinic hours)",
+          "question_id": "helpdesk_hours",
+          "type": "text",
+          "label": "Helpline Hours of Operation",
+          "required": false,
+          "placeholder": "Mon-Fri 8am-5pm",
+          "show_when": {
+            "question_id": "has_helpdesk_phone",
+            "operator": "equals",
+            "value": true
+          },
+          "help_text": "Hours when the patient helpline is staffed"
+        },
+        {
+          "question_id": "helpdesk_phone_in_emails",
+          "type": "checkbox",
+          "label": "Include this helpline number in invitation and reminder emails",
+          "required": false,
+          "show_when": {
+            "question_id": "has_helpdesk_phone",
+            "operator": "equals",
+            "value": true
+          },
+          "help_text": "If checked, this helpdesk number will appear in patient communications"
+        },
+        {
           "question_id": "website_main",
           "type": "text",
           "label": "Main Hospital Website",
@@ -156,6 +204,7 @@
           "help_text": "Check if the champion should receive all implementation communications"
         },
         {
+          "_comment": "FIX 1: Primary Contact - uses 'not_equals: true' instead of 'equals: false' because unchecked checkbox is undefined, not false",
           "question_id": "contact_primary",
           "type": "contact_group",
           "label": "Primary Contact",
@@ -163,8 +212,8 @@
           "help_text": "Main point of contact for implementation",
           "show_when": {
             "question_id": "champion_is_primary",
-            "operator": "equals",
-            "value": false
+            "operator": "not_equals",
+            "value": true
           }
         },
         {
@@ -301,22 +350,6 @@
           "label": "Send Kit to Patient's Home?",
           "required": true,
           "options_ref": "send_kit_options"
-        },
-        {
-          "_comment": "FIX 3: Moved helpdesk phone fields after send_kit_to_patient",
-          "question_id": "helpdesk_phone",
-          "type": "text",
-          "label": "Helpdesk Phone Number",
-          "required": false,
-          "placeholder": "1-800-555-1234",
-          "help_text": "Phone number patients can call for questions about their genetic testing"
-        },
-        {
-          "question_id": "helpdesk_phone_in_emails",
-          "type": "checkbox",
-          "label": "Include this phone number in invitation and reminder emails",
-          "required": false,
-          "help_text": "If checked, this helpdesk number will appear in patient communications"
         },
         {
           "question_id": "indication",
@@ -534,10 +567,13 @@
       ]
     },
     "stakeholder_group": {
+      "_comment": "FIX 3: Added phone and is_ordering_provider fields to stakeholder_group for auto-populating ordering providers",
       "fields": [
         {"field_id": "name", "label": "Name", "type": "text", "required": true, "placeholder": "Dr. Robert Brown"},
         {"field_id": "title", "label": "Title", "type": "text", "required": false, "placeholder": "Chief Medical Officer"},
-        {"field_id": "email", "label": "Email", "type": "text", "pattern": "^[^@]+@[^@]+\\.[^@]+$", "required": true, "placeholder": "robert.brown@clinic.org"}
+        {"field_id": "email", "label": "Email", "type": "text", "pattern": "^[^@]+@[^@]+\\.[^@]+$", "required": true, "placeholder": "robert.brown@clinic.org"},
+        {"field_id": "phone", "label": "Phone", "type": "text", "required": false, "placeholder": "406-555-1234"},
+        {"field_id": "is_ordering_provider", "label": "This stakeholder is also an ordering provider", "type": "checkbox", "required": false, "help_text": "If checked, this person will be added as Ordering Provider #1 on Page 8"}
       ]
     },
     "select_with_alternates": {

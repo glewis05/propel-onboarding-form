@@ -1486,7 +1486,9 @@ function ContactGroup({ question, value, onChange, errors, referenceData }) {
 
 /**
  * StakeholderGroup - Composite stakeholder fields
- * Renders name, title, email
+ * FIX 3: Now renders name, title, email, phone, and "is_ordering_provider" checkbox
+ * When is_ordering_provider is checked, this stakeholder's info will be used to
+ * auto-populate the first ordering provider on Page 8.
  */
 function StakeholderGroup({ question, value, onChange, errors, referenceData }) {
     const stakeholderValue = value || {};
@@ -1508,6 +1510,7 @@ function StakeholderGroup({ question, value, onChange, errors, referenceData }) 
                 <p className="text-sm text-gray-500 mb-2">{question.help_text}</p>
             )}
             <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                {/* Row 1: Name and Title */}
                 <div className="grid grid-cols-2 gap-3">
                     <div>
                         <label className="block text-xs text-gray-500 mb-1">Name {question.required && <span className="text-red-500">*</span>}</label>
@@ -1530,15 +1533,45 @@ function StakeholderGroup({ question, value, onChange, errors, referenceData }) 
                         />
                     </div>
                 </div>
-                <div>
-                    <label className="block text-xs text-gray-500 mb-1">Email {question.required && <span className="text-red-500">*</span>}</label>
-                    <input
-                        type="email"
-                        value={stakeholderValue.email || ''}
-                        onChange={(e) => handleFieldChange('email', e.target.value)}
-                        placeholder="robert.brown@clinic.org"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal"
-                    />
+                {/* Row 2: Email and Phone - FIX 3: Added phone field */}
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                        <label className="block text-xs text-gray-500 mb-1">Email {question.required && <span className="text-red-500">*</span>}</label>
+                        <input
+                            type="email"
+                            value={stakeholderValue.email || ''}
+                            onChange={(e) => handleFieldChange('email', e.target.value)}
+                            placeholder="robert.brown@clinic.org"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs text-gray-500 mb-1">Phone</label>
+                        <input
+                            type="tel"
+                            value={stakeholderValue.phone || ''}
+                            onChange={(e) => handleFieldChange('phone', e.target.value)}
+                            placeholder="406-555-1234"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal"
+                        />
+                    </div>
+                </div>
+                {/* FIX 3: "Is Ordering Provider" checkbox */}
+                <div className="pt-2 border-t border-gray-200">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={stakeholderValue.is_ordering_provider || false}
+                            onChange={(e) => handleFieldChange('is_ordering_provider', e.target.checked)}
+                            className="w-4 h-4 text-propel-teal border-gray-300 rounded focus:ring-propel-teal"
+                        />
+                        <span className="text-sm text-gray-700">
+                            This stakeholder is also an ordering provider
+                        </span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1 ml-6">
+                        If checked, this person will be added as Ordering Provider #1 on Page 8
+                    </p>
                 </div>
             </div>
         </div>
@@ -1745,11 +1778,39 @@ function RepeatableSection({ step, items, onChange, errors, formData }) {
         return item_title_template.replace('{{index}}', index + 1);
     };
 
+    // =========================================================================
+    // FIX 3: Check if first provider was pre-filled from stakeholder
+    // =========================================================================
+    // If the first item has _pre_filled_from_stakeholder=true, show a helpful
+    // note telling the user that some info was auto-populated and they need
+    // to add the NPI and office address.
+    const firstItemPreFilled = items.length > 0 && items[0]?._pre_filled_from_stakeholder === true;
+    const isOrderingProvidersStep = step.step_id === 'ordering_providers';
+
     return (
         <div className="space-y-4">
             {errors._section && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-md">
                     <p className="text-sm text-red-600">{errors._section}</p>
+                </div>
+            )}
+
+            {/* FIX 3: Show note when first provider was pre-filled from stakeholder */}
+            {isOrderingProvidersStep && firstItemPreFilled && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                            <p className="text-sm font-medium text-blue-800">
+                                Provider #1 was pre-filled from your stakeholder entry
+                            </p>
+                            <p className="text-sm text-blue-700 mt-1">
+                                Please add their <strong>NPI</strong> and <strong>Office Address</strong> to complete the entry.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -2416,6 +2477,65 @@ function FormWizard({ formDefinition }) {
 
     debugLog(`[FormWizard] Current step: ${currentStep} (${currentStepDef.title})`);
 
+    // =========================================================================
+    // FIX 4: TAB VISIBILITY STATE
+    // =========================================================================
+    // Track whether the tab is visible. When hidden, we pause expensive operations
+    // like auto-save to prevent the page from freezing when the user returns.
+    // This is a common cause of "page freeze" issues after periods of inactivity.
+    const [isTabVisible, setIsTabVisible] = React.useState(!document.hidden);
+
+    React.useEffect(() => {
+        const handleVisibilityChange = () => {
+            const visible = !document.hidden;
+            setIsTabVisible(visible);
+            debugLog(`[FIX 4] Tab visibility changed: ${visible ? 'visible' : 'hidden'}`);
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, []);
+
+    // =========================================================================
+    // FIX 4: ACTIVITY TRACKING
+    // =========================================================================
+    // Track user activity to detect potential freezes. If no activity is detected
+    // for an extended period while the form is open, we log a warning.
+    // This helps diagnose issues where the form becomes unresponsive.
+    const [lastActivity, setLastActivity] = React.useState(Date.now());
+
+    React.useEffect(() => {
+        const handleActivity = () => setLastActivity(Date.now());
+
+        // Track user interactions
+        window.addEventListener('mousemove', handleActivity, { passive: true });
+        window.addEventListener('keydown', handleActivity, { passive: true });
+        window.addEventListener('touchstart', handleActivity, { passive: true });
+        window.addEventListener('scroll', handleActivity, { passive: true });
+
+        return () => {
+            window.removeEventListener('mousemove', handleActivity);
+            window.removeEventListener('keydown', handleActivity);
+            window.removeEventListener('touchstart', handleActivity);
+            window.removeEventListener('scroll', handleActivity);
+        };
+    }, []);
+
+    // Warn if form appears frozen (no activity for 10+ minutes while tab is visible)
+    React.useEffect(() => {
+        // Only check when tab is visible
+        if (!isTabVisible) return;
+
+        const checkInterval = setInterval(() => {
+            const inactiveMinutes = (Date.now() - lastActivity) / 1000 / 60;
+            if (inactiveMinutes > 10) {
+                console.warn(`[FIX 4] User inactive for ${Math.round(inactiveMinutes)} minutes`);
+            }
+        }, 60000); // Check every minute
+
+        return () => clearInterval(checkInterval);
+    }, [lastActivity, isTabVisible]);
+
     // Check for saved data on mount
     React.useEffect(() => {
         try {
@@ -2432,24 +2552,67 @@ function FormWizard({ formDefinition }) {
         }
     }, []);
 
-    // Auto-save on form data or step change
+    // =========================================================================
+    // FIX 4: DEBOUNCED AUTO-SAVE
+    // =========================================================================
+    // The previous implementation saved on EVERY change to formData, which could
+    // cause performance issues and potential freezes:
+    // 1. Rapid state changes trigger rapid localStorage writes
+    // 2. localStorage is synchronous and blocks the main thread
+    // 3. Large formData objects take longer to serialize
+    //
+    // Solution: Debounce the save operation - wait 2 seconds after the last
+    // change before saving. This batches rapid changes into a single save.
+    // Also:
+    // - Don't save when tab is hidden (no point, and could cause issues)
+    // - Handle QuotaExceededError gracefully
+    // - Clear old data if quota is exceeded
     React.useEffect(() => {
-        // Don't save if form is empty
+        // Don't save if form is empty or tab is hidden
         if (Object.keys(formData).length === 0) return;
-
-        try {
-            const saveData = {
-                formData,
-                currentStep,
-                savedAt: new Date().toISOString()
-            };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
-            setLastSaved(saveData.savedAt);
-            debugLog('[FormWizard] Auto-saved:', saveData.savedAt);
-        } catch (e) {
-            console.error('[FormWizard] Error auto-saving:', e);
+        if (!isTabVisible) {
+            debugLog('[FIX 4] Tab hidden, skipping auto-save');
+            return;
         }
-    }, [formData, currentStep]);
+
+        // Debounce: Save 2 seconds after last change
+        const timeoutId = setTimeout(() => {
+            try {
+                const saveData = {
+                    formData,
+                    currentStep,
+                    savedAt: new Date().toISOString()
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
+                setLastSaved(saveData.savedAt);
+                debugLog('[FormWizard] Auto-saved:', saveData.savedAt);
+            } catch (e) {
+                // Handle QuotaExceededError
+                if (e.name === 'QuotaExceededError' || e.code === 22) {
+                    console.warn('[FIX 4] LocalStorage quota exceeded, attempting cleanup...');
+                    try {
+                        // Try to clear old draft and save again
+                        localStorage.removeItem(STORAGE_KEY);
+                        const saveData = {
+                            formData,
+                            currentStep,
+                            savedAt: new Date().toISOString()
+                        };
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
+                        setLastSaved(saveData.savedAt);
+                        debugLog('[FormWizard] Auto-saved after cleanup');
+                    } catch (retryError) {
+                        console.error('[FIX 4] Auto-save failed even after cleanup:', retryError);
+                    }
+                } else {
+                    console.error('[FormWizard] Error auto-saving:', e);
+                }
+            }
+        }, 2000); // 2 second debounce
+
+        // Cleanup: Cancel pending save if formData changes again
+        return () => clearTimeout(timeoutId);
+    }, [formData, currentStep, isTabVisible]);
 
     // Restore handlers
     const handleRestore = () => {
@@ -2532,7 +2695,61 @@ function FormWizard({ formDefinition }) {
 
         if (validation.isValid) {
             debugLog('[FormWizard] Step valid, moving to next');
-            setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+            const nextStep = Math.min(currentStep + 1, steps.length - 1);
+            const nextStepDef = steps[nextStep];
+
+            // =====================================================================
+            // FIX 3: AUTO-POPULATE ORDERING PROVIDER FROM STAKEHOLDER
+            // =====================================================================
+            // When navigating TO the ordering_providers step (Page 8), check if any
+            // stakeholder was marked as "is_ordering_provider". If so, and the first
+            // provider entry is empty or was previously auto-populated, fill it with
+            // the stakeholder's info.
+            //
+            // We only auto-populate if:
+            // 1. We're moving to the ordering_providers step
+            // 2. A stakeholder has is_ordering_provider checked
+            // 3. The first provider entry is empty OR was previously auto-filled
+            //    (prevents overwriting user's manual entries)
+            if (nextStepDef.step_id === 'ordering_providers') {
+                const stakeholderProvider = getStakeholderOrderingProvider(formData);
+
+                if (stakeholderProvider) {
+                    const existingProviders = formData.ordering_providers || [];
+                    const firstProvider = existingProviders[0];
+
+                    // Check if we should auto-populate:
+                    // - First provider doesn't exist, OR
+                    // - First provider has no name (empty), OR
+                    // - First provider was previously auto-populated from a stakeholder
+                    const shouldAutoPopulate = (
+                        !firstProvider ||
+                        !firstProvider.provider_name ||
+                        firstProvider._pre_filled_from_stakeholder === true
+                    );
+
+                    if (shouldAutoPopulate) {
+                        debugLog('[FIX 3] Auto-populating first provider from stakeholder');
+
+                        // Create new providers array with stakeholder as first entry
+                        // Keep any other existing providers (indices 1+)
+                        const newProviders = [
+                            stakeholderProvider,
+                            ...existingProviders.slice(1)
+                        ];
+
+                        // Update form data with the auto-populated provider
+                        setFormData(prev => ({
+                            ...prev,
+                            ordering_providers: newProviders
+                        }));
+                    } else {
+                        debugLog('[FIX 3] First provider already has data, skipping auto-populate');
+                    }
+                }
+            }
+
+            setCurrentStep(nextStep);
             setAttemptedNext(false);
             setErrors({});
             window.scrollTo(0, 0);
@@ -2556,6 +2773,44 @@ function FormWizard({ formDefinition }) {
             setErrors({});
             window.scrollTo(0, 0);
         }
+    };
+
+    // =========================================================================
+    // FIX 3: STAKEHOLDER TO ORDERING PROVIDER AUTO-POPULATE
+    // =========================================================================
+    // This helper finds the first stakeholder marked as "is_ordering_provider"
+    // and returns their info formatted for the ordering_providers section.
+    // Used when navigating to Page 8 (Ordering Providers) to pre-fill the first entry.
+    //
+    // We check all three stakeholder fields: stakeholder_champion, stakeholder_executive,
+    // and stakeholder_it_director. The first one with is_ordering_provider=true is used.
+    const getStakeholderOrderingProvider = (data) => {
+        // List of stakeholder question IDs to check (in priority order)
+        const stakeholderFields = [
+            'stakeholder_champion',
+            'stakeholder_executive',
+            'stakeholder_it_director'
+        ];
+
+        // Find the first stakeholder with is_ordering_provider checked
+        for (const fieldId of stakeholderFields) {
+            const stakeholder = data[fieldId];
+            if (stakeholder && stakeholder.is_ordering_provider === true && stakeholder.name) {
+                debugLog(`[FIX 3] Found stakeholder ordering provider: ${stakeholder.name}`);
+                return {
+                    provider_name: stakeholder.name,
+                    provider_title: stakeholder.title || '',
+                    provider_email: stakeholder.email || '',
+                    provider_phone: stakeholder.phone || '',
+                    provider_npi: '',           // User must fill this in
+                    provider_office_address: {}, // User must fill this in
+                    provider_specialty: '',      // Optional
+                    _pre_filled_from_stakeholder: true,  // Flag to show note on Page 8
+                    _stakeholder_source: fieldId         // Track which stakeholder this came from
+                };
+            }
+        }
+        return null;
     };
 
     const handleFormChange = (newData) => {
