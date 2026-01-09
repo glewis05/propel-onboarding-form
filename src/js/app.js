@@ -1869,14 +1869,99 @@ function StepRenderer({ step, formData, onChange, errors }) {
 // ============================================================================
 // REVIEW STEP
 // ============================================================================
-// Displays a summary of all entered data and allows JSON download
+// Displays a summary of all entered data, submits to Formspree, and allows JSON download
+//
+// Formspree Integration:
+//   - Primary action: Submit to Propel Health via Formspree webhook
+//   - Secondary action: Download JSON backup for records
+//   - Success state: Shows confirmation message after successful submit
+
+// Formspree endpoint - submissions go to the Propel Health onboarding inbox
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/mzddpdwg";
 
 function ReviewStep({ formData, formDefinition, onEdit }) {
     const { referenceData } = React.useContext(FormContext);
 
-    const handleDownload = () => {
-        // Pass referenceData to generateOutputJson for test_panel lookup
+    // =========================================================================
+    // SUBMISSION STATE
+    // =========================================================================
+    // submitting: true while POST request is in flight
+    // submitted: true after successful submission (shows success message)
+    // submitError: error message if submission fails
+    const [submitting, setSubmitting] = React.useState(false);
+    const [submitted, setSubmitted] = React.useState(false);
+    const [submitError, setSubmitError] = React.useState(null);
+
+    // =========================================================================
+    // GENERATE OUTPUT DATA
+    // =========================================================================
+    // Creates the final JSON structure that will be submitted/downloaded
+    const getOutputData = () => {
         const output = generateOutputJson(formData, formDefinition, referenceData);
+        return {
+            submitted_at: new Date().toISOString(),
+            clinic_name: formData.clinic_name || 'Unknown',
+            clinic_epic_id: formData.clinic_epic_id || '',
+            program: formData.program || '',
+            ...output
+        };
+    };
+
+    // =========================================================================
+    // FORMSPREE SUBMISSION HANDLER
+    // =========================================================================
+    // Submits the form data to Formspree webhook for email delivery to Propel team
+    const handleSubmit = async () => {
+        setSubmitting(true);
+        setSubmitError(null);
+
+        const outputData = getOutputData();
+        debugLog('[ReviewStep] Submitting to Formspree:', outputData.clinic_name);
+
+        try {
+            const response = await fetch(FORMSPREE_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    // Formspree fields for email subject/display
+                    _subject: `New Onboarding Submission: ${outputData.clinic_name}`,
+
+                    // Key fields shown at top of email for quick reference
+                    clinic_name: outputData.clinic_name,
+                    clinic_epic_id: outputData.clinic_epic_id,
+                    program: outputData.program,
+                    submitted_at: outputData.submitted_at,
+
+                    // Full JSON data as formatted string
+                    onboarding_data: JSON.stringify(outputData, null, 2)
+                })
+            });
+
+            if (response.ok) {
+                setSubmitted(true);
+                // Clear saved draft from localStorage after successful submit
+                localStorage.removeItem(STORAGE_KEY);
+                debugLog('[ReviewStep] Submission successful');
+            } else {
+                throw new Error(`HTTP ${response.status}`);
+            }
+        } catch (error) {
+            setSubmitError('Failed to submit. Please try downloading the JSON and emailing it manually.');
+            console.error('[ReviewStep] Submit error:', error);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // =========================================================================
+    // JSON DOWNLOAD HANDLER
+    // =========================================================================
+    // Downloads the form data as a JSON file (backup/offline submission)
+    const handleDownload = () => {
+        const output = getOutputData();
         const json = JSON.stringify(output, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -2031,28 +2116,111 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
         );
     };
 
+    // =========================================================================
+    // RENDER
+    // =========================================================================
     return (
         <div className="step-content">
-            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-green-700 font-medium text-sm sm:text-base">
-                    Ready to submit! Review your responses below and download the JSON file.
-                </p>
-            </div>
+            {/* ================================================================
+                HEADER MESSAGE - Changes based on submission state
+                ================================================================ */}
+            {!submitted && (
+                <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-green-700 font-medium text-sm sm:text-base">
+                        Ready to submit! Review your responses below, then submit to Propel Health.
+                    </p>
+                </div>
+            )}
 
+            {/* ================================================================
+                FORM DATA REVIEW SECTIONS
+                ================================================================ */}
             {formDefinition.steps.map((step, index) => renderSection(step, index))}
 
-            <div className="mt-6 sm:mt-8 text-center">
-                <button
-                    type="button"
-                    onClick={handleDownload}
-                    className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-propel-navy text-white font-medium rounded-lg hover:bg-opacity-90 transition-colors"
-                >
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Download JSON
-                </button>
-            </div>
+            {/* ================================================================
+                SUBMISSION UI
+                - Before submit: Show submit button + download backup
+                - After submit: Show success message + download option
+                ================================================================ */}
+            {!submitted ? (
+                <div className="mt-6 sm:mt-8 space-y-4">
+                    {/* Primary action: Submit to Propel Health */}
+                    <button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={submitting}
+                        className="w-full py-3 px-4 bg-propel-teal text-white rounded-lg font-medium
+                                   hover:bg-propel-teal-dark disabled:bg-gray-400 disabled:cursor-not-allowed
+                                   transition-colors"
+                    >
+                        {submitting ? (
+                            <span className="flex items-center justify-center gap-2">
+                                {/* Spinner animation */}
+                                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10"
+                                            stroke="currentColor" strokeWidth="4" fill="none"/>
+                                    <path className="opacity-75" fill="currentColor"
+                                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                Submitting...
+                            </span>
+                        ) : (
+                            'Submit to Propel Health'
+                        )}
+                    </button>
+
+                    {/* Secondary action: Download JSON backup */}
+                    <button
+                        type="button"
+                        onClick={handleDownload}
+                        className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-lg
+                                   hover:bg-gray-50 transition-colors"
+                    >
+                        <span className="flex items-center justify-center gap-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download JSON Backup
+                        </span>
+                    </button>
+
+                    {/* Error message if submission failed */}
+                    {submitError && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                            {submitError}
+                        </div>
+                    )}
+                </div>
+            ) : (
+                /* SUCCESS STATE - Shown after successful submission */
+                <div className="mt-6 sm:mt-8 p-6 bg-green-50 border border-green-200 rounded-lg text-center">
+                    {/* Checkmark icon */}
+                    <div className="text-green-600 text-4xl mb-3">✓</div>
+
+                    <h3 className="text-xl font-semibold text-green-800 mb-2">
+                        Submission Received!
+                    </h3>
+
+                    <p className="text-green-700">
+                        Thank you! The Propel Health team will review your information
+                        and contact you within 2 business days.
+                    </p>
+
+                    <p className="text-sm text-green-600 mt-4">
+                        A copy of your submission has been sent to our team.
+                    </p>
+
+                    {/* Still allow download after successful submit */}
+                    <button
+                        type="button"
+                        onClick={handleDownload}
+                        className="mt-4 text-sm text-propel-teal hover:underline"
+                    >
+                        Download a copy for your records
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

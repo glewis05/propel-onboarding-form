@@ -36,6 +36,15 @@
           "placeholder": "e.g., Montana Breast Care Center"
         },
         {
+          "_comment": "EPIC ID - Required identifier for integration with EPIC EHR system",
+          "question_id": "clinic_epic_id",
+          "type": "text",
+          "label": "Clinic EPIC ID",
+          "required": true,
+          "help_text": "Your clinic's identifier in the EPIC system",
+          "placeholder": "e.g., 12345"
+        },
+        {
           "question_id": "epic_department_id",
           "type": "text",
           "label": "Epic Department ID",
