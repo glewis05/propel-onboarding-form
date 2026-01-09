@@ -549,12 +549,13 @@ function generateOutputJson(formData, formDefinition, referenceData) {
             // When true, enables provider-based filtering using the list below
             filter_by_provider: formData.extract_filter_by_provider || false,
 
-            // Comma-separated list of provider names or NPIs to include.
+            // Array of provider objects with first_name and last_name.
             // Only used when filter_by_provider is true.
             // This allows clinics to limit extracts to specific ordering providers
             // rather than including all providers at the clinic.
+            // Format: [{first_name: "Jane", last_name: "Smith"}, ...]
             provider_list: formData.extract_filter_by_provider
-                ? (formData.extract_providers || null)
+                ? (formData.extract_filter_providers || null)
                 : null
         },
 
