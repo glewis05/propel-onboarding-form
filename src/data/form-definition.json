@@ -58,6 +58,24 @@
           "options_ref": "timezones"
         },
         {
+          "_comment": "UAT ITEM 1: Clinic phone always visible (not conditional)",
+          "question_id": "clinic_phone",
+          "type": "text",
+          "label": "Clinic Office Phone Number",
+          "required": true,
+          "placeholder": "555-123-4567",
+          "pattern": "^[0-9]{3}[-.]?[0-9]{3}[-.]?[0-9]{4}$",
+          "help_text": "Main clinic phone number (10 digits)"
+        },
+        {
+          "_comment": "UAT ITEM 1: Permission to use clinic phone in patient communications",
+          "question_id": "clinic_phone_patient_use",
+          "type": "checkbox",
+          "label": "This number can be used on patient communications",
+          "required": false,
+          "help_text": "Check if this phone number may appear in emails, letters, or other patient-facing materials"
+        },
+        {
           "question_id": "hours_of_operation",
           "type": "text",
           "label": "Hours of Operation",
@@ -71,7 +89,7 @@
           "required": false
         },
         {
-          "_comment": "REDUNDANCY FIX: Added checkbox to distinguish main clinic phone from separate patient helpline",
+          "_comment": "UAT: Helpdesk phone fields remain conditional for clinics with separate helpline",
           "question_id": "has_helpdesk_phone",
           "type": "checkbox",
           "label": "Does this clinic have a separate patient-facing helpline?",
@@ -79,18 +97,19 @@
           "help_text": "Check this if patients call a different number than the main clinic line for program-related questions"
         },
         {
-          "_comment": "REDUNDANCY FIX: Helpdesk phone is now conditional - only shown if clinic has separate helpline",
+          "_comment": "UAT ITEM 4: Added phone validation pattern",
           "question_id": "helpdesk_phone",
           "type": "text",
           "label": "Patient Helpline Phone Number",
           "required": false,
           "placeholder": "555-123-4567",
+          "pattern": "^[0-9]{3}[-.]?[0-9]{3}[-.]?[0-9]{4}$",
           "show_when": {
             "question_id": "has_helpdesk_phone",
             "operator": "equals",
             "value": true
           },
-          "help_text": "The phone number patients will call for program-related questions"
+          "help_text": "The phone number patients will call for program-related questions (10 digits)"
         },
         {
           "_comment": "REDUNDANCY FIX: Added helpdesk hours field (separate from main clinic hours)",
@@ -252,11 +271,12 @@
       "order": 5,
       "questions": [
         {
+          "_comment": "UAT ITEM 2: Made Program Champion optional per user testing feedback",
           "question_id": "stakeholder_champion",
           "type": "stakeholder_group",
           "label": "Program Champion",
-          "required": true,
-          "help_text": "Clinical leader driving program adoption"
+          "required": false,
+          "help_text": "Clinical leader driving program adoption (optional)"
         },
         {
           "question_id": "stakeholder_executive",
@@ -327,14 +347,14 @@
           "help_text": "Select the specific genes to include in your custom panel (up to 90 genes available)"
         },
         {
-          "_comment": "FIX 2b: Renamed to 'Default Specimen Collection Type' and clarified alternates help text",
+          "_comment": "UAT ITEM 3: Reworded alternates checkbox label per user testing feedback",
           "question_id": "specimen_type",
           "type": "select_with_alternates",
           "label": "Default Specimen Collection Type",
           "required": true,
           "options_ref": "specimen_types",
           "help_text": "Select the primary collection method. You can enable alternative options below.",
-          "alternates_label": "Offer alternative specimen collection options?",
+          "alternates_label": "Offer additional sample type options",
           "alternates_help_text": "Select additional collection methods staff can offer patients (e.g., blood draw, buccal swab)"
         },
         {
@@ -452,21 +472,23 @@
           "placeholder": "e.g., Medical Director"
         },
         {
+          "_comment": "UAT ITEM 4: Improved email validation pattern",
           "question_id": "provider_email",
           "type": "text",
           "label": "Email",
           "required": true,
-          "pattern": "^[^@]+@[^@]+\\.[^@]+$",
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
           "placeholder": "jane.smith@clinic.org"
         },
         {
-          "_comment": "FIX 5: Made provider phone mandatory",
+          "_comment": "UAT ITEM 4: Added phone validation pattern",
           "question_id": "provider_phone",
           "type": "text",
           "label": "Phone Number",
           "required": true,
           "placeholder": "406-555-1234",
-          "help_text": "Provider's contact phone number"
+          "pattern": "^[0-9]{3}[-.]?[0-9]{3}[-.]?[0-9]{4}$",
+          "help_text": "Provider's contact phone number (10 digits)"
         },
         {
           "question_id": "provider_npi",
@@ -523,18 +545,23 @@
           "help_text": "Check if only appointments for certain providers should be extracted"
         },
         {
-          "question_id": "extract_providers",
-          "type": "textarea",
-          "label": "Provider Names for Extract",
-          "required": false,
-          "placeholder": "Enter provider names, one per line (e.g., Dr. Jane Smith)",
-          "rows": 4,
+          "_comment": "UAT ITEM 5/6: Replaced textarea with structured first/last name repeatable. At least 1 provider required when filter is checked.",
+          "question_id": "extract_filter_providers",
+          "type": "provider_filter_list",
+          "label": "Providers to Include in Extract",
+          "required": true,
           "show_when": {
             "question_id": "extract_filter_by_provider",
             "operator": "equals",
             "value": true
           },
-          "help_text": "List the ordering providers whose appointments should be included in extracts. These should match names entered in the Ordering Providers section."
+          "repeatable_config": {
+            "min_items": 1,
+            "max_items": 20,
+            "add_button_text": "Add Another Provider",
+            "item_title_template": "Provider {{index}}"
+          },
+          "help_text": "Add the providers whose appointments should be included in extracts."
         }
       ]
     },
@@ -557,22 +584,23 @@
       ]
     },
     "contact_group": {
+      "_comment": "UAT ITEM 4: Added phone validation pattern",
       "fields": [
         {"field_id": "name", "label": "Name", "type": "text", "required": true, "placeholder": "Jane Smith"},
         {"field_id": "title", "label": "Title", "type": "text", "required": false, "placeholder": "Clinical Director"},
-        {"field_id": "email", "label": "Email", "type": "text", "pattern": "^[^@]+@[^@]+\\.[^@]+$", "required": true, "placeholder": "jane.smith@clinic.org"},
-        {"field_id": "phone", "label": "Phone", "type": "text", "required": false, "placeholder": "406-555-1234"},
+        {"field_id": "email", "label": "Email", "type": "text", "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", "required": true, "placeholder": "jane.smith@clinic.org"},
+        {"field_id": "phone", "label": "Phone", "type": "text", "required": false, "placeholder": "406-555-1234", "pattern": "^[0-9]{3}[-.]?[0-9]{3}[-.]?[0-9]{4}$"},
         {"field_id": "preferred_channel", "label": "Preferred Contact Method", "type": "select", "options_ref": "communication_channels", "required": false},
         {"field_id": "preferred_time", "label": "Best Time to Reach", "type": "select", "options_ref": "preferred_times", "required": false}
       ]
     },
     "stakeholder_group": {
-      "_comment": "FIX 3: Added phone and is_ordering_provider fields to stakeholder_group for auto-populating ordering providers",
+      "_comment": "UAT ITEM 4: Added phone/email validation patterns",
       "fields": [
         {"field_id": "name", "label": "Name", "type": "text", "required": true, "placeholder": "Dr. Robert Brown"},
         {"field_id": "title", "label": "Title", "type": "text", "required": false, "placeholder": "Chief Medical Officer"},
-        {"field_id": "email", "label": "Email", "type": "text", "pattern": "^[^@]+@[^@]+\\.[^@]+$", "required": true, "placeholder": "robert.brown@clinic.org"},
-        {"field_id": "phone", "label": "Phone", "type": "text", "required": false, "placeholder": "406-555-1234"},
+        {"field_id": "email", "label": "Email", "type": "text", "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", "required": true, "placeholder": "robert.brown@clinic.org"},
+        {"field_id": "phone", "label": "Phone", "type": "text", "required": false, "placeholder": "406-555-1234", "pattern": "^[0-9]{3}[-.]?[0-9]{3}[-.]?[0-9]{4}$"},
         {"field_id": "is_ordering_provider", "label": "This stakeholder is also an ordering provider", "type": "checkbox", "required": false, "help_text": "If checked, this person will be added as Ordering Provider #1 on Page 8"}
       ]
     },
@@ -587,6 +615,18 @@
         {"field_id": "default", "label_suffix": "(Default)", "type": "select", "required": true},
         {"field_id": "offer_alternates", "label": "Offer additional options?", "type": "checkbox"},
         {"field_id": "alternates", "label": "Additional options to offer:", "type": "multi_select", "show_when_checked": "offer_alternates"}
+      ]
+    },
+    "provider_filter_list": {
+      "_comment": "UAT ITEM 5: Provider filter with first/last name for extract filtering",
+      "description": "Repeatable list of providers with first and last name",
+      "is_repeatable": true,
+      "value_structure": {
+        "items": "array of {first_name, last_name} objects"
+      },
+      "fields": [
+        {"field_id": "first_name", "label": "First Name", "type": "text", "required": true, "placeholder": "Jane"},
+        {"field_id": "last_name", "label": "Last Name", "type": "text", "required": true, "placeholder": "Smith"}
       ]
     }
   }

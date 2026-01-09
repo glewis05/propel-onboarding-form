@@ -1579,6 +1579,126 @@ function StakeholderGroup({ question, value, onChange, errors, referenceData }) 
 }
 
 // ============================================================================
+// PROVIDER FILTER LIST
+// ============================================================================
+// UAT ITEM 5: Repeatable list of providers with first/last name for extract filtering.
+// Renders as a mini-repeatable within a non-repeatable step.
+
+function ProviderFilterList({ question, value, onChange, errors }) {
+    // Value is an array of {first_name, last_name} objects
+    const providers = value || [];
+
+    const handleAddProvider = () => {
+        onChange([...providers, { first_name: '', last_name: '' }]);
+    };
+
+    const handleRemoveProvider = (index) => {
+        if (providers.length > (question.repeatable_config?.min_items || 0)) {
+            onChange(providers.filter((_, i) => i !== index));
+        }
+    };
+
+    const handleProviderChange = (index, field, fieldValue) => {
+        const newProviders = [...providers];
+        newProviders[index] = {
+            ...newProviders[index],
+            [field]: fieldValue
+        };
+        onChange(newProviders);
+    };
+
+    const config = question.repeatable_config || {};
+    const minItems = config.min_items || 0;
+    const maxItems = config.max_items || 20;
+
+    return (
+        <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+                {question.label}
+                {question.required && <span className="text-red-500 ml-1">*</span>}
+            </label>
+            {question.help_text && (
+                <p className="text-sm text-gray-500 mb-3">{question.help_text}</p>
+            )}
+
+            {/* List of providers */}
+            <div className="space-y-3">
+                {providers.map((provider, index) => (
+                    <div key={index} className="flex gap-3 items-start p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="flex-1 grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="block text-xs text-gray-500 mb-1">
+                                    First Name <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={provider.first_name || ''}
+                                    onChange={(e) => handleProviderChange(index, 'first_name', e.target.value)}
+                                    placeholder="Jane"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-gray-500 mb-1">
+                                    Last Name <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={provider.last_name || ''}
+                                    onChange={(e) => handleProviderChange(index, 'last_name', e.target.value)}
+                                    placeholder="Smith"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal text-sm"
+                                />
+                            </div>
+                        </div>
+                        {providers.length > minItems && (
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveProvider(index)}
+                                className="px-2 py-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                title="Remove provider"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+                ))}
+
+                {/* Empty state */}
+                {providers.length === 0 && (
+                    <div className="text-center py-4 text-gray-500 text-sm">
+                        No providers added yet. Click below to add one.
+                    </div>
+                )}
+
+                {/* Add button */}
+                {providers.length < maxItems && (
+                    <button
+                        type="button"
+                        onClick={handleAddProvider}
+                        className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-propel-teal hover:text-propel-teal hover:bg-propel-light transition-colors text-sm"
+                    >
+                        <span className="flex items-center justify-center">
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            {config.add_button_text || 'Add Provider'}
+                        </span>
+                    </button>
+                )}
+            </div>
+
+            {/* Validation error */}
+            {errors[question.question_id] && (
+                <p className="mt-2 text-sm text-red-600">{errors[question.question_id]}</p>
+            )}
+        </div>
+    );
+}
+
+// ============================================================================
 // QUESTION RENDERER
 // ============================================================================
 // This component is the heart of the form-driven architecture.
@@ -1711,6 +1831,21 @@ function QuestionRenderer({ question, value, onChange, errors, formData }) {
                     onChange={onChange}
                     errors={errors}
                     referenceData={referenceData}
+                />
+            );
+
+        // =====================================================================
+        // PROVIDER FILTER LIST TYPE (UAT ITEM 5)
+        // =====================================================================
+        // Repeatable list of providers with first/last name for extract filtering.
+        // Used within non-repeatable steps to allow adding multiple providers.
+        case 'provider_filter_list':
+            return (
+                <ProviderFilterList
+                    question={question}
+                    value={value}
+                    onChange={onChange}
+                    errors={errors}
                 />
             );
 
@@ -2077,6 +2212,214 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
         debugLog('[ReviewStep] Downloaded:', filename);
     };
 
+    // =========================================================================
+    // WORD DOCUMENT DOWNLOAD HANDLER (UAT ITEM 7)
+    // =========================================================================
+    // Downloads the form data as a Word document (.docx) for easier sharing
+    const handleWordDownload = async () => {
+        const output = getOutputData();
+
+        // Import docx components from global window.docx
+        const {
+            Document, Packer, Paragraph, TextRun, HeadingLevel,
+            Table, TableRow, TableCell, WidthType, BorderStyle
+        } = window.docx;
+
+        // Helper to format a value for display
+        const formatValue = (val) => {
+            if (val === null || val === undefined || val === '') return 'Not provided';
+            if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+            if (Array.isArray(val)) {
+                if (val.length === 0) return 'None';
+                // Check if it's an array of objects (like providers)
+                if (typeof val[0] === 'object') {
+                    return val.map((item, i) => {
+                        if (item.first_name && item.last_name) {
+                            return `${i + 1}. ${item.first_name} ${item.last_name}`;
+                        }
+                        return `${i + 1}. ${JSON.stringify(item)}`;
+                    }).join('\n');
+                }
+                return val.join(', ');
+            }
+            if (typeof val === 'object') {
+                // Address object
+                if (val.street) {
+                    return `${val.street}, ${val.city}, ${val.state} ${val.zip}`;
+                }
+                // Contact object
+                if (val.name && val.email) {
+                    const parts = [val.name, val.email];
+                    if (val.phone) parts.push(val.phone);
+                    return parts.join(' | ');
+                }
+                // Select with alternates
+                if ('default' in val) {
+                    let result = val.default || 'Not selected';
+                    if (val.alternates && val.alternates.length > 0) {
+                        result += ` (Also: ${val.alternates.join(', ')})`;
+                    }
+                    return result;
+                }
+                return JSON.stringify(val, null, 2);
+            }
+            return String(val);
+        };
+
+        // Create document sections
+        const docChildren = [];
+
+        // Title
+        docChildren.push(
+            new Paragraph({
+                text: 'Propel Health Onboarding Questionnaire',
+                heading: HeadingLevel.TITLE,
+                spacing: { after: 400 }
+            })
+        );
+
+        // Subtitle with clinic info
+        docChildren.push(
+            new Paragraph({
+                children: [
+                    new TextRun({ text: 'Clinic: ', bold: true }),
+                    new TextRun(output.clinic_name || 'Unknown'),
+                    new TextRun({ text: '  |  Program: ', bold: true }),
+                    new TextRun(output.program || 'Unknown'),
+                ],
+                spacing: { after: 200 }
+            })
+        );
+
+        docChildren.push(
+            new Paragraph({
+                children: [
+                    new TextRun({ text: 'Submitted: ', bold: true }),
+                    new TextRun(new Date(output.submitted_at).toLocaleString()),
+                ],
+                spacing: { after: 400 }
+            })
+        );
+
+        // Process each step from form definition
+        formDefinition.steps.forEach(step => {
+            if (step.is_review_step) return;
+
+            // Section heading
+            docChildren.push(
+                new Paragraph({
+                    text: step.title,
+                    heading: HeadingLevel.HEADING_1,
+                    spacing: { before: 400, after: 200 }
+                })
+            );
+
+            if (step.repeatable) {
+                // Repeatable section (providers, locations, etc.)
+                const items = formData[step.step_id] || [];
+                if (items.length === 0) {
+                    docChildren.push(
+                        new Paragraph({
+                            text: 'None added',
+                            spacing: { after: 200 }
+                        })
+                    );
+                } else {
+                    items.forEach((item, idx) => {
+                        // Item header
+                        const itemTitle = step.repeatable_config.item_title_template
+                            .replace('{{index}}', idx + 1);
+                        docChildren.push(
+                            new Paragraph({
+                                text: itemTitle,
+                                heading: HeadingLevel.HEADING_2,
+                                spacing: { before: 200, after: 100 }
+                            })
+                        );
+
+                        // Item fields as table
+                        const rows = step.questions.map(q => {
+                            return new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: q.label, bold: true })] })],
+                                        width: { size: 35, type: WidthType.PERCENTAGE }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph(formatValue(item[q.question_id]))],
+                                        width: { size: 65, type: WidthType.PERCENTAGE }
+                                    })
+                                ]
+                            });
+                        });
+
+                        docChildren.push(
+                            new Table({
+                                rows: rows,
+                                width: { size: 100, type: WidthType.PERCENTAGE }
+                            })
+                        );
+                    });
+                }
+            } else {
+                // Regular section - create table of fields
+                const rows = [];
+                step.questions.forEach(q => {
+                    // Check show_when conditions
+                    if (q.show_when && !evaluateCondition(q.show_when, formData)) {
+                        return;
+                    }
+
+                    rows.push(new TableRow({
+                        children: [
+                            new TableCell({
+                                children: [new Paragraph({ children: [new TextRun({ text: q.label, bold: true })] })],
+                                width: { size: 35, type: WidthType.PERCENTAGE }
+                            }),
+                            new TableCell({
+                                children: [new Paragraph(formatValue(formData[q.question_id]))],
+                                width: { size: 65, type: WidthType.PERCENTAGE }
+                            })
+                        ]
+                    }));
+                });
+
+                if (rows.length > 0) {
+                    docChildren.push(
+                        new Table({
+                            rows: rows,
+                            width: { size: 100, type: WidthType.PERCENTAGE }
+                        })
+                    );
+                }
+            }
+        });
+
+        // Create document
+        const doc = new Document({
+            sections: [{
+                children: docChildren
+            }]
+        });
+
+        // Generate and download
+        const blob = await Packer.toBlob(doc);
+        const url = URL.createObjectURL(blob);
+
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+        const filename = `onboarding-${formData.program || 'unknown'}-${timestamp}.docx`;
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        debugLog('[ReviewStep] Downloaded Word doc:', filename);
+    };
+
     const getDisplayValue = (value, optionsRef, questionType) => {
         if (!value) return <span className="text-gray-400">Not provided</span>;
 
@@ -2286,21 +2629,40 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                         )}
                     </button>
 
-                    {/* Secondary action: Download JSON backup */}
-                    <button
-                        type="button"
-                        onClick={handleDownload}
-                        className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-lg
-                                   hover:bg-gray-50 transition-colors"
-                    >
-                        <span className="flex items-center justify-center gap-2">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            Download JSON Backup
-                        </span>
-                    </button>
+                    {/* Secondary actions: Download options */}
+                    <div className="flex gap-2">
+                        {/* Download Word document (UAT ITEM 7) */}
+                        <button
+                            type="button"
+                            onClick={handleWordDownload}
+                            className="flex-1 py-2 px-4 border border-gray-300 text-gray-700 rounded-lg
+                                       hover:bg-gray-50 transition-colors"
+                        >
+                            <span className="flex items-center justify-center gap-2">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Download Word
+                            </span>
+                        </button>
+
+                        {/* Download JSON backup */}
+                        <button
+                            type="button"
+                            onClick={handleDownload}
+                            className="flex-1 py-2 px-4 border border-gray-300 text-gray-700 rounded-lg
+                                       hover:bg-gray-50 transition-colors"
+                        >
+                            <span className="flex items-center justify-center gap-2">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Download JSON
+                            </span>
+                        </button>
+                    </div>
 
                     {/* Error message if submission failed */}
                     {submitError && (
@@ -2328,14 +2690,24 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                         A copy of your submission has been sent to our team.
                     </p>
 
-                    {/* Still allow download after successful submit */}
-                    <button
-                        type="button"
-                        onClick={handleDownload}
-                        className="mt-4 text-sm text-propel-teal hover:underline"
-                    >
-                        Download a copy for your records
-                    </button>
+                    {/* Still allow downloads after successful submit */}
+                    <div className="mt-4 flex justify-center gap-4">
+                        <button
+                            type="button"
+                            onClick={handleWordDownload}
+                            className="text-sm text-propel-teal hover:underline"
+                        >
+                            Download Word
+                        </button>
+                        <span className="text-gray-300">|</span>
+                        <button
+                            type="button"
+                            onClick={handleDownload}
+                            className="text-sm text-propel-teal hover:underline"
+                        >
+                            Download JSON
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
