@@ -2285,9 +2285,35 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
 // PROGRESS INDICATOR
 // ============================================================================
 // Shows the current step and overall progress
+//
+// FIX: Added proper text spacing and wrapping for step labels
+// - Uses abbreviated titles on smaller screens
+// - Proper word-break and whitespace handling
+// - Adequate spacing between step items
 
 function ProgressIndicator({ steps, currentStep, onStepClick }) {
     const currentStepTitle = steps[currentStep]?.title || '';
+
+    // =========================================================================
+    // STEP ABBREVIATIONS
+    // =========================================================================
+    // Shorter versions of step titles for the progress indicator
+    // Prevents text from running together (e.g., "KeyStakeholders")
+    const stepAbbreviations = {
+        "Program Selection": "Program",
+        "Clinic Information": "Clinic",
+        "Satellite Locations": "Locations",
+        "Contacts": "Contacts",
+        "Key Stakeholders": "Stake-holders",
+        "Lab Configuration": "Lab Config",
+        "Additional Test Panels": "Add'l Tests",
+        "Ordering Providers": "Providers",
+        "Extract Filtering": "Filtering",
+        "Review & Download": "Review"
+    };
+
+    // Get abbreviated title for compact display
+    const getShortTitle = (title) => stepAbbreviations[title] || title;
 
     return (
         <div className="mb-4 sm:mb-8">
@@ -2316,18 +2342,28 @@ function ProgressIndicator({ steps, currentStep, onStepClick }) {
                 </div>
             </div>
 
-            {/* Step labels - horizontal on desktop (md+), hidden on mobile/tablet */}
-            <div className="hidden md:flex justify-between">
+            {/* ================================================================
+                STEP LABELS - Desktop only (md+)
+                ================================================================
+                FIX: Improved text spacing and wrapping:
+                - flex-1 and min-w-0 allow items to shrink properly
+                - gap-1 adds spacing between items
+                - break-words and whitespace-normal enable word wrapping
+                - leading-tight reduces line height for multi-line labels
+                - Uses abbreviated titles to prevent overflow
+            */}
+            <div className="hidden md:flex justify-between items-start gap-1">
                 {steps.map((step, index) => (
                     <button
                         key={step.step_id}
                         onClick={() => onStepClick(index)}
                         disabled={index > currentStep}
-                        className={`flex flex-col items-center text-center max-w-[100px] ${
+                        className={`flex flex-col items-center text-center flex-1 min-w-0 px-1 ${
                             index <= currentStep ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
                         }`}
                     >
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mb-1 ${
+                        {/* Step circle with number or checkmark */}
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mb-1 flex-shrink-0 ${
                             index < currentStep
                                 ? 'bg-propel-teal text-white'
                                 : index === currentStep
@@ -2342,10 +2378,12 @@ function ProgressIndicator({ steps, currentStep, onStepClick }) {
                                 index + 1
                             )}
                         </div>
-                        <span className={`text-xs ${
+
+                        {/* Step label - with proper text handling */}
+                        <span className={`text-xs leading-tight whitespace-normal break-words w-full ${
                             index === currentStep ? 'text-propel-teal font-medium' : 'text-gray-500'
                         }`}>
-                            {step.title}
+                            {getShortTitle(step.title)}
                         </span>
                     </button>
                 ))}
