@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UAT Tracker - ONB Questionnaire v1</title>
+
+    <!-- =======================================================================
+         UAT Test Execution Tracker
+         =======================================================================
+         A self-contained React application for tracking UAT test execution.
+
+         Features:
+         - Progress dashboard with visual breakdown
+         - Collapsible category sections
+         - Quick action buttons (Pass/Fail/Blocked/Skipped)
+         - Notes per test case
+         - localStorage persistence
+         - JSON export for database import
+
+         Tech Stack:
+         - React 18 (CDN)
+         - Tailwind CSS (CDN)
+         - Babel standalone (JSX transpilation)
+    ======================================================================== -->
+
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://unpkg.com https://cdn.tailwindcss.com 'unsafe-inline' 'unsafe-eval';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data:;
+        font-src 'self';
+        connect-src 'self';
+        frame-ancestors 'none';
+        base-uri 'self';
+        form-action 'self';
+    ">
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Configure Tailwind with status colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'propel-navy': '#1a365d',
+                        'propel-teal': '#4a9aba',
+                        'propel-light': '#e8f4f8',
+                        'status-pass': '#22c55e',
+                        'status-fail': '#ef4444',
+                        'status-blocked': '#f59e0b',
+                        'status-skipped': '#3b82f6',
+                        'status-notrun': '#6b7280',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- React 18.3.1 via CDN with SRI -->
+    <script crossorigin="anonymous"
+            src="https://unpkg.com/react@18.3.1/umd/react.development.js"
+            integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L"></script>
+    <script crossorigin="anonymous"
+            src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"
+            integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm"></script>
+
+    <!-- Babel 7.28.5 standalone for JSX transpilation with SRI -->
+    <script crossorigin="anonymous"
+            src="https://unpkg.com/@babel/standalone@7.28.5/babel.min.js"
+            integrity="sha384-mP9sW+eK08VvAmlxEkn9Kn6egvKFtnFEfW7/u9feUWAIoTvnYAzT4NwsskP+uWUd"></script>
+
+    <style>
+        /* Custom scrollbar for test details */
+        .test-details::-webkit-scrollbar {
+            width: 6px;
+        }
+        .test-details::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .test-details::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        .test-details::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Smooth transitions */
+        .category-section {
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Print styles */
+        @media print {
+            .no-print { display: none !important; }
+            .print-break { page-break-before: always; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div id="root">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-propel-teal mx-auto mb-4"></div>
+                <p class="text-gray-600">Loading UAT Tracker...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/babel">
+        // =======================================================================
+        // TEST DATA
+        // =======================================================================
+        // Sample test cases - will be replaced with actual data from database
+
+        const TEST_CASES_DATA = [
+            // SAVE category (6 tests)
+            { test_id: "ONB-SAVE-001-TC01", title: "Auto-save triggers after field change", category: "SAVE", test_type: "happy_path", test_steps: "1. Open questionnaire\n2. Enter data in any field\n3. Wait 30 seconds", expected_results: "Data is automatically saved without user action", priority: "Must Have" },
+            { test_id: "ONB-SAVE-002-TC01", title: "Resume from saved draft", category: "SAVE", test_type: "happy_path", test_steps: "1. Start questionnaire, enter data\n2. Close browser\n3. Reopen questionnaire", expected_results: "Previously entered data is restored", priority: "Must Have" },
+            { test_id: "ONB-SAVE-003-TC01", title: "Download draft as JSON", category: "SAVE", test_type: "happy_path", test_steps: "1. Enter data\n2. Click Download Draft", expected_results: "JSON file downloads with all form data", priority: "Must Have" },
+            { test_id: "ONB-SAVE-004-TC01", title: "Upload draft JSON", category: "SAVE", test_type: "happy_path", test_steps: "1. Click Upload Draft\n2. Select valid JSON file", expected_results: "Form populates with uploaded data", priority: "Must Have" },
+            { test_id: "ONB-SAVE-005-TC01", title: "Clear form confirmation", category: "SAVE", test_type: "validation", test_steps: "1. Enter data\n2. Click Clear Form", expected_results: "Confirmation dialog appears before clearing", priority: "Should Have" },
+            { test_id: "ONB-SAVE-006-TC01", title: "Help text displays", category: "SAVE", test_type: "happy_path", test_steps: "1. Click help icon on any field", expected_results: "Help tooltip or modal displays", priority: "Should Have" },
+
+            // STEP category (10 tests)
+            { test_id: "ONB-STEP-001-TC01", title: "Program step - select program", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Program step\n2. Select P4M", expected_results: "Program selected, conditional fields update", priority: "Must Have" },
+            { test_id: "ONB-STEP-002-TC01", title: "Clinic Info - required fields", category: "STEP", test_type: "validation", test_steps: "1. Go to Clinic Info\n2. Leave required fields empty\n3. Try to proceed", expected_results: "Validation errors shown", priority: "Must Have" },
+            { test_id: "ONB-STEP-003-TC01", title: "Locations - add location", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Locations\n2. Click Add Location\n3. Fill details", expected_results: "Location added to list", priority: "Must Have" },
+            { test_id: "ONB-STEP-004-TC01", title: "Contacts - add contact", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Contacts\n2. Click Add Contact\n3. Fill details", expected_results: "Contact added with role", priority: "Must Have" },
+            { test_id: "ONB-STEP-005-TC01", title: "Stakeholders - configure", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Stakeholders\n2. Configure options", expected_results: "Stakeholder settings saved", priority: "Must Have" },
+            { test_id: "ONB-STEP-006-TC01", title: "Lab Config - select lab", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Lab Config\n2. Select lab", expected_results: "Lab-specific options appear", priority: "Must Have" },
+            { test_id: "ONB-STEP-007-TC01", title: "Test Products - select products", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Test Products\n2. Select products", expected_results: "Products saved", priority: "Must Have" },
+            { test_id: "ONB-STEP-008-TC01", title: "Providers - add provider with NPI", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Providers\n2. Add provider\n3. Enter NPI", expected_results: "Provider added, NPI validated", priority: "Must Have" },
+            { test_id: "ONB-STEP-009-TC01", title: "Extract Filtering - configure", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Extract Filtering\n2. Set filter rules", expected_results: "Filters configured", priority: "Should Have" },
+            { test_id: "ONB-STEP-010-TC01", title: "Review - shows summary", category: "STEP", test_type: "happy_path", test_steps: "1. Complete all steps\n2. Go to Review", expected_results: "All entered data displayed", priority: "Must Have" },
+
+            // FORM category (6 tests)
+            { test_id: "ONB-FORM-001-TC01", title: "Email - valid format accepted", category: "FORM", test_type: "happy_path", test_steps: "1. Enter: test@example.com", expected_results: "Email accepted", priority: "Must Have" },
+            { test_id: "ONB-FORM-001-TC02", title: "Email - invalid format rejected", category: "FORM", test_type: "negative", test_steps: "1. Enter: test@", expected_results: "Validation error shown", priority: "Must Have" },
+            { test_id: "ONB-FORM-002-TC01", title: "ZIP - 5 digit accepted", category: "FORM", test_type: "happy_path", test_steps: "1. Enter: 98001", expected_results: "ZIP accepted", priority: "Must Have" },
+            { test_id: "ONB-FORM-002-TC02", title: "ZIP - ZIP+4 accepted", category: "FORM", test_type: "happy_path", test_steps: "1. Enter: 98001-1234", expected_results: "ZIP+4 accepted", priority: "Should Have" },
+            { test_id: "ONB-FORM-003-TC01", title: "Phone - formats correctly", category: "FORM", test_type: "happy_path", test_steps: "1. Enter: 2535551234", expected_results: "Displays as (253) 555-1234", priority: "Should Have" },
+            { test_id: "ONB-FORM-003-TC02", title: "NPI - 10 digit validated", category: "FORM", test_type: "validation", test_steps: "1. Enter NPI: 1234567890", expected_results: "NPI validated", priority: "Must Have" },
+
+            // GENE category (3 tests)
+            { test_id: "ONB-GENE-001-TC01", title: "Gene selector - displays list", category: "GENE", test_type: "happy_path", test_steps: "1. Open gene selector", expected_results: "Full gene list shown", priority: "Must Have" },
+            { test_id: "ONB-GENE-001-TC02", title: "Gene selector - search filters", category: "GENE", test_type: "happy_path", test_steps: "1. Type 'BRCA' in search", expected_results: "List filters to BRCA1, BRCA2", priority: "Must Have" },
+            { test_id: "ONB-GENE-001-TC03", title: "Gene selector - toggle selection", category: "GENE", test_type: "happy_path", test_steps: "1. Click gene to select\n2. Click again to deselect", expected_results: "Selection toggles", priority: "Must Have" },
+        ];
+
+        const CATEGORY_INFO = {
+            'SAVE': { name: 'Auto-Save & Draft', description: 'Save, resume, download/upload functionality', icon: '💾' },
+            'STEP': { name: 'Form Steps', description: 'Each wizard step from Program to Review', icon: '📋' },
+            'FORM': { name: 'Validation', description: 'Email, ZIP, phone, NPI validation patterns', icon: '✓' },
+            'GENE': { name: 'Gene Selector', description: 'CustomNext-Cancer gene selection component', icon: '🧬' },
+        };
+
+        const CYCLE_INFO = {
+            name: "ONB Questionnaire v1",
+            cycle_id: "UAT-ONB-853A06E9",
+            target_date: "2025-05-02"
+        };
+
+        const STORAGE_KEY = 'onb_uat_tracker';
+
+        // =======================================================================
+        // UTILITY FUNCTIONS
+        // =======================================================================
+
+        const getStatusColor = (status) => {
+            const colors = {
+                'Pass': 'bg-status-pass text-white',
+                'Fail': 'bg-status-fail text-white',
+                'Blocked': 'bg-status-blocked text-white',
+                'Skipped': 'bg-status-skipped text-white',
+                'Not Run': 'bg-gray-200 text-gray-600',
+            };
+            return colors[status] || colors['Not Run'];
+        };
+
+        const getTestTypeBadge = (type) => {
+            const badges = {
+                'happy_path': { bg: 'bg-green-100', text: 'text-green-800', label: 'Happy Path' },
+                'negative': { bg: 'bg-red-100', text: 'text-red-800', label: 'Negative' },
+                'validation': { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Validation' },
+                'edge_case': { bg: 'bg-purple-100', text: 'text-purple-800', label: 'Edge Case' },
+            };
+            return badges[type] || { bg: 'bg-gray-100', text: 'text-gray-800', label: type };
+        };
+
+        const formatDate = (dateStr) => {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        };
+
+        // =======================================================================
+        // REACT COMPONENTS
+        // =======================================================================
+
+        const { useState, useEffect, useMemo } = React;
+
+        // Progress Bar Component
+        const ProgressBar = ({ stats }) => {
+            const total = stats.total || 1;
+            const passWidth = (stats.passed / total) * 100;
+            const failWidth = (stats.failed / total) * 100;
+            const blockedWidth = (stats.blocked / total) * 100;
+            const skippedWidth = (stats.skipped / total) * 100;
+
+            return (
+                <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden flex">
+                    {stats.passed > 0 && (
+                        <div className="bg-status-pass h-full transition-all duration-300"
+                             style={{ width: `${passWidth}%` }}
+                             title={`${stats.passed} Passed`} />
+                    )}
+                    {stats.failed > 0 && (
+                        <div className="bg-status-fail h-full transition-all duration-300"
+                             style={{ width: `${failWidth}%` }}
+                             title={`${stats.failed} Failed`} />
+                    )}
+                    {stats.blocked > 0 && (
+                        <div className="bg-status-blocked h-full transition-all duration-300"
+                             style={{ width: `${blockedWidth}%` }}
+                             title={`${stats.blocked} Blocked`} />
+                    )}
+                    {stats.skipped > 0 && (
+                        <div className="bg-status-skipped h-full transition-all duration-300"
+                             style={{ width: `${skippedWidth}%` }}
+                             title={`${stats.skipped} Skipped`} />
+                    )}
+                </div>
+            );
+        };
+
+        // Stats Box Component
+        const StatsBox = ({ label, value, color, icon }) => (
+            <div className={`${color} rounded-lg p-3 text-center min-w-[80px]`}>
+                <div className="text-2xl font-bold">{value}</div>
+                <div className="text-xs opacity-80">{label}</div>
+            </div>
+        );
+
+        // Test Case Row Component
+        const TestCaseRow = ({ test, notes, onStatusChange, onNotesChange, isExpanded, onToggle }) => {
+            const badge = getTestTypeBadge(test.test_type);
+
+            return (
+                <div className="border-b border-gray-100 last:border-b-0">
+                    {/* Main row */}
+                    <div className="flex items-center gap-2 py-2 px-3 hover:bg-gray-50">
+                        {/* Expand button */}
+                        <button
+                            onClick={onToggle}
+                            className="text-gray-400 hover:text-gray-600 p-1"
+                        >
+                            <svg className={`w-4 h-4 transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+
+                        {/* Test ID */}
+                        <code className="text-xs text-gray-400 font-mono w-40 shrink-0">
+                            {test.test_id}
+                        </code>
+
+                        {/* Test type badge */}
+                        <span className={`${badge.bg} ${badge.text} text-xs px-2 py-0.5 rounded-full shrink-0`}>
+                            {badge.label}
+                        </span>
+
+                        {/* Title */}
+                        <span className="flex-1 text-sm truncate" title={test.title}>
+                            {test.title}
+                        </span>
+
+                        {/* Status indicator */}
+                        <span className={`${getStatusColor(test.test_status)} text-xs px-2 py-0.5 rounded shrink-0`}>
+                            {test.test_status}
+                        </span>
+
+                        {/* Quick action buttons */}
+                        <div className="flex gap-1 shrink-0 no-print">
+                            <button
+                                onClick={() => onStatusChange(test.test_id, 'Pass')}
+                                className={`w-7 h-7 rounded text-sm font-bold transition-colors
+                                    ${test.test_status === 'Pass'
+                                        ? 'bg-status-pass text-white'
+                                        : 'bg-gray-100 text-gray-400 hover:bg-green-100 hover:text-green-600'}`}
+                                title="Pass"
+                            >
+                                ✓
+                            </button>
+                            <button
+                                onClick={() => onStatusChange(test.test_id, 'Fail')}
+                                className={`w-7 h-7 rounded text-sm font-bold transition-colors
+                                    ${test.test_status === 'Fail'
+                                        ? 'bg-status-fail text-white'
+                                        : 'bg-gray-100 text-gray-400 hover:bg-red-100 hover:text-red-600'}`}
+                                title="Fail"
+                            >
+                                ✗
+                            </button>
+                            <button
+                                onClick={() => onStatusChange(test.test_id, 'Blocked')}
+                                className={`w-7 h-7 rounded text-sm font-bold transition-colors
+                                    ${test.test_status === 'Blocked'
+                                        ? 'bg-status-blocked text-white'
+                                        : 'bg-gray-100 text-gray-400 hover:bg-amber-100 hover:text-amber-600'}`}
+                                title="Blocked"
+                            >
+                                !
+                            </button>
+                            <button
+                                onClick={() => onStatusChange(test.test_id, 'Skipped')}
+                                className={`w-7 h-7 rounded text-sm font-bold transition-colors
+                                    ${test.test_status === 'Skipped'
+                                        ? 'bg-status-skipped text-white'
+                                        : 'bg-gray-100 text-gray-400 hover:bg-blue-100 hover:text-blue-600'}`}
+                                title="Skipped"
+                            >
+                                −
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Expanded details */}
+                    {isExpanded && (
+                        <div className="bg-gray-50 px-3 py-3 ml-6 mr-3 mb-2 rounded-lg test-details">
+                            <div className="grid md:grid-cols-2 gap-4">
+                                {/* Test Steps */}
+                                <div>
+                                    <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Test Steps</h4>
+                                    <pre className="text-sm text-gray-700 whitespace-pre-wrap bg-white p-2 rounded border">
+                                        {test.test_steps || 'No steps defined'}
+                                    </pre>
+                                </div>
+
+                                {/* Expected Results */}
+                                <div>
+                                    <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Expected Results</h4>
+                                    <pre className="text-sm text-gray-700 whitespace-pre-wrap bg-white p-2 rounded border">
+                                        {test.expected_results || 'No expected results defined'}
+                                    </pre>
+                                </div>
+                            </div>
+
+                            {/* Notes */}
+                            <div className="mt-3">
+                                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1">Execution Notes</h4>
+                                <textarea
+                                    className="w-full p-2 border rounded text-sm resize-none focus:ring-2 focus:ring-propel-teal focus:border-transparent"
+                                    rows={2}
+                                    placeholder="Add notes about this test execution..."
+                                    value={notes || ''}
+                                    onChange={(e) => onNotesChange(test.test_id, e.target.value)}
+                                />
+                            </div>
+
+                            {/* Metadata */}
+                            {test.tested_date && (
+                                <div className="mt-2 text-xs text-gray-400">
+                                    Tested: {formatDate(test.tested_date)}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Category Section Component
+        const CategorySection = ({ category, tests, notes, onStatusChange, onNotesChange, expandedTests, onToggleTest }) => {
+            const [isCollapsed, setIsCollapsed] = useState(false);
+            const info = CATEGORY_INFO[category] || { name: category, description: '' };
+
+            const stats = useMemo(() => {
+                const executed = tests.filter(t => t.test_status !== 'Not Run').length;
+                const passed = tests.filter(t => t.test_status === 'Pass').length;
+                return { total: tests.length, executed, passed };
+            }, [tests]);
+
+            return (
+                <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden category-section">
+                    {/* Category Header */}
+                    <button
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        className="w-full flex items-center justify-between px-4 py-3 bg-propel-navy text-white hover:bg-opacity-90 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <span className="text-xl">{info.icon}</span>
+                            <div className="text-left">
+                                <h3 className="font-semibold">{info.name}</h3>
+                                <p className="text-xs text-gray-300">{info.description}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="text-right text-sm">
+                                <span className="text-green-300">{stats.passed}/{stats.total}</span>
+                                <span className="text-gray-300 ml-1">passed</span>
+                                <span className="text-gray-400 mx-2">|</span>
+                                <span className="text-gray-300">{stats.executed}/{stats.total}</span>
+                                <span className="text-gray-400 ml-1">executed</span>
+                            </div>
+                            <svg className={`w-5 h-5 transform transition-transform ${isCollapsed ? '' : 'rotate-180'}`}
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </button>
+
+                    {/* Test Cases */}
+                    {!isCollapsed && (
+                        <div className="divide-y divide-gray-100">
+                            {tests.map(test => (
+                                <TestCaseRow
+                                    key={test.test_id}
+                                    test={test}
+                                    notes={notes[test.test_id]}
+                                    onStatusChange={onStatusChange}
+                                    onNotesChange={onNotesChange}
+                                    isExpanded={expandedTests.has(test.test_id)}
+                                    onToggle={() => onToggleTest(test.test_id)}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            // State
+            const [testCases, setTestCases] = useState([]);
+            const [notes, setNotes] = useState({});
+            const [testerName, setTesterName] = useState('');
+            const [expandedTests, setExpandedTests] = useState(new Set());
+            const [lastUpdated, setLastUpdated] = useState(null);
+            const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+            // Load from localStorage on mount
+            useEffect(() => {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        setTestCases(data.testCases || TEST_CASES_DATA.map(t => ({ ...t, test_status: 'Not Run' })));
+                        setNotes(data.notes || {});
+                        setTesterName(data.testerName || '');
+                        setLastUpdated(data.lastUpdated);
+                    } catch (e) {
+                        console.error('Failed to load saved data:', e);
+                        initializeTestCases();
+                    }
+                } else {
+                    initializeTestCases();
+                }
+            }, []);
+
+            const initializeTestCases = () => {
+                setTestCases(TEST_CASES_DATA.map(t => ({ ...t, test_status: 'Not Run' })));
+            };
+
+            // Save to localStorage whenever state changes
+            useEffect(() => {
+                if (testCases.length > 0) {
+                    const data = {
+                        testCases,
+                        notes,
+                        testerName,
+                        cycleInfo: CYCLE_INFO,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                    setLastUpdated(data.lastUpdated);
+                }
+            }, [testCases, notes, testerName]);
+
+            // Calculate stats
+            const stats = useMemo(() => {
+                const total = testCases.length;
+                const passed = testCases.filter(t => t.test_status === 'Pass').length;
+                const failed = testCases.filter(t => t.test_status === 'Fail').length;
+                const blocked = testCases.filter(t => t.test_status === 'Blocked').length;
+                const skipped = testCases.filter(t => t.test_status === 'Skipped').length;
+                const notRun = testCases.filter(t => t.test_status === 'Not Run').length;
+                const executed = total - notRun;
+                const executionPct = total > 0 ? Math.round((executed / total) * 100) : 0;
+                const passRate = (passed + failed) > 0 ? Math.round((passed / (passed + failed)) * 100) : 0;
+
+                return { total, passed, failed, blocked, skipped, notRun, executed, executionPct, passRate };
+            }, [testCases]);
+
+            // Group tests by category
+            const testsByCategory = useMemo(() => {
+                const grouped = {};
+                testCases.forEach(test => {
+                    if (!grouped[test.category]) {
+                        grouped[test.category] = [];
+                    }
+                    grouped[test.category].push(test);
+                });
+                return grouped;
+            }, [testCases]);
+
+            // Handlers
+            const handleStatusChange = (testId, newStatus) => {
+                setTestCases(prev => prev.map(test => {
+                    if (test.test_id === testId) {
+                        // Toggle off if clicking same status
+                        const status = test.test_status === newStatus ? 'Not Run' : newStatus;
+                        return {
+                            ...test,
+                            test_status: status,
+                            tested_date: status !== 'Not Run' ? new Date().toISOString() : null,
+                            tested_by: status !== 'Not Run' ? testerName : null
+                        };
+                    }
+                    return test;
+                }));
+            };
+
+            const handleNotesChange = (testId, noteText) => {
+                setNotes(prev => ({ ...prev, [testId]: noteText }));
+            };
+
+            const handleToggleTest = (testId) => {
+                setExpandedTests(prev => {
+                    const newSet = new Set(prev);
+                    if (newSet.has(testId)) {
+                        newSet.delete(testId);
+                    } else {
+                        newSet.add(testId);
+                    }
+                    return newSet;
+                });
+            };
+
+            const handleExport = () => {
+                const exportData = {
+                    cycle_info: CYCLE_INFO,
+                    tester: testerName,
+                    exported_at: new Date().toISOString(),
+                    summary: {
+                        total: stats.total,
+                        executed: stats.executed,
+                        passed: stats.passed,
+                        failed: stats.failed,
+                        blocked: stats.blocked,
+                        skipped: stats.skipped,
+                        executionPct: stats.executionPct,
+                        passRate: stats.passRate
+                    },
+                    results: testCases.map(test => ({
+                        test_id: test.test_id,
+                        title: test.title,
+                        category: test.category,
+                        test_type: test.test_type,
+                        test_status: test.test_status,
+                        tested_by: test.tested_by || testerName,
+                        tested_date: test.tested_date,
+                        notes: notes[test.test_id] || ''
+                    }))
+                };
+
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `onb_uat_results_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            const handleReset = () => {
+                localStorage.removeItem(STORAGE_KEY);
+                initializeTestCases();
+                setNotes({});
+                setTesterName('');
+                setExpandedTests(new Set());
+                setShowResetConfirm(false);
+            };
+
+            // Days until target
+            const daysToLaunch = useMemo(() => {
+                const target = new Date(CYCLE_INFO.target_date);
+                const today = new Date();
+                const diffTime = target - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays;
+            }, []);
+
+            return (
+                <div className="min-h-screen bg-gray-100">
+                    {/* Header */}
+                    <header className="bg-propel-navy text-white shadow-lg sticky top-0 z-10 no-print">
+                        <div className="max-w-6xl mx-auto px-4 py-4">
+                            <div className="flex flex-wrap items-center justify-between gap-4">
+                                <div>
+                                    <h1 className="text-xl font-bold">{CYCLE_INFO.name}</h1>
+                                    <p className="text-sm text-gray-300">
+                                        Target: {CYCLE_INFO.target_date}
+                                        {daysToLaunch > 0 && (
+                                            <span className="ml-2 text-amber-300">({daysToLaunch} days)</span>
+                                        )}
+                                        {daysToLaunch <= 0 && (
+                                            <span className="ml-2 text-red-300">(Past due)</span>
+                                        )}
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="text"
+                                        placeholder="Your name"
+                                        className="px-3 py-1.5 rounded text-gray-800 text-sm w-40"
+                                        value={testerName}
+                                        onChange={(e) => setTesterName(e.target.value)}
+                                    />
+                                    <button
+                                        onClick={handleExport}
+                                        className="bg-propel-teal hover:bg-opacity-80 px-4 py-1.5 rounded text-sm font-medium transition-colors"
+                                    >
+                                        Export JSON
+                                    </button>
+                                    <button
+                                        onClick={() => setShowResetConfirm(true)}
+                                        className="bg-red-500 hover:bg-red-600 px-4 py-1.5 rounded text-sm font-medium transition-colors"
+                                    >
+                                        Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Content */}
+                    <main className="max-w-6xl mx-auto px-4 py-6">
+                        {/* Progress Dashboard */}
+                        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+                            <div className="flex items-center justify-between mb-3">
+                                <h2 className="font-semibold text-gray-700">Execution Progress</h2>
+                                <span className="text-2xl font-bold text-propel-navy">
+                                    {stats.executionPct}%
+                                </span>
+                            </div>
+
+                            <ProgressBar stats={stats} />
+
+                            <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                                <StatsBox label="Not Run" value={stats.notRun} color="bg-gray-100 text-gray-600" />
+                                <StatsBox label="Passed" value={stats.passed} color="bg-green-100 text-green-700" />
+                                <StatsBox label="Failed" value={stats.failed} color="bg-red-100 text-red-700" />
+                                <StatsBox label="Blocked" value={stats.blocked} color="bg-amber-100 text-amber-700" />
+                                <StatsBox label="Skipped" value={stats.skipped} color="bg-blue-100 text-blue-700" />
+                            </div>
+
+                            {stats.executed > 0 && (
+                                <div className="text-center mt-3 text-sm text-gray-500">
+                                    Pass Rate: <span className="font-semibold text-propel-navy">{stats.passRate}%</span>
+                                    <span className="mx-2">|</span>
+                                    {stats.executed} of {stats.total} executed
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Test Categories */}
+                        {['SAVE', 'STEP', 'FORM', 'GENE'].map(category => (
+                            testsByCategory[category] && (
+                                <CategorySection
+                                    key={category}
+                                    category={category}
+                                    tests={testsByCategory[category]}
+                                    notes={notes}
+                                    onStatusChange={handleStatusChange}
+                                    onNotesChange={handleNotesChange}
+                                    expandedTests={expandedTests}
+                                    onToggleTest={handleToggleTest}
+                                />
+                            )
+                        ))}
+
+                        {/* Footer */}
+                        <div className="text-center text-xs text-gray-400 mt-8">
+                            {lastUpdated && (
+                                <p>Last saved: {formatDate(lastUpdated)}</p>
+                            )}
+                            <p className="mt-1">Data is auto-saved to browser localStorage</p>
+                        </div>
+                    </main>
+
+                    {/* Reset Confirmation Modal */}
+                    {showResetConfirm && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 no-print">
+                            <div className="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-xl">
+                                <h3 className="text-lg font-semibold text-gray-800 mb-2">Reset All Progress?</h3>
+                                <p className="text-gray-600 mb-4">
+                                    This will clear all test results, notes, and saved data. This cannot be undone.
+                                </p>
+                                <div className="flex gap-3 justify-end">
+                                    <button
+                                        onClick={() => setShowResetConfirm(false)}
+                                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleReset}
+                                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                                    >
+                                        Reset Everything
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
