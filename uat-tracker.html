@@ -115,41 +115,356 @@
         // =======================================================================
         // TEST DATA
         // =======================================================================
-        // Sample test cases - will be replaced with actual data from database
+        // 66 ONB test cases loaded from requirements database (UAT-ONB-853A06E9)
 
         const TEST_CASES_DATA = [
-            // SAVE category (6 tests)
-            { test_id: "ONB-SAVE-001-TC01", title: "Auto-save triggers after field change", category: "SAVE", test_type: "happy_path", test_steps: "1. Open questionnaire\n2. Enter data in any field\n3. Wait 30 seconds", expected_results: "Data is automatically saved without user action", priority: "Must Have" },
-            { test_id: "ONB-SAVE-002-TC01", title: "Resume from saved draft", category: "SAVE", test_type: "happy_path", test_steps: "1. Start questionnaire, enter data\n2. Close browser\n3. Reopen questionnaire", expected_results: "Previously entered data is restored", priority: "Must Have" },
-            { test_id: "ONB-SAVE-003-TC01", title: "Download draft as JSON", category: "SAVE", test_type: "happy_path", test_steps: "1. Enter data\n2. Click Download Draft", expected_results: "JSON file downloads with all form data", priority: "Must Have" },
-            { test_id: "ONB-SAVE-004-TC01", title: "Upload draft JSON", category: "SAVE", test_type: "happy_path", test_steps: "1. Click Upload Draft\n2. Select valid JSON file", expected_results: "Form populates with uploaded data", priority: "Must Have" },
-            { test_id: "ONB-SAVE-005-TC01", title: "Clear form confirmation", category: "SAVE", test_type: "validation", test_steps: "1. Enter data\n2. Click Clear Form", expected_results: "Confirmation dialog appears before clearing", priority: "Should Have" },
-            { test_id: "ONB-SAVE-006-TC01", title: "Help text displays", category: "SAVE", test_type: "happy_path", test_steps: "1. Click help icon on any field", expected_results: "Help tooltip or modal displays", priority: "Should Have" },
-
-            // STEP category (10 tests)
-            { test_id: "ONB-STEP-001-TC01", title: "Program step - select program", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Program step\n2. Select P4M", expected_results: "Program selected, conditional fields update", priority: "Must Have" },
-            { test_id: "ONB-STEP-002-TC01", title: "Clinic Info - required fields", category: "STEP", test_type: "validation", test_steps: "1. Go to Clinic Info\n2. Leave required fields empty\n3. Try to proceed", expected_results: "Validation errors shown", priority: "Must Have" },
-            { test_id: "ONB-STEP-003-TC01", title: "Locations - add location", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Locations\n2. Click Add Location\n3. Fill details", expected_results: "Location added to list", priority: "Must Have" },
-            { test_id: "ONB-STEP-004-TC01", title: "Contacts - add contact", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Contacts\n2. Click Add Contact\n3. Fill details", expected_results: "Contact added with role", priority: "Must Have" },
-            { test_id: "ONB-STEP-005-TC01", title: "Stakeholders - configure", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Stakeholders\n2. Configure options", expected_results: "Stakeholder settings saved", priority: "Must Have" },
-            { test_id: "ONB-STEP-006-TC01", title: "Lab Config - select lab", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Lab Config\n2. Select lab", expected_results: "Lab-specific options appear", priority: "Must Have" },
-            { test_id: "ONB-STEP-007-TC01", title: "Test Products - select products", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Test Products\n2. Select products", expected_results: "Products saved", priority: "Must Have" },
-            { test_id: "ONB-STEP-008-TC01", title: "Providers - add provider with NPI", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Providers\n2. Add provider\n3. Enter NPI", expected_results: "Provider added, NPI validated", priority: "Must Have" },
-            { test_id: "ONB-STEP-009-TC01", title: "Extract Filtering - configure", category: "STEP", test_type: "happy_path", test_steps: "1. Go to Extract Filtering\n2. Set filter rules", expected_results: "Filters configured", priority: "Should Have" },
-            { test_id: "ONB-STEP-010-TC01", title: "Review - shows summary", category: "STEP", test_type: "happy_path", test_steps: "1. Complete all steps\n2. Go to Review", expected_results: "All entered data displayed", priority: "Must Have" },
-
-            // FORM category (6 tests)
-            { test_id: "ONB-FORM-001-TC01", title: "Email - valid format accepted", category: "FORM", test_type: "happy_path", test_steps: "1. Enter: test@example.com", expected_results: "Email accepted", priority: "Must Have" },
-            { test_id: "ONB-FORM-001-TC02", title: "Email - invalid format rejected", category: "FORM", test_type: "negative", test_steps: "1. Enter: test@", expected_results: "Validation error shown", priority: "Must Have" },
-            { test_id: "ONB-FORM-002-TC01", title: "ZIP - 5 digit accepted", category: "FORM", test_type: "happy_path", test_steps: "1. Enter: 98001", expected_results: "ZIP accepted", priority: "Must Have" },
-            { test_id: "ONB-FORM-002-TC02", title: "ZIP - ZIP+4 accepted", category: "FORM", test_type: "happy_path", test_steps: "1. Enter: 98001-1234", expected_results: "ZIP+4 accepted", priority: "Should Have" },
-            { test_id: "ONB-FORM-003-TC01", title: "Phone - formats correctly", category: "FORM", test_type: "happy_path", test_steps: "1. Enter: 2535551234", expected_results: "Displays as (253) 555-1234", priority: "Should Have" },
-            { test_id: "ONB-FORM-003-TC02", title: "NPI - 10 digit validated", category: "FORM", test_type: "validation", test_steps: "1. Enter NPI: 1234567890", expected_results: "NPI validated", priority: "Must Have" },
-
-            // GENE category (3 tests)
-            { test_id: "ONB-GENE-001-TC01", title: "Gene selector - displays list", category: "GENE", test_type: "happy_path", test_steps: "1. Open gene selector", expected_results: "Full gene list shown", priority: "Must Have" },
-            { test_id: "ONB-GENE-001-TC02", title: "Gene selector - search filters", category: "GENE", test_type: "happy_path", test_steps: "1. Type 'BRCA' in search", expected_results: "List filters to BRCA1, BRCA2", priority: "Must Have" },
-            { test_id: "ONB-GENE-001-TC03", title: "Gene selector - toggle selection", category: "GENE", test_type: "happy_path", test_steps: "1. Click gene to select\n2. Click again to deselect", expected_results: "Selection toggles", priority: "Must Have" },
+            { test_id: "ONB-EXPORT-001-TC01", title: "Verify JSON export structure matches schema", category: "EXPORT", test_type: "happy_path", test_steps: "1. Complete form with test data
+2. Navigate to Review step
+3. Click \"Download JSON\" button
+4. Open downloaded file
+5. Verify valid JSON (parseable)
+6. Verify schema_version present
+7. Verify submitted_at timestamp
+8. Verify structure matches sample files", expected_results: "Valid JSON file downloaded with correct structure matching sample-p4m.json format", prerequisites: "Form completed, on Review step", priority: "Should Have" },
+            { test_id: "ONB-FORM-001-TC01", title: "Verify questions render from JSON configuration", category: "FORM", test_type: "happy_path", test_steps: "1. Open form-definition.json
+2. Add a new text question to clinic_info step:
+   {\"question_id\": \"test_field\", \"type\": \"text\", \"label\": \"Test Field\", \"required\": false}
+3. Save file and refresh form
+4. Navigate to Step 2
+5. Verify \"Test Field\" appears in the form
+6. Remove test_field from JSON and verify it disappears", expected_results: "New question renders in Step 2 without any code changes", prerequisites: "Access to form-definition.json file", priority: "Should Have" },
+            { test_id: "ONB-FORM-002-TC01", title: "Verify conditional field shows for P4M only", category: "FORM", test_type: "happy_path", test_steps: "1. Select P4M program in Step 1
+2. Navigate to Lab Configuration step
+3. Verify \"Indication\" field is visible
+4. Navigate back to Step 1
+5. Change selection to GRX
+6. Navigate to Lab Configuration step
+7. Verify \"Indication\" field is NOT visible", expected_results: "Indication field visible for P4M, hidden for GRX", prerequisites: "Form loaded", priority: "Should Have" },
+            { test_id: "ONB-FORM-003-TC01", title: "Verify required field indicators display consistently", category: "FORM", test_type: "happy_path", test_steps: "1. Navigate through all form steps
+2. Identify fields marked as required in form-definition.json
+3. Verify each required field has a red asterisk indicator
+4. Verify optional fields do NOT have an asterisk", expected_results: "Red asterisk (*) visible next to required field labels on all steps", prerequisites: "Form loaded", priority: "Should Have" },
+            { test_id: "ONB-FORM-003-TC02", title: "Verify required field prevents navigation when empty", category: "FORM", test_type: "negative", test_steps: "1. Navigate to Step 2
+2. Leave \"Clinic Name\" field empty (required field)
+3. Click \"Next\" button
+4. Verify form does NOT advance to Step 3
+5. Verify error message appears below Clinic Name field
+6. Verify field has red border", expected_results: "Form stays on current step, validation error shown below field, field highlighted in red", prerequisites: "Form on Step 2 (Clinic Information)", priority: "Should Have" },
+            { test_id: "ONB-FORM-003-TC03", title: "Verify NPI pattern validation", category: "FORM", test_type: "validation", test_steps: "1. Navigate to Ordering Providers step
+2. Enter provider name
+3. Enter invalid NPI: \"123\" (too short)
+4. Click away from field or click Next
+5. Verify validation error for NPI format
+6. Enter valid NPI: \"1234567890\"
+7. Verify error clears", expected_results: "Validation error shown: NPI must be 10 digits", prerequisites: "Form on Ordering Providers step", priority: "Should Have" },
+            { test_id: "ONB-FORM-003-TC04", title: "Verify email validation rejects invalid format", category: "FORM", test_type: "validation", test_steps: "1. Navigate to Step 4 - Contacts
+2. In Primary Contact Email field, enter \"invalid-email\"
+3. Click out of the field (blur)
+4. Verify validation error appears", expected_results: "Error message displays: \"Please enter a valid email address\"", prerequisites: "Form loaded, navigated to any step with email input", priority: "Must Have" },
+            { test_id: "ONB-FORM-003-TC05", title: "Verify email validation accepts valid format", category: "FORM", test_type: "happy_path", test_steps: "1. Navigate to Step 4 - Contacts
+2. In Primary Contact Email field, enter \"jane.doe@clinic.org\"
+3. Click out of the field (blur)
+4. Verify no validation error appears", expected_results: "Field accepts input, no validation error displayed", prerequisites: "Form loaded, navigated to any step with email input", priority: "Must Have" },
+            { test_id: "ONB-FORM-003-TC06", title: "Verify ZIP validation accepts 5-digit and ZIP+4", category: "FORM", test_type: "happy_path", test_steps: "1. Navigate to Step 2 - Clinic Information
+2. In clinic address ZIP field, enter \"98101\"
+3. Verify no validation error
+4. Clear field and enter \"98101-1234\"
+5. Verify no validation error", expected_results: "Both formats accepted: 5-digit (98101) and ZIP+4 (98101-1234)", prerequisites: "Form loaded, navigated to any step with ZIP input", priority: "Must Have" },
+            { test_id: "ONB-FORM-003-TC07", title: "Verify ZIP validation rejects invalid formats", category: "FORM", test_type: "negative", test_steps: "1. Navigate to Step 2 - Clinic Information
+2. In clinic address ZIP field, enter \"9810\" (4 digits)
+3. Verify validation error appears
+4. Clear and enter \"981011\" (6 digits)
+5. Verify validation error appears
+6. Clear and enter \"ABCDE\" (letters)
+7. Verify validation error appears", expected_results: "Validation error displays for each invalid format", prerequisites: "Form loaded, navigated to any step with ZIP input", priority: "Must Have" },
+            { test_id: "ONB-FORM-003-TC08", title: "Verify phone validation accepts multiple formats", category: "FORM", test_type: "happy_path", test_steps: "1. Navigate to Step 2 - Clinic Information
+2. In clinic phone field, enter \"5551234567\" (no separators)
+3. Verify no validation error
+4. Clear and enter \"555-123-4567\" (dashes)
+5. Verify no validation error
+6. Clear and enter \"555.123.4567\" (dots)
+7. Verify no validation error", expected_results: "All three formats accepted without validation error", prerequisites: "Form loaded, navigated to any step with phone input", priority: "Must Have" },
+            { test_id: "ONB-FORM-004-TC01", title: "Verify Add button creates new repeatable item", category: "FORM", test_type: "happy_path", test_steps: "1. Navigate to Satellite Locations step
+2. Click \"Add Satellite Location\" button
+3. Verify new location form section appears
+4. Verify section titled \"Location 1\"
+5. Verify all location fields present
+6. Click Add again
+7. Verify \"Location 2\" appears", expected_results: "New location form appears with fields for name, Epic ID, address, phone, hours", prerequisites: "Form on Satellite Locations step", priority: "Should Have" },
+            { test_id: "ONB-FORM-004-TC02", title: "Verify Remove button deletes item and renumbers", category: "FORM", test_type: "happy_path", test_steps: "1. Add 3 satellite locations with data
+2. Click Remove button on Location 2
+3. Confirm removal if prompted
+4. Verify Location 2 is removed
+5. Verify Location 3 data now shows as Location 2
+6. Verify Location 1 data unchanged", expected_results: "Location 2 removed, Location 3 renumbered to Location 2", prerequisites: "Form on Satellite Locations step with 3 locations added", priority: "Should Have" },
+            { test_id: "ONB-FORM-005-TC01", title: "Verify address composite renders all subfields", category: "FORM", test_type: "happy_path", test_steps: "1. Navigate to Clinic Information step
+2. Locate clinic address section
+3. Verify Street Address field present
+4. Verify City field present
+5. Verify State is a dropdown with all US states
+6. Verify ZIP Code field present
+7. Enter valid address and verify data saved together", expected_results: "Address fields grouped together: Street, City, State dropdown, ZIP code", prerequisites: "Form on Clinic Information step", priority: "Should Have" },
+            { test_id: "ONB-FORM-005-TC02", title: "Verify contact composite renders all subfields", category: "FORM", test_type: "happy_path", test_steps: "1. Navigate to Contacts step
+2. Locate Primary Contact section
+3. Verify all contact fields present
+4. Verify Preferred Channel has Email, Phone, Teams options
+5. Verify Preferred Time has Morning, Afternoon, Anytime options", expected_results: "Contact section shows: Name, Title, Email, Phone, Preferred Channel dropdown, Preferred Time dropdown", prerequisites: "Form on Contacts step", priority: "Should Have" },
+            { test_id: "ONB-GENE-001-TC01", title: "Verify gene selector appears for CustomNext-Cancer selection", category: "GENE", test_type: "happy_path", test_steps: "1. Navigate to Step 7 - Test Products
+2. Select \"CustomNext-Cancer®\" from test panel dropdown
+3. Verify gene selector component appears
+4. Verify component contains: search input, gene checkbox list, selected genes area", expected_results: "Gene selector component appears below the test dropdown with search input, gene checkbox list, and selected genes area", prerequisites: "Form loaded, navigated to Step 7 - Test Products", priority: "Must Have" },
+            { test_id: "ONB-GENE-001-TC02", title: "Verify gene selector hidden for non-CustomNext tests", category: "GENE", test_type: "negative", test_steps: "1. Navigate to Step 7 - Test Products
+2. Select \"CancerNext-Expanded®\" from dropdown
+3. Verify gene selector component is NOT visible
+4. Change selection to \"CancerNext-Expanded® +RNAinsight®\"
+5. Verify gene selector still not visible", expected_results: "Gene selector is not visible when non-CustomNext test is selected", prerequisites: "Form loaded, navigated to Step 7 - Test Products", priority: "Must Have" },
+            { test_id: "ONB-GENE-001-TC03", title: "Verify search filter reduces gene list", category: "GENE", test_type: "happy_path", test_steps: "1. Select CustomNext-Cancer® to show gene selector
+2. Type \"BRCA\" in the search input field
+3. Verify gene list filters in real-time
+4. Verify only BRCA1 and BRCA2 are visible in the checkbox list", expected_results: "Gene list filters to show only BRCA1 and BRCA2, other genes are hidden", prerequisites: "Gene selector visible after selecting CustomNext-Cancer®", priority: "Must Have" },
+            { test_id: "ONB-GENE-001-TC04", title: "Verify Select All button functionality", category: "GENE", test_type: "happy_path", test_steps: "1. Select CustomNext-Cancer® to show gene selector
+2. Verify count shows \"0 of 90 genes selected\"
+3. Click \"Select All\" button
+4. Verify count updates to \"90 of 90 genes selected\"
+5. Verify all gene chips appear in selected genes area", expected_results: "All 90 genes become selected, count shows \"90 of 90 genes selected\", all genes appear as chips in selected area", prerequisites: "Gene selector visible, no genes currently selected", priority: "Must Have" },
+            { test_id: "ONB-GENE-001-TC05", title: "Verify Clear All button functionality", category: "GENE", test_type: "happy_path", test_steps: "1. Select CustomNext-Cancer® to show gene selector
+2. Select several genes (BRCA1, BRCA2, ATM, CHEK2)
+3. Verify count shows \"4 of 90 genes selected\"
+4. Click \"Clear All\" button
+5. Verify count resets to \"0 of 90 genes selected\"
+6. Verify selected genes area is empty", expected_results: "All selections cleared, count shows \"0 of 90 genes selected\", selected genes area is empty", prerequisites: "Gene selector visible with multiple genes selected", priority: "Must Have" },
+            { test_id: "ONB-GENE-001-TC06", title: "Verify gene chip removal via X button", category: "GENE", test_type: "happy_path", test_steps: "1. Select CustomNext-Cancer® and select BRCA1, BRCA2, ATM
+2. Verify count shows \"3 of 90 genes selected\"
+3. Locate BRCA1 chip in selected genes area
+4. Click the X button on the BRCA1 chip
+5. Verify BRCA1 chip is removed
+6. Verify count updates to \"2 of 90 genes selected\"
+7. Verify BRCA1 checkbox in the list is now unchecked", expected_results: "BRCA1 chip is removed, count updates to \"2 of 90 genes selected\", BRCA1 checkbox becomes unchecked in the list", prerequisites: "Gene selector visible with BRCA1, BRCA2, ATM selected", priority: "Must Have" },
+            { test_id: "ONB-GENE-001-TC07", title: "Verify validation requires at least one gene selected", category: "GENE", test_type: "negative", test_steps: "1. Select CustomNext-Cancer® to show gene selector
+2. Do not select any genes (count shows \"0 of 90\")
+3. Click \"Next\" button to proceed
+4. Verify validation error message appears
+5. Verify user cannot advance to next step", expected_results: "Form displays validation error \"At least one gene must be selected\", user cannot proceed to next step", prerequisites: "Gene selector visible with zero genes selected", priority: "Must Have" },
+            { test_id: "ONB-GENE-001-TC08", title: "Verify JSON output includes selected genes array", category: "GENE", test_type: "validation", test_steps: "1. Complete form with CustomNext-Cancer® selected
+2. Select genes: ATM, BRCA1, CHEK2
+3. Navigate to Review step
+4. Download JSON output
+5. Open JSON file and verify test_panel structure
+6. Verify selected_genes array contains selected genes alphabetically
+7. Verify gene_count matches array length", expected_results: "JSON output contains test_panel object with: test_name=\"CustomNext-Cancer®\", test_code=\"9511\", selected_genes=[\"ATM\",\"BRCA1\",\"CHEK2\"], gene_count=3", prerequisites: "Form completed with CustomNext-Cancer® selected and 3 genes chosen (ATM, BRCA1, CHEK2)", priority: "Must Have" },
+            { test_id: "ONB-SAVE-001-TC02", title: "Verify auto-save indicator displays timestamp", category: "SAVE", test_type: "happy_path", test_steps: "1. Open form in browser
+2. Select a program
+3. Navigate to Step 2
+4. Enter any field value
+5. Look at save status bar at top of form
+6. Verify auto-save indicator shows timestamp", expected_results: "\"Auto-saved at [current time]\" indicator visible with green checkmark", prerequisites: "Form loaded", priority: "Should Have" },
+            { test_id: "ONB-SAVE-001-TC03", title: "Auto-save triggers on field change", category: "SAVE", test_type: "happy_path", test_steps: "1. Select a program (e.g., P4M)
+2. Click Next to go to step 2
+3. Enter text in Clinic Name field
+4. Observe the save status bar", expected_results: "Save status bar displays \"Auto-saved at [current time]\" within 1-2 seconds of typing", prerequisites: "Browser localStorage is empty. Form is loaded at step 1.", priority: "Must Have" },
+            { test_id: "ONB-SAVE-001-TC04", title: "Auto-save stores correct data structure in localStorage", category: "SAVE", test_type: "validation", test_steps: "1. Fill out program selection and clinic name
+2. Open browser DevTools (F12)
+3. Go to Application tab > Local Storage
+4. Find the propel-onboarding-draft key
+5. Inspect the stored JSON value", expected_results: "Opening browser DevTools > Application > localStorage shows key \"propel-onboarding-draft\" with JSON containing formData, currentStep, savedAt, and version fields", prerequisites: "Form loaded. DevTools accessible.", priority: "Must Have" },
+            { test_id: "ONB-SAVE-001-TC05", title: "Auto-save captures current step position", category: "SAVE", test_type: "validation", test_steps: "1. Complete steps 1-3 with valid data
+2. Navigate to step 4 (Contacts)
+3. Enter primary contact name
+4. Check localStorage value in DevTools
+5. Verify currentStep value", expected_results: "localStorage JSON shows currentStep matching the step number user navigated to (e.g., currentStep: 4 for Contacts)", prerequisites: "Form loaded with empty localStorage.", priority: "Must Have" },
+            { test_id: "ONB-SAVE-002-TC04", title: "Restore prompt appears when saved data exists", category: "SAVE", test_type: "happy_path", test_steps: "1. Fill out form through step 3 with valid data
+2. Close the browser tab
+3. Open a new tab and navigate to the form URL
+4. Observe the page load", expected_results: "Modal appears with title \"Resume Previous Session?\", displays saved date/time, and shows \"Resume Draft\" and \"Start Fresh\" buttons", prerequisites: "localStorage contains valid saved draft data from a previous session.", priority: "Must Have" },
+            { test_id: "ONB-SAVE-002-TC05", title: "Resume Draft restores data and step position", category: "SAVE", test_type: "happy_path", test_steps: "1. With restore prompt displayed, click \"Resume Draft\"
+2. Verify the form data is restored (program, clinic name, etc.)
+3. Verify the current step matches where you left off", expected_results: "Form loads with all previously entered data populated and user is on step 3 (the step they were on when they left)", prerequisites: "Restore prompt is displayed after returning to form with saved data.", priority: "Must Have" },
+            { test_id: "ONB-SAVE-002-TC06", title: "Start Fresh clears saved data", category: "SAVE", test_type: "happy_path", test_steps: "1. With restore prompt displayed, click \"Start Fresh\"
+2. Verify the form starts at step 1 with empty fields
+3. Refresh the page
+4. Verify no restore prompt appears", expected_results: "Form starts at step 1 with all fields empty. localStorage is cleared. No restore prompt appears on next page refresh.", prerequisites: "Restore prompt is displayed after returning to form with saved data.", priority: "Must Have" },
+            { test_id: "ONB-SAVE-002-TC07", title: "No restore prompt when no saved data exists", category: "SAVE", test_type: "negative", test_steps: "1. Clear localStorage or open incognito window
+2. Navigate to the form URL
+3. Observe the page load", expected_results: "Form loads directly to step 1 with no modal prompt. User can immediately begin filling out the form.", prerequisites: "Browser localStorage is empty (no saved draft). Use incognito mode or clear localStorage manually.", priority: "Must Have" },
+            { test_id: "ONB-SAVE-003-TC03", title: "Save Draft downloads JSON file", category: "SAVE", test_type: "happy_path", test_steps: "1. Fill out program selection (P4M)
+2. Fill out clinic information (name, address)
+3. Click \"Save Draft\" button in the status bar
+4. Observe the file download", expected_results: "JSON file downloads with filename \"propel-onboarding-draft-YYYY-MM-DD.json\" (e.g., propel-onboarding-draft-2025-01-08.json)", prerequisites: "Form has data entered in at least 2 steps.", priority: "Must Have" },
+            { test_id: "ONB-SAVE-003-TC04", title: "Downloaded file contains correct JSON structure", category: "SAVE", test_type: "validation", test_steps: "1. Download a draft file using Save Draft
+2. Open the downloaded .json file in a text editor
+3. Verify JSON structure contains required fields
+4. Verify formData contains the values entered in the form", expected_results: "JSON file contains: formData object with all entered values, currentStep number, savedAt ISO timestamp, version \"1.0\", isDraft: true", prerequisites: "Downloaded draft file from Save Draft button.", priority: "Must Have" },
+            { test_id: "ONB-SAVE-004-TC03", title: "Load Draft restores form from file", category: "SAVE", test_type: "happy_path", test_steps: "1. Click \"Load Draft\" button in the status bar
+2. Select the previously downloaded draft JSON file
+3. Observe the form state after file loads", expected_results: "Form populates with all data from the draft file and navigates to the step that was saved in the file", prerequisites: "Have a valid draft JSON file downloaded previously. Form is in a fresh state (different browser or cleared localStorage).", priority: "Must Have" },
+            { test_id: "ONB-SAVE-004-TC04", title: "Invalid file shows error message", category: "SAVE", test_type: "negative", test_steps: "1. Click \"Load Draft\" button
+2. Select an invalid file (e.g., a .txt file or corrupted JSON)
+3. Observe the error handling", expected_results: "Alert message displays: \"Unable to read file. Please select a valid Propel onboarding draft (.json).\" Form remains unchanged.", prerequisites: "Have an invalid JSON file or non-JSON file ready (e.g., a text file or malformed JSON).", priority: "Must Have" },
+            { test_id: "ONB-SAVE-004-TC05", title: "Load Draft works across different browsers", category: "SAVE", test_type: "edge_case", test_steps: "1. In Chrome, fill out form and click \"Save Draft\"
+2. Open Firefox browser
+3. Navigate to the form URL
+4. Click \"Load Draft\" and select the file saved from Chrome
+5. Verify form data is restored correctly", expected_results: "Draft file loads successfully and form is populated correctly in Firefox, even though the file was created in Chrome", prerequisites: "Draft file saved from Chrome browser. Firefox browser available.", priority: "Should Have" },
+            { test_id: "ONB-SAVE-005-TC03", title: "Start Over shows confirmation modal", category: "SAVE", test_type: "happy_path", test_steps: "1. Fill out form through step 3 with valid data
+2. Click \"Start Over\" button in the status bar
+3. Observe the confirmation modal", expected_results: "Confirmation modal appears with warning message and two buttons: \"Cancel\" and \"Clear All\"", prerequisites: "Form has data entered in multiple steps.", priority: "Must Have" },
+            { test_id: "ONB-SAVE-005-TC04", title: "Confirming Clear All resets form completely", category: "SAVE", test_type: "happy_path", test_steps: "1. With confirmation modal displayed, click \"Clear All\"
+2. Verify form returns to step 1
+3. Verify all fields are empty
+4. Check localStorage in DevTools to confirm it is cleared", expected_results: "Form resets to step 1 with all fields empty. localStorage is cleared. Auto-save indicator resets to \"Your progress will be saved automatically\"", prerequisites: "Confirmation modal is displayed after clicking Start Over.", priority: "Must Have" },
+            { test_id: "ONB-SAVE-005-TC05", title: "Cancel returns to form without changes", category: "SAVE", test_type: "happy_path", test_steps: "1. With confirmation modal displayed, click \"Cancel\"
+2. Verify modal closes
+3. Verify form data is still present
+4. Verify user is still on the same step", expected_results: "Modal closes and form remains unchanged with all data intact. User stays on the same step.", prerequisites: "Confirmation modal is displayed after clicking Start Over.", priority: "Must Have" },
+            { test_id: "ONB-SAVE-006-TC02", title: "Help icon expands informational panel", category: "SAVE", test_type: "happy_path", test_steps: "1. Locate the help icon (?) in the status bar
+2. Click the help icon
+3. Observe the expanded panel", expected_results: "Informational panel expands below the status bar with explanations of Auto-save, Save Draft, and Load Draft functionality", prerequisites: "Form is loaded and status bar is visible.", priority: "Should Have" },
+            { test_id: "ONB-SAVE-006-TC03", title: "Help icon toggles panel closed", category: "SAVE", test_type: "happy_path", test_steps: "1. With help panel expanded, click the help icon (?) again
+2. Observe the panel collapse", expected_results: "Panel collapses and is no longer visible. Help icon remains clickable.", prerequisites: "Help panel is currently expanded.", priority: "Should Have" },
+            { test_id: "ONB-SAVE-006-TC04", title: "Help content explains all save options and limitations", category: "SAVE", test_type: "validation", test_steps: "1. Expand the help panel by clicking the (?) icon
+2. Read through the content
+3. Verify all three save methods are explained
+4. Verify the browser limitation note is present", expected_results: "Help panel contains: (1) Explanation that auto-save only works in same browser/device, (2) Description of Save Draft for cross-device access, (3) Description of Load Draft to restore from file, (4) Note about browser limitation clearly stated", prerequisites: "Help panel is expanded.", priority: "Should Have" },
+            { test_id: "ONB-STEP-001-TC01", title: "Verify program options display correctly", category: "STEP", test_type: "happy_path", test_steps: "1. Open form
+2. Verify Step 1 \"Program Selection\" displayed
+3. Verify P4M option with \"Prevention4ME\" and description
+4. Verify PR4M option with \"Precision4ME\" and description
+5. Verify GRX option with \"GenoRx\" and description
+6. Select each option and verify radio button state changes", expected_results: "Three program options displayed with names and descriptions, radio buttons functional", prerequisites: "Form loaded at Step 1", priority: "Should Have" },
+            { test_id: "ONB-STEP-002-TC01", title: "Verify clinic information fields present", category: "STEP", test_type: "happy_path", test_steps: "1. Select P4M and navigate to Step 2
+2. Verify Clinic Name field (required)
+3. Verify Epic Department ID field
+4. Verify Address composite field
+5. Verify Timezone dropdown
+6. Verify Hours of Operation field
+7. Verify Website fields
+8. Fill all fields and proceed to Step 3", expected_results: "All clinic information fields present and functional", prerequisites: "Program selected, navigated to Step 2", priority: "Should Have" },
+            { test_id: "ONB-STEP-002-TC02", title: "Verify clinic phone field always visible and required", category: "STEP", test_type: "happy_path", test_steps: "1. Load onboarding form
+2. Navigate to Step 2 - Clinic Information
+3. Locate Clinic Office Phone Number field
+4. Verify field is visible and marked required", expected_results: "Clinic Office Phone Number field displays as required with red asterisk, positioned after clinic address", prerequisites: "Form loaded, navigated to Step 2 - Clinic Information", priority: "Must Have" },
+            { test_id: "ONB-STEP-002-TC03", title: "Verify patient communication checkbox displays", category: "STEP", test_type: "happy_path", test_steps: "1. Navigate to Step 2 - Clinic Information
+2. Locate checkbox below clinic phone field
+3. Verify checkbox label reads \"This number can be used on patient communications\"
+4. Verify checkbox is unchecked by default", expected_results: "Checkbox displays below clinic phone field, unchecked by default", prerequisites: "Form loaded, navigated to Step 2 - Clinic Information", priority: "Must Have" },
+            { test_id: "ONB-STEP-002-TC04", title: "Verify helpdesk fields appear when checkbox checked", category: "STEP", test_type: "happy_path", test_steps: "1. Navigate to Step 2 - Clinic Information
+2. Locate \"Does this clinic have a separate patient-facing helpline?\" checkbox
+3. Check the checkbox
+4. Verify two new fields appear: Helpline Phone Number and Helpline Hours of Operation", expected_results: "Helpline Phone Number and Helpline Hours fields appear below the checkbox", prerequisites: "Form loaded, navigated to Step 2 - Clinic Information", priority: "Must Have" },
+            { test_id: "ONB-STEP-002-TC05", title: "Verify helpdesk fields hidden when checkbox unchecked", category: "STEP", test_type: "negative", test_steps: "1. Navigate to Step 2 - Clinic Information
+2. Verify \"Does this clinic have a separate patient-facing helpline?\" checkbox is unchecked
+3. Verify Helpline Phone Number field is NOT visible
+4. Verify Helpline Hours field is NOT visible", expected_results: "Helpline Phone Number and Helpline Hours fields are not visible on the page", prerequisites: "Form loaded, navigated to Step 2 - Clinic Information, helpline checkbox unchecked", priority: "Must Have" },
+            { test_id: "ONB-STEP-004-TC01", title: "Verify Genetic Counselor contact fields display", category: "STEP", test_type: "happy_path", test_steps: "1. Load the onboarding form
+2. Navigate to Step 4 - Contacts
+3. Locate the Genetic Counselor section
+4. Verify all three fields are present and marked required", expected_results: "Genetic Counselor section displays with Name, Email, and Phone fields, all marked as required with red asterisks", prerequisites: "Form loaded, navigated to Step 4 - Contacts", priority: "Must Have" },
+            { test_id: "ONB-STEP-004-TC02", title: "Verify Genetic Counselor field order in form", category: "STEP", test_type: "validation", test_steps: "1. Load the onboarding form
+2. Navigate to Step 4 - Contacts
+3. Review field order on the page
+4. Verify Genetic Counselor appears after Clinic Champion", expected_results: "Genetic Counselor section appears immediately after Clinic Champion section, before Primary Contact", prerequisites: "Form loaded, navigated to Step 4 - Contacts", priority: "Should Have" },
+            { test_id: "ONB-STEP-005-TC01", title: "Verify Program Champion fields are optional", category: "STEP", test_type: "happy_path", test_steps: "1. Navigate to Step 5 - Key Stakeholders
+2. Leave Program Champion fields blank (name, title, email)
+3. Click Next
+4. Verify form proceeds to Step 6", expected_results: "Form proceeds to next step without Program Champion information", prerequisites: "Form loaded, navigated to Step 5 - Key Stakeholders", priority: "Must Have" },
+            { test_id: "ONB-STEP-006-TC01", title: "Verify lab configuration varies by program", category: "STEP", test_type: "happy_path", test_steps: "1. With P4M selected, go to Lab Configuration
+2. Verify Lab Partner shows Ambry Genetics
+3. Verify Indication field is visible
+4. Verify Criteria for Testing field is visible
+5. Go back to Step 1, select GRX
+6. Return to Lab Configuration
+7. Verify Lab Partner shows Helix
+8. Verify Indication field is NOT visible", expected_results: "Lab partner shows Ambry for P4M, Helix for GRX; conditional fields show/hide correctly", prerequisites: "P4M selected, navigated to Lab Configuration step", priority: "Should Have" },
+            { test_id: "ONB-STEP-006-TC02", title: "Verify sample type checkbox label is correctly worded", category: "STEP", test_type: "happy_path", test_steps: "1. Navigate to Step 6 - Lab Configuration
+2. Locate the sample type section
+3. Verify checkbox exists with label \"Offer additional sample type options\"
+4. Verify checking the box reveals alternate specimen type dropdown", expected_results: "Checkbox displays with label \"Offer additional sample type options\"", prerequisites: "Form loaded, navigated to Step 6 - Lab Configuration", priority: "Must Have" },
+            { test_id: "ONB-STEP-007-TC01", title: "Verify test products filtered by program", category: "STEP", test_type: "happy_path", test_steps: "1. With P4M selected, go to Test Products
+2. Click Add Test Product
+3. Open Test Name dropdown
+4. Verify only P4M-compatible tests shown
+5. Select a test and add modifications
+6. Add second test product
+7. Verify both saved correctly", expected_results: "Test products filtered to show only options valid for selected program", prerequisites: "P4M selected, navigated to Test Products step", priority: "Should Have" },
+            { test_id: "ONB-STEP-007-TC02", title: "Verify Ambry test options display in dropdown", category: "STEP", test_type: "happy_path", test_steps: "1. Load the onboarding form
+2. Navigate to Step 7 - Test Products
+3. Click on test panel dropdown
+4. Verify all 5 Ambry test options are listed", expected_results: "Dropdown displays all 5 Ambry test options: CustomNext-Cancer®, CancerNext-Expanded® +RNAinsight®, CancerNext-Expanded®, CancerNext-Expanded® + Limited Evidence Genes +RNAinsight®, CancerNext-Expanded® + Limited Evidence Genes", prerequisites: "Form loaded, navigated to Step 7 - Test Products", priority: "Must Have" },
+            { test_id: "ONB-STEP-007-TC03", title: "Verify test code auto-populates on selection", category: "STEP", test_type: "happy_path", test_steps: "1. Navigate to Step 7 - Test Products
+2. Select \"CancerNext-Expanded® +RNAinsight®\" from dropdown
+3. Verify test code field auto-populates with \"8875-R\"
+4. Attempt to edit the test code field
+5. Verify field is read-only", expected_results: "Test code field displays \"8875-R\" and is read-only (not editable by user)", prerequisites: "Form loaded, navigated to Step 7 - Test Products", priority: "Must Have" },
+            { test_id: "ONB-STEP-008-TC01", title: "Verify provider entry with valid NPI", category: "STEP", test_type: "happy_path", test_steps: "1. Navigate to Ordering Providers step
+2. Enter Provider Name: \"Dr. Jane Smith\"
+3. Enter NPI: \"1234567890\"
+4. Select Specialty from dropdown
+5. Click Add Provider
+6. Add second provider
+7. Click Next
+8. Verify form proceeds with valid data", expected_results: "Provider added with valid NPI, form proceeds to next step", prerequisites: "Navigated to Ordering Providers step", priority: "Should Have" },
+            { test_id: "ONB-STEP-009-TC01", title: "Verify review displays all data with edit navigation", category: "STEP", test_type: "happy_path", test_steps: "1. Complete all form steps with test data
+2. Navigate to Review step
+3. Verify Program Selection section shows selected program
+4. Verify Clinic Information section shows entered data
+5. Verify each section has an Edit button
+6. Click Edit on Clinic Information
+7. Verify navigates back to Step 2", expected_results: "Review page shows all entered data organized by section with Edit buttons", prerequisites: "All steps completed with test data", priority: "Should Have" },
+            { test_id: "ONB-STEP-009-TC02", title: "Verify Word document download button works", category: "STEP", test_type: "happy_path", test_steps: "1. Complete form through all steps
+2. Navigate to Step 10 - Review and Download
+3. Click \"Download Word Document\" button
+4. Verify .docx file downloads
+5. Verify filename includes clinic name and date", expected_results: "Word document (.docx) downloads with filename format: {clinic-name}-onboarding-YYYY-MM-DD.docx", prerequisites: "Form completed through all steps, on Step 10 - Review and Download", priority: "Must Have" },
+            { test_id: "ONB-STEP-009-TC03", title: "Verify Word document contains all form sections", category: "STEP", test_type: "validation", test_steps: "1. Download Word document from completed form
+2. Open document in Microsoft Word
+3. Verify document contains Program Selection
+4. Verify document contains Clinic Information (name, address, phone)
+5. Verify document contains Contacts section
+6. Verify document contains Stakeholders section
+7. Verify document contains Lab Configuration
+8. Verify document contains Test Products
+9. Verify document contains Ordering Providers
+10. Verify document contains Extract Filtering settings
+11. Verify all data matches what was entered in the form", expected_results: "Word document contains all sections with accurate data from form entries", prerequisites: "Word document downloaded from completed form", priority: "Must Have" },
+            { test_id: "ONB-STEP-010-TC01", title: "Verify provider filter fields appear when checkbox checked", category: "STEP", test_type: "happy_path", test_steps: "1. Navigate to Step 9 - Extract Filtering
+2. Locate \"Filter by provider\" checkbox
+3. Check the checkbox
+4. Verify provider input section appears
+5. Verify First Name field is visible and required
+6. Verify Last Name field is visible and required", expected_results: "Repeatable provider section appears with First Name and Last Name fields, both marked required", prerequisites: "Form loaded, navigated to Step 9 - Extract Filtering", priority: "Must Have" },
+            { test_id: "ONB-STEP-010-TC02", title: "Verify provider list mandatory when filter checkbox checked", category: "STEP", test_type: "negative", test_steps: "1. Navigate to Step 9 - Extract Filtering
+2. Check \"Filter by provider\" checkbox
+3. Leave First Name and Last Name fields empty
+4. Click Next
+5. Verify validation error prevents navigation", expected_results: "Validation error prevents navigation: \"At least one provider is required when filtering by provider\"", prerequisites: "Form loaded, navigated to Step 9 - Extract Filtering", priority: "Must Have" },
+            { test_id: "ONB-STEP-010-TC03", title: "Verify Add Provider button creates additional entry", category: "STEP", test_type: "happy_path", test_steps: "1. Navigate to Step 9 - Extract Filtering
+2. Check \"Filter by provider\" checkbox
+3. Enter first provider: First Name = \"Jane\", Last Name = \"Smith\"
+4. Click \"Add Provider\" button
+5. Verify second provider entry appears", expected_results: "Second provider entry appears with First Name and Last Name fields", prerequisites: "Form loaded, navigated to Step 9 - Extract Filtering, provider filter checkbox checked", priority: "Must Have" },
+            { test_id: "ONB-UI-001-TC01", title: "Verify progress indicator shows correct step", category: "UI", test_type: "happy_path", test_steps: "1. Complete Steps 1-2
+2. Navigate to Step 3
+3. Verify progress shows \"Step 3 of 9\"
+4. Verify current step title displayed
+5. Verify steps 1-2 show as completed
+6. Verify step 3 highlighted as current
+7. Verify steps 4-9 shown but not active", expected_results: "Progress indicator shows \"Step 3 of 9\" with step title and visual progress", prerequisites: "Form navigated to Step 3", priority: "Should Have" },
+            { test_id: "ONB-UI-002-TC01", title: "Verify Previous/Next navigation works correctly", category: "UI", test_type: "happy_path", test_steps: "1. Open form at Step 1
+2. Verify Previous button NOT visible
+3. Select program and click Next
+4. Verify now on Step 2
+5. Verify Previous button now visible
+6. Click Previous
+7. Verify returned to Step 1
+8. Select program, complete form to Step 8
+9. Verify Next button says \"Review\"", expected_results: "Previous/Next buttons navigate correctly, Previous hidden on Step 1", prerequisites: "Form loaded", priority: "Should Have" },
+            { test_id: "ONB-UI-003-TC01", title: "Verify branding consistency across form", category: "UI", test_type: "happy_path", test_steps: "1. Open form
+2. Verify header displays \"Propel Health\"
+3. Verify headers use navy color (#1a365d)
+4. Verify buttons use teal color (#4a9aba)
+5. Navigate through all steps
+6. Verify consistent styling throughout
+7. Check for any visual bugs or misaligned elements", expected_results: "Consistent branding with navy headers, teal accents, professional appearance", prerequisites: "Form loaded", priority: "Should Have" },
         ];
 
         const CATEGORY_INFO = {
@@ -157,6 +472,8 @@
             'STEP': { name: 'Form Steps', description: 'Each wizard step from Program to Review', icon: '📋' },
             'FORM': { name: 'Validation', description: 'Email, ZIP, phone, NPI validation patterns', icon: '✓' },
             'GENE': { name: 'Gene Selector', description: 'CustomNext-Cancer gene selection component', icon: '🧬' },
+            'UI': { name: 'User Interface', description: 'UI/UX patterns and behaviors', icon: '🎨' },
+            'EXPORT': { name: 'Export & Download', description: 'JSON export and download functionality', icon: '📤' },
         };
 
         const CYCLE_INFO = {
@@ -679,7 +996,7 @@
                         </div>
 
                         {/* Test Categories */}
-                        {['SAVE', 'STEP', 'FORM', 'GENE'].map(category => (
+                        {['SAVE', 'STEP', 'FORM', 'GENE', 'UI', 'EXPORT'].map(category => (
                             testsByCategory[category] && (
                                 <CategorySection
                                     key={category}
