@@ -1758,23 +1758,25 @@ function StakeholderGroup({ question, value, onChange, errors, referenceData }) 
                         />
                     </div>
                 </div>
-                {/* FIX 3: "Is Ordering Provider" checkbox */}
-                <div className="pt-2 border-t border-gray-200">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={stakeholderValue.is_ordering_provider || false}
-                            onChange={(e) => handleFieldChange('is_ordering_provider', e.target.checked)}
-                            className="w-4 h-4 text-propel-teal border-gray-300 rounded focus:ring-propel-teal"
-                        />
-                        <span className="text-sm text-gray-700">
-                            This stakeholder is also an ordering provider
-                        </span>
-                    </label>
-                    <p className="text-xs text-gray-500 mt-1 ml-6">
-                        If checked, this person will be added as Ordering Provider #1 on Page 8
-                    </p>
-                </div>
+                {/* FIX 3: "Is Ordering Provider" checkbox - hidden for IT Director */}
+                {question.question_id !== 'stakeholder_it_director' && (
+                    <div className="pt-2 border-t border-gray-200">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={stakeholderValue.is_ordering_provider || false}
+                                onChange={(e) => handleFieldChange('is_ordering_provider', e.target.checked)}
+                                className="w-4 h-4 text-propel-teal border-gray-300 rounded focus:ring-propel-teal"
+                            />
+                            <span className="text-sm text-gray-700">
+                                This stakeholder is also an ordering provider
+                            </span>
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1 ml-6">
+                            If checked, this person will be added as Ordering Provider #1 on Page 8
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -2348,15 +2350,18 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
         const outputData = getOutputData();
         debugLog('[ReviewStep] Submitting to Supabase:', outputData.clinic_name);
 
-        // Validate required fields
-        const submitterEmail = formData.submitter_email || formData.stakeholder_primary?.email;
-        const submitterName = formData.submitter_name || formData.stakeholder_primary?.name || outputData.clinic_name;
-
-        if (!submitterEmail) {
-            setSubmitError('Please provide an email address to submit.');
-            setSubmitting(false);
-            return;
-        }
+        // Get submitter info from available contact fields
+        // Falls back to generic Propel Health email if no contact email is found
+        const submitterEmail = formData.submitter_email
+            || formData.clinic_champion?.email
+            || formData.contact_primary?.email
+            || formData.genetic_counselor?.email
+            || 'onboarding@propelhealth.com';  // Fallback for submissions without contact email
+        const submitterName = formData.submitter_name
+            || formData.clinic_champion?.name
+            || formData.contact_primary?.name
+            || outputData.clinic_name
+            || 'Unknown Clinic';
 
         try {
             // Save to Supabase
@@ -2811,7 +2816,7 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                         onChange={(e) => setHoneypot(e.target.value)}
                     />
 
-                    {/* Primary action: Submit to Providence Health */}
+                    {/* Primary action: Submit to Propel Health */}
                     <button
                         type="button"
                         onClick={handleSubmit}
@@ -2832,7 +2837,7 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                                 Submitting...
                             </span>
                         ) : (
-                            'Submit to Providence Health'
+                            'Submit to Propel Health'
                         )}
                     </button>
 
@@ -3216,8 +3221,11 @@ function FormWizard({ formDefinition }) {
     // Also save to Supabase when user has provided an email address
     // This enables cross-device session restore
     React.useEffect(() => {
-        // Get submitter email from form data
-        const submitterEmail = formData.submitter_email || formData.stakeholder_primary?.email;
+        // Get submitter email from form data (clinic champion, primary contact, or genetic counselor)
+        const submitterEmail = formData.submitter_email
+            || formData.clinic_champion?.email
+            || formData.contact_primary?.email
+            || formData.genetic_counselor?.email;
 
         // Don't save if no email or form is empty or tab is hidden
         if (!submitterEmail || Object.keys(formData).length === 0 || !isTabVisible) {
@@ -3229,7 +3237,10 @@ function FormWizard({ formDefinition }) {
             setSupabaseSaveStatus('saving');
 
             try {
-                const submitterName = formData.submitter_name || formData.stakeholder_primary?.name || '';
+                const submitterName = formData.submitter_name
+                    || formData.clinic_champion?.name
+                    || formData.contact_primary?.name
+                    || '';
 
                 const result = await saveOnboardingSubmission({
                     submitter_email: submitterEmail,
@@ -3278,7 +3289,10 @@ function FormWizard({ formDefinition }) {
 
     // Watch for email field changes to check for existing draft
     React.useEffect(() => {
-        const email = formData.submitter_email || formData.stakeholder_primary?.email;
+        const email = formData.submitter_email
+            || formData.clinic_champion?.email
+            || formData.contact_primary?.email
+            || formData.genetic_counselor?.email;
         if (email && !supabaseDraftId && !showRestorePrompt) {
             // Debounce the check
             const timeoutId = setTimeout(() => {
@@ -3286,7 +3300,7 @@ function FormWizard({ formDefinition }) {
             }, 1000);
             return () => clearTimeout(timeoutId);
         }
-    }, [formData.submitter_email, formData.stakeholder_primary?.email, checkForExistingDraft, supabaseDraftId, showRestorePrompt]);
+    }, [formData.submitter_email, formData.clinic_champion?.email, formData.contact_primary?.email, formData.genetic_counselor?.email, checkForExistingDraft, supabaseDraftId, showRestorePrompt]);
 
     // Restore handlers
     const handleRestore = () => {

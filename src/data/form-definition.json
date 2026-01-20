@@ -131,6 +131,17 @@
           "help_text": "Hours when the patient helpline is staffed"
         },
         {
+          "question_id": "helpdesk_hours_in_emails",
+          "type": "checkbox",
+          "label": "Use these patient helpline hours for patient emails and SMS",
+          "required": false,
+          "show_when": {
+            "question_id": "has_helpdesk_phone",
+            "operator": "equals",
+            "value": true
+          }
+        },
+        {
           "question_id": "helpdesk_phone_in_emails",
           "type": "checkbox",
           "label": "Include this helpline number in invitation and reminder emails",
