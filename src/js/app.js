@@ -48,6 +48,159 @@ function debugLog(...args) {
 const STORAGE_KEY = 'propel_onboarding_draft';
 
 // ============================================================================
+// SUPABASE CONFIGURATION
+// ============================================================================
+// Supabase client for database operations:
+// - Fetching programs from the database
+// - Saving onboarding submissions
+// - Auto-saving drafts by email
+// - Restoring sessions by email
+
+const SUPABASE_URL = 'https://royctwjkewpnrcqdyhzd.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_qKFxQag4D0amycXOM8pQTg_VAVpPcVo';
+
+// Initialize Supabase client (available via CDN as window.supabase)
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+debugLog('[Supabase] Client initialized');
+
+// ============================================================================
+// SUPABASE HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Fetch active programs from Supabase for the dropdown.
+ * Falls back to reference-data.json if Supabase fails.
+ *
+ * @returns {Promise<Array>} Array of program objects {value, display_name, program_id}
+ */
+async function fetchProgramsFromSupabase() {
+    try {
+        const { data, error } = await supabase
+            .from('programs')
+            .select('program_id, name, prefix')
+            .eq('status', 'Active')
+            .order('name');
+
+        if (error) throw error;
+
+        // Transform to match reference-data format
+        const programs = data.map(p => ({
+            value: p.prefix || p.program_id,
+            display_name: p.name,
+            program_id: p.program_id
+        }));
+
+        debugLog('[Supabase] Fetched programs:', programs.length);
+        return programs;
+    } catch (error) {
+        console.error('[Supabase] Error fetching programs:', error);
+        return null; // Will trigger fallback to reference-data.json
+    }
+}
+
+/**
+ * Save or update an onboarding submission to Supabase.
+ *
+ * @param {Object} params - Submission parameters
+ * @param {string} params.submitter_email - Email of the submitter
+ * @param {string} params.submitter_name - Name of the submitter
+ * @param {string} params.program_id - Selected program ID
+ * @param {Object} params.form_data - Complete form data as JSON
+ * @param {string} params.status - 'draft' or 'submitted'
+ * @returns {Promise<Object>} The saved submission record
+ */
+async function saveOnboardingSubmission({ submitter_email, submitter_name, program_id, form_data, status }) {
+    try {
+        // Check if a draft already exists for this email
+        const { data: existing } = await supabase
+            .from('onboarding_submissions')
+            .select('submission_id')
+            .eq('submitter_email', submitter_email)
+            .eq('submission_status', 'draft')
+            .single();
+
+        const submissionData = {
+            submitter_email,
+            submitter_name,
+            program_prefix: program_id,
+            form_data,
+            submission_status: status,
+            updated_at: new Date().toISOString()
+        };
+
+        if (status === 'submitted') {
+            submissionData.submitted_at = new Date().toISOString();
+        }
+
+        let result;
+
+        if (existing?.submission_id) {
+            // Update existing draft
+            const { data, error } = await supabase
+                .from('onboarding_submissions')
+                .update(submissionData)
+                .eq('submission_id', existing.submission_id)
+                .select()
+                .single();
+
+            if (error) throw error;
+            result = data;
+            debugLog('[Supabase] Updated submission:', result.submission_id);
+        } else {
+            // Insert new submission
+            const { data, error } = await supabase
+                .from('onboarding_submissions')
+                .insert(submissionData)
+                .select()
+                .single();
+
+            if (error) throw error;
+            result = data;
+            debugLog('[Supabase] Created submission:', result.submission_id);
+        }
+
+        return result;
+    } catch (error) {
+        console.error('[Supabase] Error saving submission:', error);
+        throw error;
+    }
+}
+
+/**
+ * Load an existing draft by submitter email.
+ *
+ * @param {string} email - Submitter's email
+ * @returns {Promise<Object|null>} The draft submission or null if not found
+ */
+async function loadDraftByEmail(email) {
+    try {
+        const { data, error } = await supabase
+            .from('onboarding_submissions')
+            .select('*')
+            .eq('submitter_email', email)
+            .eq('submission_status', 'draft')
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+            throw error;
+        }
+
+        if (data) {
+            debugLog('[Supabase] Found draft for email:', email);
+            return data;
+        }
+
+        return null;
+    } catch (error) {
+        console.error('[Supabase] Error loading draft:', error);
+        return null;
+    }
+}
+
+// ============================================================================
 // REACT CONTEXT
 // ============================================================================
 // We use React Context to share form definition and reference data across components
@@ -619,7 +772,7 @@ function RestorePrompt({ savedData, onRestore, onDiscard }) {
 /**
  * SaveStatusBar - Shows auto-save status with save/load/clear buttons and help section
  */
-function SaveStatusBar({ lastSaved, onSaveDraft, onLoadDraft, onStartOver }) {
+function SaveStatusBar({ lastSaved, onSaveDraft, onLoadDraft, onStartOver, supabaseSaveStatus }) {
     const [showHelp, setShowHelp] = React.useState(false);
 
     const formatTime = (date) => {
@@ -632,22 +785,56 @@ function SaveStatusBar({ lastSaved, onSaveDraft, onLoadDraft, onStartOver }) {
             {/* Main status bar - stack on mobile, row on desktop */}
             <div className="px-3 sm:px-4 py-2 sm:py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
                 {/* Auto-save status - always visible */}
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-                    {lastSaved ? (
-                        <>
-                            <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span>Auto-saved at {formatTime(lastSaved)}</span>
-                        </>
-                    ) : (
-                        <>
-                            <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                            </svg>
-                            <span className="hidden sm:inline">Your progress will be saved automatically</span>
-                            <span className="sm:hidden">Auto-save enabled</span>
-                        </>
+                <div className="flex items-center gap-3 text-xs sm:text-sm text-gray-600">
+                    {/* Local save status */}
+                    <div className="flex items-center gap-2">
+                        {lastSaved ? (
+                            <>
+                                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>Auto-saved at {formatTime(lastSaved)}</span>
+                            </>
+                        ) : (
+                            <>
+                                <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                </svg>
+                                <span className="hidden sm:inline">Your progress will be saved automatically</span>
+                                <span className="sm:hidden">Auto-save enabled</span>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Cloud save status (Supabase) */}
+                    {supabaseSaveStatus && (
+                        <div className="flex items-center gap-1.5 border-l border-gray-300 pl-3">
+                            {supabaseSaveStatus === 'saving' && (
+                                <>
+                                    <svg className="w-4 h-4 text-blue-500 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span className="hidden sm:inline text-blue-600">Syncing to cloud...</span>
+                                </>
+                            )}
+                            {supabaseSaveStatus === 'saved' && (
+                                <>
+                                    <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                                    </svg>
+                                    <span className="hidden sm:inline text-green-600">Cloud saved</span>
+                                </>
+                            )}
+                            {supabaseSaveStatus === 'error' && (
+                                <>
+                                    <svg className="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    <span className="hidden sm:inline text-amber-600">Cloud sync failed</span>
+                                </>
+                            )}
+                        </div>
                     )}
                 </div>
 
@@ -2090,14 +2277,14 @@ function StepRenderer({ step, formData, onChange, errors }) {
 // ============================================================================
 // REVIEW STEP
 // ============================================================================
-// Displays a summary of all entered data, submits to Formspree, and allows JSON download
+// Displays a summary of all entered data, submits to Supabase, and allows JSON download
 //
-// Formspree Integration:
-//   - Primary action: Submit to Propel Health via Formspree webhook
+// Supabase Integration:
+//   - Primary action: Submit to Supabase onboarding_submissions table
 //   - Secondary action: Download JSON backup for records
 //   - Success state: Shows confirmation message after successful submit
-
-// Formspree endpoint - submissions go to the Propel Health onboarding inbox
+//
+// Legacy Formspree endpoint (kept for fallback)
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mzddpdwg";
 
 function ReviewStep({ formData, formDefinition, onEdit }) {
@@ -2137,53 +2324,58 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
     };
 
     // =========================================================================
-    // FORMSPREE SUBMISSION HANDLER
+    // SUPABASE SUBMISSION HANDLER
     // =========================================================================
-    // Submits the form data to Formspree webhook for email delivery to Propel team
+    // Submits the form data to Supabase onboarding_submissions table
     const handleSubmit = async () => {
         setSubmitting(true);
         setSubmitError(null);
 
         const outputData = getOutputData();
-        debugLog('[ReviewStep] Submitting to Formspree:', outputData.clinic_name);
+        debugLog('[ReviewStep] Submitting to Supabase:', outputData.clinic_name);
+
+        // Validate required fields
+        const submitterEmail = formData.submitter_email || formData.stakeholder_primary?.email;
+        const submitterName = formData.submitter_name || formData.stakeholder_primary?.name || outputData.clinic_name;
+
+        if (!submitterEmail) {
+            setSubmitError('Please provide an email address to submit.');
+            setSubmitting(false);
+            return;
+        }
 
         try {
-            const response = await fetch(FORMSPREE_ENDPOINT, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    // Formspree fields for email subject/display
-                    _subject: `New Onboarding Submission: ${outputData.clinic_name}`,
-
-                    // Honeypot spam protection - should always be empty
-                    // Bots fill this hidden field, Formspree rejects if it has a value
-                    _gotcha: honeypot,
-
-                    // Key fields shown at top of email for quick reference
-                    clinic_name: outputData.clinic_name,
-                    clinic_epic_id: outputData.clinic_epic_id,
-                    program: outputData.program,
-                    submitted_at: outputData.submitted_at,
-
-                    // Full JSON data as formatted string
-                    onboarding_data: JSON.stringify(outputData, null, 2)
-                })
+            // Save to Supabase
+            await saveOnboardingSubmission({
+                submitter_email: submitterEmail,
+                submitter_name: submitterName,
+                program_id: formData.program || '',
+                form_data: outputData,
+                status: 'submitted'
             });
 
-            if (response.ok) {
-                setSubmitted(true);
-                // Clear saved draft from localStorage after successful submit
-                localStorage.removeItem(STORAGE_KEY);
-                debugLog('[ReviewStep] Submission successful');
-            } else {
-                throw new Error(`HTTP ${response.status}`);
-            }
+            setSubmitted(true);
+            // Clear saved draft from localStorage after successful submit
+            localStorage.removeItem(STORAGE_KEY);
+            debugLog('[ReviewStep] Submission successful to Supabase');
+
+            // Also send to Formspree as backup notification (non-blocking)
+            fetch(FORMSPREE_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({
+                    _subject: `New Onboarding Submission: ${outputData.clinic_name}`,
+                    _gotcha: honeypot,
+                    clinic_name: outputData.clinic_name,
+                    program: outputData.program,
+                    submitted_at: outputData.submitted_at,
+                    note: 'Data saved to Supabase. This is a backup notification.'
+                })
+            }).catch(e => debugLog('[ReviewStep] Formspree backup notification failed (non-critical):', e));
+
         } catch (error) {
-            setSubmitError('Failed to submit. Please try downloading the JSON and emailing it manually.');
             console.error('[ReviewStep] Submit error:', error);
+            setSubmitError('Failed to submit to database. Please try downloading the JSON and emailing it manually.');
         } finally {
             setSubmitting(false);
         }
@@ -2842,6 +3034,15 @@ function FormWizard({ formDefinition }) {
     const [showRestorePrompt, setShowRestorePrompt] = React.useState(false);
     const [pendingSavedData, setPendingSavedData] = React.useState(null);
 
+    // =========================================================================
+    // SUPABASE DRAFT MANAGEMENT
+    // =========================================================================
+    // Track submitter email for auto-save and session restore
+    const [supabaseDraftId, setSupabaseDraftId] = React.useState(null);
+    const [supabaseSaveStatus, setSupabaseSaveStatus] = React.useState(null); // 'saving', 'saved', 'error'
+    const [showEmailRestoreModal, setShowEmailRestoreModal] = React.useState(false);
+    const [restoreEmail, setRestoreEmail] = React.useState('');
+
     const { steps, composite_types } = formDefinition;
     const currentStepDef = steps[currentStep];
     const isFirstStep = currentStep === 0;
@@ -2987,12 +3188,95 @@ function FormWizard({ formDefinition }) {
         return () => clearTimeout(timeoutId);
     }, [formData, currentStep, isTabVisible]);
 
+    // =========================================================================
+    // SUPABASE AUTO-SAVE (Draft to database)
+    // =========================================================================
+    // Also save to Supabase when user has provided an email address
+    // This enables cross-device session restore
+    React.useEffect(() => {
+        // Get submitter email from form data
+        const submitterEmail = formData.submitter_email || formData.stakeholder_primary?.email;
+
+        // Don't save if no email or form is empty or tab is hidden
+        if (!submitterEmail || Object.keys(formData).length === 0 || !isTabVisible) {
+            return;
+        }
+
+        // Debounce: Save 2 seconds after last change
+        const timeoutId = setTimeout(async () => {
+            setSupabaseSaveStatus('saving');
+
+            try {
+                const submitterName = formData.submitter_name || formData.stakeholder_primary?.name || '';
+
+                const result = await saveOnboardingSubmission({
+                    submitter_email: submitterEmail,
+                    submitter_name: submitterName,
+                    program_id: formData.program || '',
+                    form_data: { formData, currentStep },
+                    status: 'draft'
+                });
+
+                setSupabaseDraftId(result.submission_id);
+                setSupabaseSaveStatus('saved');
+                debugLog('[Supabase] Draft auto-saved:', result.submission_id);
+
+                // Clear status after 2 seconds
+                setTimeout(() => setSupabaseSaveStatus(null), 2000);
+            } catch (error) {
+                console.error('[Supabase] Draft auto-save failed:', error);
+                setSupabaseSaveStatus('error');
+                // Clear error status after 3 seconds
+                setTimeout(() => setSupabaseSaveStatus(null), 3000);
+            }
+        }, 2000); // 2 second debounce
+
+        return () => clearTimeout(timeoutId);
+    }, [formData, currentStep, isTabVisible]);
+
+    // =========================================================================
+    // EMAIL-BASED SESSION RESTORE
+    // =========================================================================
+    // Check for existing draft when submitter_email changes
+    const checkForExistingDraft = React.useCallback(async (email) => {
+        if (!email || supabaseDraftId) return; // Don't check if we already have a draft
+
+        const draft = await loadDraftByEmail(email);
+        if (draft && draft.form_data) {
+            setPendingSavedData({
+                formData: draft.form_data.formData || draft.form_data,
+                currentStep: draft.form_data.currentStep || 0,
+                savedAt: draft.updated_at,
+                source: 'supabase'
+            });
+            setShowRestorePrompt(true);
+            debugLog('[Supabase] Found existing draft for:', email);
+        }
+    }, [supabaseDraftId]);
+
+    // Watch for email field changes to check for existing draft
+    React.useEffect(() => {
+        const email = formData.submitter_email || formData.stakeholder_primary?.email;
+        if (email && !supabaseDraftId && !showRestorePrompt) {
+            // Debounce the check
+            const timeoutId = setTimeout(() => {
+                checkForExistingDraft(email);
+            }, 1000);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [formData.submitter_email, formData.stakeholder_primary?.email, checkForExistingDraft, supabaseDraftId, showRestorePrompt]);
+
     // Restore handlers
     const handleRestore = () => {
         if (pendingSavedData) {
             setFormData(pendingSavedData.formData || {});
             setCurrentStep(pendingSavedData.currentStep || 0);
             setLastSaved(pendingSavedData.savedAt);
+
+            // If restored from Supabase, set the draft ID to enable future saves
+            if (pendingSavedData.source === 'supabase' && pendingSavedData.submission_id) {
+                setSupabaseDraftId(pendingSavedData.submission_id);
+            }
         }
         setShowRestorePrompt(false);
         setPendingSavedData(null);
@@ -3221,6 +3505,7 @@ function FormWizard({ formDefinition }) {
                 onSaveDraft={handleSaveDraft}
                 onLoadDraft={handleLoadDraft}
                 onStartOver={handleStartOver}
+                supabaseSaveStatus={supabaseSaveStatus}
             />
 
             {/* Progress indicator */}
@@ -3322,16 +3607,26 @@ function App() {
     React.useEffect(() => {
         debugLog('[App] Loading configuration files...');
 
+        // Load local config files and Supabase programs in parallel
         Promise.all([
             fetch('src/data/form-definition.json').then(r => r.json()),
             fetch('src/data/reference-data.json').then(r => r.json()),
-            fetch('src/data/test-catalog.json').then(r => r.json())
+            fetch('src/data/test-catalog.json').then(r => r.json()),
+            fetchProgramsFromSupabase() // Fetch programs from Supabase
         ])
-            .then(([formDef, refData, testCat]) => {
+            .then(([formDef, refData, testCat, supabasePrograms]) => {
                 debugLog('[App] Configuration loaded successfully');
                 debugLog('[App] Form definition:', formDef.form_id, 'v' + formDef.version);
                 debugLog('[App] Reference data keys:', Object.keys(refData));
                 debugLog('[App] Test catalog labs:', Object.keys(testCat));
+
+                // If Supabase programs loaded successfully, use them instead of local data
+                if (supabasePrograms && supabasePrograms.length > 0) {
+                    debugLog('[App] Using programs from Supabase:', supabasePrograms.length);
+                    refData.programs = supabasePrograms;
+                } else {
+                    debugLog('[App] Using fallback programs from reference-data.json');
+                }
 
                 setFormDefinition(formDef);
                 setReferenceData(refData);
