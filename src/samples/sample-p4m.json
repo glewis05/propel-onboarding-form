@@ -111,7 +111,7 @@
       },
       {
         "test_code": "9510-R",
-        "test_name": "CustomNext-Cancer 86 Gene + RNA InSight",
+        "test_name": "CustomNext-Cancer 86 Gene + RNAInsight",
         "is_default": false,
         "modifications": {
           "type": "GENE_REMOVAL",

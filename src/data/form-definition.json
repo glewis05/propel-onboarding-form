@@ -341,13 +341,13 @@
         {
           "question_id": "include_rna_insight",
           "type": "checkbox",
-          "label": "Include RNAinsight®",
+          "label": "Include RNAInsight®",
           "required": false,
           "show_when": {
             "question_id": "test_panel",
             "operator": "not_empty"
           },
-          "help_text": "Add RNAinsight® RNA analysis to the selected test panel for enhanced variant interpretation"
+          "help_text": "Add RNAInsight® RNA analysis to the selected test panel for enhanced variant interpretation"
         },
         {
           "question_id": "custom_genes",

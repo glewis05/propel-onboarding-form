@@ -525,7 +525,7 @@ function generateOutputJson(formData, formDefinition, referenceData) {
     // =========================================================================
     // The test_panel field needs to include test_code and test_name from
     // reference data, plus handle:
-    // 1. The RNAinsight checkbox - uses test_code_rna instead of test_code
+    // 1. The RNAInsight checkbox - uses test_code_rna instead of test_code
     // 2. The special case of CustomNext-Cancer which includes selected genes.
     let testPanelOutput = null;
 
@@ -540,8 +540,8 @@ function generateOutputJson(formData, formDefinition, referenceData) {
             const isCustomPanel = selectedPanel.is_custom === true;
             const selectedGenes = isCustomPanel ? (formData.custom_genes || []) : null;
 
-            // Check if RNAinsight is included
-            // When true, use the RNA test code and append +RNAinsight® to the name
+            // Check if RNAInsight is included
+            // When true, use the RNA test code and append +RNAInsight® to the name
             const includeRna = formData.include_rna_insight === true;
 
             // Determine which test code to use based on RNA checkbox
@@ -550,10 +550,10 @@ function generateOutputJson(formData, formDefinition, referenceData) {
                 ? (selectedPanel.test_code_rna || selectedPanel.test_code)
                 : selectedPanel.test_code;
 
-            // Build the test name - append +RNAinsight® when RNA is included
-            // Example: "CancerNext-Expanded®" becomes "CancerNext-Expanded® +RNAinsight®"
+            // Build the test name - append +RNAInsight® when RNA is included
+            // Example: "CancerNext-Expanded®" becomes "CancerNext-Expanded® +RNAInsight®"
             const testName = includeRna
-                ? `${selectedPanel.display_name} +RNAinsight®`
+                ? `${selectedPanel.display_name} +RNAInsight®`
                 : selectedPanel.display_name;
 
             // Build the test_panel output object

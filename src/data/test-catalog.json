@@ -13,7 +13,7 @@
       },
       {
         "test_code": "9510-R",
-        "test_name": "CustomNext-Cancer 86 Gene + RNA InSight",
+        "test_name": "CustomNext-Cancer 86 Gene + RNAInsight",
         "has_limited_evidence_option": false,
         "sample_types": ["SALIVA", "BLOOD"],
         "default_sample_type": "SALIVA"

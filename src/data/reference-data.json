@@ -8,7 +8,7 @@
   ],
 
   "_comment_test_panels": "Ambry Genetics test panel options - 3 base tests with separate RNA checkbox",
-  "_comment_test_codes": "Each test has a base code and RNA code. RNA checkbox adds RNAinsight® and uses test_code_rna",
+  "_comment_test_codes": "Each test has a base code and RNA code. RNA checkbox adds RNAInsight® and uses test_code_rna",
   "test_panels": [
     {
       "value": "customnext_cancer",
@@ -56,7 +56,7 @@
     },
     {
       "value": "cancernext_expanded_rna",
-      "display_name": "CancerNext-Expanded® +RNAinsight®",
+      "display_name": "CancerNext-Expanded® +RNAInsight®",
       "test_code": "8875-R",
       "description": "CancerNext-Expanded with RNA analysis for enhanced variant interpretation"
     },
@@ -68,7 +68,7 @@
     },
     {
       "value": "cancernext_expanded_leg_rna",
-      "display_name": "CancerNext-Expanded® + Limited Evidence Genes +RNAinsight®",
+      "display_name": "CancerNext-Expanded® + Limited Evidence Genes +RNAInsight®",
       "test_code": "8875-R-LEG",
       "description": "Full expanded panel with RNA analysis"
     }
