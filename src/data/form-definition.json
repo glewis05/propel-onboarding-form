@@ -36,6 +36,12 @@
           "placeholder": "e.g., Montana Breast Care Center"
         },
         {
+          "question_id": "clinic_name_patient_use",
+          "type": "checkbox",
+          "label": "Use this name for invitation emails and SMS messaging",
+          "required": false
+        },
+        {
           "_comment": "FIX 1: Removed epic_department_id - only clinic_epic_id is needed",
           "question_id": "clinic_epic_id",
           "type": "text",
