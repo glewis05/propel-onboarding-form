@@ -453,6 +453,13 @@ function validateStep(step, formData, compositeTypes) {
                                 errors[`${index}_${question.question_id}_${field.field_id}`] = `${field.label} is required`;
                             }
                         }
+                        // Check pattern (regex validation) for composite fields
+                        if (field.pattern && compositeValue[field.field_id]) {
+                            const regex = new RegExp(field.pattern);
+                            if (!regex.test(compositeValue[field.field_id])) {
+                                errors[`${index}_${question.question_id}_${field.field_id}`] = `${field.label} format is invalid`;
+                            }
+                        }
                     });
                 }
             });
@@ -476,6 +483,13 @@ function validateStep(step, formData, compositeTypes) {
                     if (field.required && !compositeValue[field.field_id]) {
                         if (question.required) { // Only if parent is required
                             errors[`${question.question_id}_${field.field_id}`] = `${field.label} is required`;
+                        }
+                    }
+                    // Check pattern (regex validation) for composite fields
+                    if (field.pattern && compositeValue[field.field_id]) {
+                        const regex = new RegExp(field.pattern);
+                        if (!regex.test(compositeValue[field.field_id])) {
+                            errors[`${question.question_id}_${field.field_id}`] = `${field.label} format is invalid`;
                         }
                     }
                 });
@@ -2465,7 +2479,7 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
         // Title
         docChildren.push(
             new Paragraph({
-                text: 'Propel Health Onboarding Questionnaire',
+                text: 'Providence Health Onboarding Questionnaire',
                 heading: HeadingLevel.TITLE,
                 spacing: { after: 400 }
             })
@@ -2714,8 +2728,8 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                                     {step.repeatable_config.item_title_template.replace('{{index}}', itemIndex + 1)}
                                 </p>
                                 {step.questions.map(q => (
-                                    <div key={q.question_id} className="flex flex-col sm:flex-row py-1">
-                                        <span className="sm:w-1/3 text-xs sm:text-sm text-gray-500">{q.label}:</span>
+                                    <div key={q.question_id} className="flex flex-col sm:flex-row sm:gap-x-6 py-1">
+                                        <span className="sm:w-1/3 sm:flex-shrink-0 text-xs sm:text-sm text-gray-500">{q.label}:</span>
                                         <span className="sm:w-2/3 text-xs sm:text-sm text-gray-900 mt-0.5 sm:mt-0">
                                             {getDisplayValue(item[q.question_id], q.options_ref, q.type)}
                                         </span>
@@ -2735,8 +2749,8 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                                 return null;
                             }
                             return (
-                                <div key={q.question_id} className="flex flex-col sm:flex-row py-1">
-                                    <span className="sm:w-1/3 text-xs sm:text-sm text-gray-500">{q.label}:</span>
+                                <div key={q.question_id} className="flex flex-col sm:flex-row sm:gap-x-6 py-1">
+                                    <span className="sm:w-1/3 sm:flex-shrink-0 text-xs sm:text-sm text-gray-500">{q.label}:</span>
                                     <span className="sm:w-2/3 text-xs sm:text-sm text-gray-900 mt-0.5 sm:mt-0">
                                         {getDisplayValue(formData[q.question_id], q.options_ref, q.type)}
                                     </span>
@@ -2760,7 +2774,7 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
             {!submitted && (
                 <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
                     <p className="text-green-700 font-medium text-sm sm:text-base">
-                        Ready to submit! Review your responses below, then submit to Propel Health.
+                        Ready to submit! Review your responses below, then submit to Providence Health.
                     </p>
                 </div>
             )}
@@ -2797,7 +2811,7 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                         onChange={(e) => setHoneypot(e.target.value)}
                     />
 
-                    {/* Primary action: Submit to Propel Health */}
+                    {/* Primary action: Submit to Providence Health */}
                     <button
                         type="button"
                         onClick={handleSubmit}
@@ -2818,7 +2832,7 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                                 Submitting...
                             </span>
                         ) : (
-                            'Submit to Propel Health'
+                            'Submit to Providence Health'
                         )}
                     </button>
 
@@ -2875,7 +2889,7 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                     </h3>
 
                     <p className="text-green-700">
-                        Thank you! The Propel Health team will review your information
+                        Thank you! The Providence Health team will review your information
                         and contact you within 2 business days.
                     </p>
 
@@ -3042,6 +3056,14 @@ function FormWizard({ formDefinition }) {
     const [supabaseSaveStatus, setSupabaseSaveStatus] = React.useState(null); // 'saving', 'saved', 'error'
     const [showEmailRestoreModal, setShowEmailRestoreModal] = React.useState(false);
     const [restoreEmail, setRestoreEmail] = React.useState('');
+
+    // =========================================================================
+    // RETURN TO SUMMARY FLAG
+    // =========================================================================
+    // When user clicks Edit from the Summary page, this flag is set to true.
+    // After completing the edited step, navigation returns directly to Summary
+    // instead of advancing to the next sequential step.
+    const [returnToSummary, setReturnToSummary] = React.useState(false);
 
     const { steps, composite_types } = formDefinition;
     const currentStepDef = steps[currentStep];
@@ -3352,6 +3374,22 @@ function FormWizard({ formDefinition }) {
 
         if (validation.isValid) {
             debugLog('[FormWizard] Step valid, moving to next');
+
+            // =================================================================
+            // RETURN TO SUMMARY AFTER EDIT
+            // =================================================================
+            // If user clicked Edit from Summary page, return directly to Summary
+            // (last step) instead of advancing to the next sequential step.
+            if (returnToSummary) {
+                debugLog('[FormWizard] Returning to Summary after edit');
+                setReturnToSummary(false); // Clear the flag
+                setCurrentStep(steps.length - 1); // Go to last step (Summary)
+                setAttemptedNext(false);
+                setErrors({});
+                window.scrollTo(0, 0);
+                return; // Exit early - skip normal next step logic
+            }
+
             const nextStep = Math.min(currentStep + 1, steps.length - 1);
             const nextStepDef = steps[nextStep];
 
@@ -3433,6 +3471,20 @@ function FormWizard({ formDefinition }) {
     };
 
     // =========================================================================
+    // EDIT FROM SUMMARY - RETURN TO SUMMARY AFTER CHANGES
+    // =========================================================================
+    // When user clicks Edit on the Summary page, we navigate to that step and
+    // set a flag so that clicking Next returns them directly to Summary instead
+    // of advancing through all subsequent steps.
+    const handleEditFromSummary = (index) => {
+        setReturnToSummary(true);
+        setCurrentStep(index);
+        setAttemptedNext(false);
+        setErrors({});
+        window.scrollTo(0, 0);
+    };
+
+    // =========================================================================
     // FIX 3: STAKEHOLDER TO ORDERING PROVIDER AUTO-POPULATE
     // =========================================================================
     // This helper finds the first stakeholder marked as "is_ordering_provider"
@@ -3491,12 +3543,22 @@ function FormWizard({ formDefinition }) {
                 />
             )}
 
-            {/* Header - compact on mobile */}
-            <div className="text-center mb-4 sm:mb-8">
-                <h1 className="text-lg sm:text-2xl font-bold text-propel-navy mb-1 sm:mb-2">
-                    {formDefinition.title}
-                </h1>
-                <p className="text-xs sm:text-base text-gray-600 hidden sm:block">{formDefinition.description}</p>
+            {/* Header - Providence branded with logo */}
+            <div className="bg-propel-navy rounded-lg p-4 sm:p-6 mb-4 sm:mb-8">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+                    {/* Providence Logo */}
+                    <img
+                        src="https://cdn.providence.org/asset/GtV28qX0x6P0DfEBf7sJ7w10/project/psjh/providence/socal/images/logos/providence-logo-svg/svg"
+                        alt="Providence Health"
+                        className="h-8 sm:h-10"
+                    />
+                    <div className="text-center sm:text-left">
+                        <h1 className="text-lg sm:text-2xl font-bold text-white mb-0 sm:mb-1">
+                            {formDefinition.title}
+                        </h1>
+                        <p className="text-xs sm:text-sm text-gray-300 hidden sm:block">{formDefinition.description}</p>
+                    </div>
+                </div>
             </div>
 
             {/* Save status bar */}
@@ -3538,7 +3600,7 @@ function FormWizard({ formDefinition }) {
                     <ReviewStep
                         formData={formData}
                         formDefinition={formDefinition}
-                        onEdit={handleStepClick}
+                        onEdit={handleEditFromSummary}
                     />
                 ) : (
                     <StepRenderer
@@ -3572,7 +3634,7 @@ function FormWizard({ formDefinition }) {
                             onClick={handleNext}
                             className="flex-1 sm:flex-none px-4 sm:px-6 py-3 sm:py-2 bg-propel-teal text-white rounded-lg font-medium text-base sm:text-sm hover:bg-opacity-90 transition-colors"
                         >
-                            {isLastStep ? 'Review' : 'Next'}
+                            {returnToSummary ? 'Save & Return to Summary' : (isLastStep ? 'Review' : 'Next')}
                         </button>
                     )}
                 </div>
@@ -3675,9 +3737,10 @@ function App() {
             <div className="min-h-screen bg-gray-100 py-8">
                 <FormWizard formDefinition={formDefinition} />
 
-                {/* Footer */}
-                <div className="text-center mt-8 text-sm text-gray-500">
-                    <p>Propel Health Onboarding Questionnaire v{formDefinition.version}</p>
+                {/* Footer - Providence branded */}
+                <div className="bg-propel-navy rounded-lg p-4 mt-8 text-center">
+                    <p className="text-sm text-white">Providence Health Clinic Onboarding v{formDefinition.version}</p>
+                    <p className="text-xs text-gray-400 mt-1">© {new Date().getFullYear()} Providence Health & Services</p>
                 </div>
             </div>
         </FormContext.Provider>
@@ -3696,4 +3759,4 @@ root.render(
     </ErrorBoundary>
 );
 
-debugLog('[Propel Onboarding] App initialized');
+debugLog('[Providence Onboarding] App initialized');

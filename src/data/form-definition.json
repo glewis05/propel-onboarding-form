@@ -1,8 +1,8 @@
 {
   "form_id": "onboarding-questionnaire",
   "version": "1.0",
-  "title": "Propel Health Onboarding Questionnaire",
-  "description": "Client onboarding questionnaire for Prevention4ME, Precision4ME, and GenoRx programs",
+  "title": "Providence Health Clinic Onboarding",
+  "description": "Clinic onboarding questionnaire for Prevention4ME, Precision4ME, and GenoRx programs",
 
   "steps": [
     {
@@ -38,7 +38,7 @@
         {
           "question_id": "clinic_name_patient_use",
           "type": "checkbox",
-          "label": "Use this name for invitation emails and SMS messaging",
+          "label": "Use this clinic name for patient emails and SMS",
           "required": false
         },
         {
@@ -77,9 +77,8 @@
           "_comment": "UAT ITEM 1: Permission to use clinic phone in patient communications",
           "question_id": "clinic_phone_patient_use",
           "type": "checkbox",
-          "label": "This number can be used on patient communications",
-          "required": false,
-          "help_text": "Check if this phone number may appear in emails, letters, or other patient-facing materials"
+          "label": "Use this clinic phone number for patient emails and SMS",
+          "required": false
         },
         {
           "question_id": "hours_of_operation",
@@ -91,7 +90,7 @@
         {
           "question_id": "hours_in_emails",
           "type": "checkbox",
-          "label": "Use these hours in patient invitation/reminder emails and texts",
+          "label": "Use these hours of operation for patient emails and SMS",
           "required": false
         },
         {

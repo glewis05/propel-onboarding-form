@@ -1,14 +1,16 @@
 /**
- * PROPEL HEALTH ONBOARDING QUESTIONNAIRE
+ * PROVIDENCE HEALTH ONBOARDING QUESTIONNAIRE
  * Custom Styles
  *
  * These styles complement Tailwind CSS for specific UI patterns
  * that are unique to this questionnaire form.
  *
- * Brand Colors:
- * - Navy: #1a365d (primary headers, buttons)
- * - Teal: #4a9aba (accents, active states)
- * - Light: #e8f4f8 (backgrounds, highlights)
+ * Providence Brand Colors:
+ * - Primary Green: #39892F (buttons, active states)
+ * - Navy Blue: #041E4F (text, headers, footer)
+ * - Accent Warm: #C2987F (subtle highlights, borders)
+ * - White: #FFFFFF (backgrounds)
+ * - Light Gray: #F5F5F5 (form backgrounds, alternating rows)
  */
 
 /* ==========================================================================
@@ -16,9 +18,11 @@
    ========================================================================== */
 
 :root {
-    --propel-navy: #1a365d;
-    --propel-teal: #4a9aba;
-    --propel-light: #e8f4f8;
+    /* Providence brand colors */
+    --propel-navy: #041E4F;
+    --propel-teal: #39892F;
+    --propel-light: #F5F5F5;
+    --propel-accent: #C2987F;
     --transition-fast: 150ms ease-in-out;
     --transition-normal: 300ms ease-in-out;
 }
@@ -46,7 +50,7 @@ input:focus,
 select:focus,
 textarea:focus {
     border-color: var(--propel-teal) !important;
-    box-shadow: 0 0 0 3px rgba(74, 154, 186, 0.15);
+    box-shadow: 0 0 0 3px rgba(57, 137, 47, 0.15);
 }
 
 /* Error state styling */

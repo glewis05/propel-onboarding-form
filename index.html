@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Propel Health - Onboarding Questionnaire</title>
+    <title>Providence Health - Clinic Onboarding</title>
 
     <!-- =======================================================================
          SECURITY: Content Security Policy
@@ -14,12 +14,13 @@
          - script-src: Only allow scripts from trusted CDNs and self
          - style-src: Allow Tailwind-generated inline styles
          - 'unsafe-eval': Required for Babel JSX transpilation
+         - img-src: Allow Providence CDN for logo
     ======================================================================== -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
         script-src 'self' https://unpkg.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval';
         style-src 'self' 'unsafe-inline';
-        img-src 'self' data:;
+        img-src 'self' data: https://cdn.providence.org;
         font-src 'self';
         connect-src 'self' https://formspree.io https://*.supabase.co;
         frame-ancestors 'none';
@@ -30,16 +31,21 @@
     <!-- Tailwind CSS via CDN (dynamic - cannot use SRI) -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Configure Tailwind with Propel Health brand colors -->
+    <!-- Configure Tailwind with Providence brand colors -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        // Propel Health brand colors
-                        'propel-navy': '#1a365d',
-                        'propel-teal': '#4a9aba',
-                        'propel-light': '#e8f4f8',
+                        // Providence brand colors
+                        'propel-navy': '#041E4F',      // Providence Navy Blue
+                        'propel-teal': '#39892F',      // Providence Primary Green
+                        'propel-light': '#F5F5F5',     // Light Gray
+                        'propel-accent': '#C2987F',    // Warm Accent
+                    },
+                    fontFamily: {
+                        // Providence typography - system font stack
+                        'sans': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
                     }
                 }
             }
@@ -93,8 +99,8 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
     <!--
-        PROPEL HEALTH ONBOARDING QUESTIONNAIRE
-        ======================================
+        PROVIDENCE HEALTH CLINIC ONBOARDING
+        ====================================
         Form-Driven Architecture
 
         This application uses a JSON-based form definition to render
