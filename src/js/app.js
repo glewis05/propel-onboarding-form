@@ -57,7 +57,7 @@ const STORAGE_KEY = 'propel_onboarding_draft';
 // - Restoring sessions by email
 
 const SUPABASE_URL = 'https://royctwjkewpnrcqdyhzd.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_qKFxQag4D0amycXOM8pQTg_VAVpPcVo';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJveWN0d2prZXdwbnJjcWR5aHpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5MzE3OTQsImV4cCI6MjA4NDUwNzc5NH0.pSBZt5fmtW2CGClhGQ3fsx4NncGugICRmVsLvU0eLoY';
 
 // Initialize Supabase client (available via CDN as window.supabase)
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
