@@ -4182,8 +4182,7 @@ function App() {
                 {/* Footer - Version and attribution */}
                 <div className="max-w-3xl mx-auto px-3 sm:px-4 mt-8">
                     <div className="text-center py-4 border-t border-gray-200">
-                        <p className="text-sm text-gray-600">Providence Health Clinic Onboarding</p>
-                        <p className="text-xs text-gray-500 mt-1">v{formDefinition.version} | Designed and maintained by Glen Lewis</p>
+                        <p className="text-xs text-gray-500">v{formDefinition.version} | Designed and maintained by Glen Lewis</p>
                     </div>
                 </div>
             </div>
