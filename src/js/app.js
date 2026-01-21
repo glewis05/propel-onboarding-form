@@ -4179,10 +4179,12 @@ function App() {
             <div className="min-h-screen bg-gray-100 py-8">
                 <FormWizard formDefinition={formDefinition} />
 
-                {/* Footer - Providence branded */}
-                <div className="bg-propel-navy rounded-lg p-4 mt-8 text-center">
-                    <p className="text-sm text-white">Providence Health Clinic Onboarding v{formDefinition.version}</p>
-                    <p className="text-xs text-gray-400 mt-1">© {new Date().getFullYear()} Providence Health & Services</p>
+                {/* Footer - Version and attribution */}
+                <div className="max-w-3xl mx-auto px-3 sm:px-4 mt-8">
+                    <div className="text-center py-4 border-t border-gray-200">
+                        <p className="text-sm text-gray-600">Providence Health Clinic Onboarding</p>
+                        <p className="text-xs text-gray-500 mt-1">v{formDefinition.version} | Designed and maintained by Glen Lewis</p>
+                    </div>
                 </div>
             </div>
         </FormContext.Provider>
