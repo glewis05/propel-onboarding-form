@@ -326,6 +326,18 @@ function evaluateCondition(condition, formData) {
             return Array.isArray(targetValue) && targetValue.includes(currentValue);
         case 'not_in':
             return Array.isArray(targetValue) && !targetValue.includes(currentValue);
+        case 'not_empty':
+            // Check if value exists and is not empty (handles strings, arrays, objects)
+            if (currentValue === undefined || currentValue === null || currentValue === '') return false;
+            if (Array.isArray(currentValue)) return currentValue.length > 0;
+            if (typeof currentValue === 'object') return Object.keys(currentValue).length > 0;
+            return true;
+        case 'empty':
+            // Opposite of not_empty
+            if (currentValue === undefined || currentValue === null || currentValue === '') return true;
+            if (Array.isArray(currentValue)) return currentValue.length === 0;
+            if (typeof currentValue === 'object') return Object.keys(currentValue).length === 0;
+            return false;
         default:
             console.warn(`[Condition] Unknown operator: ${operator}`);
             return true;
