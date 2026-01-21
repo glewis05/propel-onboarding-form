@@ -195,7 +195,7 @@
           "question_id": "location_epic_id",
           "type": "text",
           "label": "Epic Department ID",
-          "required": false
+          "required": true
         },
         {
           "question_id": "location_address",
