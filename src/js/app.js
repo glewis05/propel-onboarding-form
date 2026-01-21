@@ -1343,6 +1343,289 @@ const SelectField = React.memo(function SelectField({ question, value, onChange,
 });
 
 /**
+ * GeneListPopup - Non-modal floating panel showing gene list
+ *
+ * PURPOSE: Display gene information for test panels without covering the form.
+ * Uses a floating panel positioned near the trigger button rather than a centered modal.
+ *
+ * FEATURES:
+ * - Positioned to the right of trigger or below on mobile
+ * - No background overlay - user can still see their form selections
+ * - Multi-column gene display for readability
+ * - Keyboard accessible (Escape to close)
+ * - Click outside to close
+ */
+function GeneListPopup({ isOpen, onClose, panelType, anchorRef }) {
+    const popupRef = React.useRef(null);
+    const { referenceData } = React.useContext(FormContext);
+
+    // Get gene lists from reference data
+    const geneLists = referenceData?.gene_lists || {};
+    const basePanel = geneLists.cancernext_expanded_base || { genes: [], gene_count: 0 };
+    const limitedEvidence = geneLists.limited_evidence_addon || { genes: [], gene_count: 0 };
+
+    // Determine which genes to show based on panel type
+    const showLimitedEvidence = panelType === 'cancernext_expanded_leg' ||
+                                 panelType === 'cancernext_expanded_leg_rna';
+
+    // Handle keyboard events (Escape to close)
+    React.useEffect(() => {
+        if (!isOpen) return;
+
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
+
+    // Handle click outside to close
+    React.useEffect(() => {
+        if (!isOpen) return;
+
+        const handleClickOutside = (e) => {
+            if (popupRef.current && !popupRef.current.contains(e.target)) {
+                // Check if click was on the info button itself (don't close if clicking the button)
+                if (anchorRef?.current && anchorRef.current.contains(e.target)) {
+                    return;
+                }
+                onClose();
+            }
+        };
+
+        // Delay adding listener to avoid immediate close
+        const timeoutId = setTimeout(() => {
+            document.addEventListener('mousedown', handleClickOutside);
+        }, 0);
+
+        return () => {
+            clearTimeout(timeoutId);
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen, onClose, anchorRef]);
+
+    if (!isOpen) return null;
+
+    // Render genes in multi-column layout (4 columns on desktop, 2 on mobile)
+    const renderGeneGrid = (genes, title, count) => (
+        <div className="mb-4 last:mb-0">
+            <h4 className="font-semibold text-propel-navy mb-2 text-sm border-b border-gray-200 pb-1">
+                {title} ({count} genes)
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-3 gap-y-1">
+                {genes.map((gene) => (
+                    <span key={gene} className="text-xs text-gray-700 font-mono">
+                        {gene}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+
+    const totalGenes = showLimitedEvidence
+        ? basePanel.gene_count + limitedEvidence.gene_count
+        : basePanel.gene_count;
+
+    const panelTitle = showLimitedEvidence
+        ? `CancerNext-Expanded + Limited Evidence Genes (${totalGenes} genes)`
+        : `CancerNext-Expanded (${basePanel.gene_count} genes)`;
+
+    // On mobile (< 640px), show as fixed bottom panel
+    // On desktop, show as floating panel to the right
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+
+    return (
+        <div
+            ref={popupRef}
+            className={`z-50 bg-white rounded-lg shadow-xl border border-gray-200 p-4 max-h-[70vh] overflow-y-auto ${
+                isMobile
+                    ? 'fixed bottom-0 left-0 right-0 rounded-b-none w-full max-h-[60vh]'
+                    : 'absolute w-80 sm:w-96 md:w-[450px]'
+            }`}
+            style={isMobile ? {} : {
+                // Position to the right of anchor on desktop
+                top: '0',
+                left: '100%',
+                marginLeft: '8px'
+            }}
+            role="dialog"
+            aria-label={panelTitle}
+        >
+            {/* Header with close button */}
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
+                <h3 className="font-semibold text-propel-navy text-sm">
+                    {panelTitle}
+                </h3>
+                <button
+                    onClick={onClose}
+                    className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                    aria-label="Close gene list"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            {/* Gene lists */}
+            <div className="space-y-4">
+                {renderGeneGrid(basePanel.genes, 'Base Panel', basePanel.gene_count)}
+
+                {showLimitedEvidence && (
+                    <div className="pt-2 border-t border-gray-100">
+                        {renderGeneGrid(limitedEvidence.genes, 'Limited Evidence Add-on', limitedEvidence.gene_count)}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+/**
+ * GeneInfoButton - Question mark icon button that triggers gene list popup
+ *
+ * PURPOSE: Provide a visual indicator that gene information is available,
+ * and trigger the popup when clicked.
+ */
+function GeneInfoButton({ panelValue, isActive, onClick, buttonRef }) {
+    // Only show for panels that have gene lists
+    const showableTypes = ['cancernext_expanded', 'cancernext_expanded_rna',
+                          'cancernext_expanded_leg', 'cancernext_expanded_leg_rna'];
+
+    if (!showableTypes.includes(panelValue)) {
+        return null;
+    }
+
+    return (
+        <button
+            ref={buttonRef}
+            type="button"
+            onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClick();
+            }}
+            className={`ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-medium transition-colors ${
+                isActive
+                    ? 'bg-propel-teal text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-propel-teal hover:text-white'
+            }`}
+            aria-label="View gene list"
+            title="Click to view gene list"
+        >
+            ?
+        </button>
+    );
+}
+
+/**
+ * TestPanelSelector - Specialized select field for test panels with gene info buttons
+ *
+ * PURPOSE: Render test panel options with info buttons that show gene lists.
+ * This is a specialized version of SelectField for the test_panel question.
+ */
+const TestPanelSelector = React.memo(function TestPanelSelector({ question, value, onChange, options, error }) {
+    const [activePopup, setActivePopup] = React.useState(null);
+    const buttonRefs = React.useRef({});
+
+    // Create refs for each option's info button
+    const getButtonRef = (optValue) => {
+        if (!buttonRefs.current[optValue]) {
+            buttonRefs.current[optValue] = React.createRef();
+        }
+        return buttonRefs.current[optValue];
+    };
+
+    const handleInfoClick = (optValue) => {
+        setActivePopup(activePopup === optValue ? null : optValue);
+    };
+
+    const closePopup = () => {
+        setActivePopup(null);
+    };
+
+    return (
+        <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+                {question.label}
+                {question.required && <span className="text-red-500 ml-1">*</span>}
+            </label>
+
+            <div className={`space-y-2 ${error ? 'p-3 border-2 border-red-500 rounded-lg bg-red-50' : ''}`}>
+                {options.map(opt => {
+                    const hasGeneList = opt.has_gene_list;
+                    const isSelected = value === opt.value;
+
+                    return (
+                        <div key={opt.value} className="relative">
+                            <label
+                                className={`flex items-start p-4 border rounded-lg cursor-pointer transition-all ${
+                                    isSelected
+                                        ? 'border-propel-teal bg-propel-light ring-2 ring-propel-teal'
+                                        : error
+                                            ? 'border-red-300 bg-white hover:border-propel-teal hover:bg-gray-50'
+                                            : 'border-gray-200 hover:border-propel-teal hover:bg-gray-50'
+                                }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name={question.question_id}
+                                    value={opt.value}
+                                    checked={isSelected}
+                                    onChange={() => onChange(opt.value)}
+                                    className="mt-1 h-4 w-4 text-propel-teal focus:ring-propel-teal"
+                                />
+                                <div className="ml-3 flex-1">
+                                    <div className="flex items-center">
+                                        <span className="font-medium text-gray-900">{opt.display_name}</span>
+                                        {opt.gene_count && (
+                                            <span className="ml-2 text-xs text-gray-500">
+                                                ({opt.gene_count} genes)
+                                            </span>
+                                        )}
+                                        {hasGeneList && (
+                                            <GeneInfoButton
+                                                panelValue={opt.value}
+                                                isActive={activePopup === opt.value}
+                                                onClick={() => handleInfoClick(opt.value)}
+                                                buttonRef={getButtonRef(opt.value)}
+                                            />
+                                        )}
+                                    </div>
+                                    {opt.description && (
+                                        <p className="text-sm text-gray-500 mt-1">{opt.description}</p>
+                                    )}
+                                </div>
+                            </label>
+
+                            {/* Gene list popup - positioned relative to this option */}
+                            {activePopup === opt.value && (
+                                <GeneListPopup
+                                    isOpen={true}
+                                    onClose={closePopup}
+                                    panelType={opt.value}
+                                    anchorRef={getButtonRef(opt.value)}
+                                />
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+
+            {question.help_text && (
+                <p className="mt-2 text-sm text-gray-500">{question.help_text}</p>
+            )}
+            {error && (
+                <p className="mt-1 text-sm text-red-600">{error}</p>
+            )}
+        </div>
+    );
+});
+
+/**
  * RadioGroup - Radio button selection with cards (memoized)
  */
 const RadioGroup = React.memo(function RadioGroup({ question, value, onChange, options, error }) {
@@ -2275,6 +2558,19 @@ function QuestionRenderer({ question, value, onChange, errors, formData }) {
             );
 
         case 'select':
+            // Use specialized TestPanelSelector for test panel questions
+            // This shows gene info buttons with popup gene lists
+            if (question.question_id === 'test_panel' || question.question_id === 'test_code') {
+                return (
+                    <TestPanelSelector
+                        question={question}
+                        value={value}
+                        onChange={onChange}
+                        options={options}
+                        error={errors[question.question_id]}
+                    />
+                );
+            }
             return (
                 <SelectField
                     question={question}

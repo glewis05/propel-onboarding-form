@@ -26,18 +26,46 @@
       "test_code_rna": "8875-R",
       "description": "Comprehensive hereditary cancer panel (77 genes)",
       "gene_count": 77,
-      "is_custom": false
+      "is_custom": false,
+      "has_gene_list": true
     },
     {
       "value": "cancernext_expanded_leg",
       "display_name": "CancerNext-Expanded® + Limited Evidence Genes",
       "test_code": "8875-LEG",
       "test_code_rna": "8875-R-LEG",
-      "description": "Expanded panel including genes with limited clinical evidence (92 genes)",
-      "gene_count": 92,
-      "is_custom": false
+      "description": "Expanded panel with base panel (77 genes) + limited evidence genes (8 genes) = 85 total",
+      "gene_count": 85,
+      "is_custom": false,
+      "has_gene_list": true,
+      "includes_limited_evidence": true
     }
   ],
+
+  "_comment_gene_lists": "Gene lists for CancerNext-Expanded panels with info button popups",
+  "gene_lists": {
+    "cancernext_expanded_base": {
+      "name": "CancerNext-Expanded Base Panel",
+      "gene_count": 77,
+      "genes": [
+        "AIP", "ALK", "APC", "ATM", "AXIN2", "BAP1", "BARD1", "BMPR1A", "BRCA1", "BRCA2",
+        "BRIP1", "CDC73", "CDH1", "CDK4", "CDKN1B", "CDKN2A", "CEBPA", "CHEK2", "CTNNA1",
+        "DDX41", "DICER1", "EGFR", "EPCAM", "ETV6", "FH", "FLCN", "GATA2", "GREM1", "HOXB13",
+        "KIT", "LZTR1", "MAX", "MBD4", "MEN1", "MET", "MITF", "MLH1", "MSH2", "MSH3", "MSH6",
+        "MUTYH", "NF1", "NF2", "NTHL1", "PALB2", "PDGFRA", "PHOX2B", "PMS2", "POLD1", "POLE",
+        "POT1", "PRKAR1A", "PTCH1", "PTEN", "RAD51C", "RAD51D", "RB1", "RET", "RPS20", "RUNX1",
+        "SDHA", "SDHAF2", "SDHB", "SDHC", "SDHD", "SMAD4", "SMARCA4", "SMARCB1", "SMARCE1",
+        "STK11", "SUFU", "TMEM127", "TP53", "TSC1", "TSC2", "VHL", "WT1"
+      ]
+    },
+    "limited_evidence_addon": {
+      "name": "Limited Evidence Genes Add-on",
+      "gene_count": 8,
+      "genes": [
+        "ATRIP", "EGLN1", "KIF1B", "MLH3", "PALLD", "RAD51B", "RNF43", "TERT"
+      ]
+    }
+  },
 
   "_comment_all_test_panels": "FIX 4d: Complete list of ALL available tests for Additional Test Panels (Page 7)",
   "all_test_panels": [
@@ -52,25 +80,35 @@
       "value": "cancernext_expanded",
       "display_name": "CancerNext-Expanded®",
       "test_code": "8875",
-      "description": "Comprehensive hereditary cancer panel (77 genes)"
+      "description": "Comprehensive hereditary cancer panel (77 genes)",
+      "gene_count": 77,
+      "has_gene_list": true
     },
     {
       "value": "cancernext_expanded_rna",
       "display_name": "CancerNext-Expanded® +RNAInsight®",
       "test_code": "8875-R",
-      "description": "CancerNext-Expanded with RNA analysis for enhanced variant interpretation"
+      "description": "CancerNext-Expanded (77 genes) with RNA analysis for enhanced variant interpretation",
+      "gene_count": 77,
+      "has_gene_list": true
     },
     {
       "value": "cancernext_expanded_leg",
       "display_name": "CancerNext-Expanded® + Limited Evidence Genes",
       "test_code": "8875-LEG",
-      "description": "Expanded panel including genes with limited clinical evidence (92 genes)"
+      "description": "Base panel (77 genes) + limited evidence genes (8 genes) = 85 total",
+      "gene_count": 85,
+      "has_gene_list": true,
+      "includes_limited_evidence": true
     },
     {
       "value": "cancernext_expanded_leg_rna",
       "display_name": "CancerNext-Expanded® + Limited Evidence Genes +RNAInsight®",
       "test_code": "8875-R-LEG",
-      "description": "Full expanded panel with RNA analysis"
+      "description": "Full expanded panel (85 genes) with RNA analysis",
+      "gene_count": 85,
+      "has_gene_list": true,
+      "includes_limited_evidence": true
     }
   ],
 
