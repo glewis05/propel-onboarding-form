@@ -1522,101 +1522,94 @@ function GeneInfoButton({ panelValue, isActive, onClick, buttonRef }) {
 }
 
 /**
- * TestPanelSelector - Specialized select field for test panels with gene info buttons
+ * TestPanelSelector - Dropdown select with gene info buttons
  *
- * PURPOSE: Render test panel options with info buttons that show gene lists.
- * This is a specialized version of SelectField for the test_panel question.
+ * PURPOSE: Render test panel options as a dropdown (like original SelectField)
+ * but with info buttons showing gene lists for CancerNext-Expanded panels.
+ *
+ * PRESERVES: Original dropdown UI behavior
+ * ADDS: Gene info buttons for panels that have gene lists
  */
 const TestPanelSelector = React.memo(function TestPanelSelector({ question, value, onChange, options, error }) {
     const [activePopup, setActivePopup] = React.useState(null);
-    const buttonRefs = React.useRef({});
+    const infoButtonRef = React.useRef(null);
 
-    // Create refs for each option's info button
-    const getButtonRef = (optValue) => {
-        if (!buttonRefs.current[optValue]) {
-            buttonRefs.current[optValue] = React.createRef();
-        }
-        return buttonRefs.current[optValue];
-    };
-
-    const handleInfoClick = (optValue) => {
-        setActivePopup(activePopup === optValue ? null : optValue);
+    const handleInfoClick = (panelValue) => {
+        setActivePopup(activePopup === panelValue ? null : panelValue);
     };
 
     const closePopup = () => {
         setActivePopup(null);
     };
 
+    // Find the currently selected option to show its info button
+    const selectedOption = options.find(opt => opt.value === value);
+    const showInfoButton = selectedOption?.has_gene_list;
+
     return (
         <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
                 {question.label}
                 {question.required && <span className="text-red-500 ml-1">*</span>}
             </label>
 
-            <div className={`space-y-2 ${error ? 'p-3 border-2 border-red-500 rounded-lg bg-red-50' : ''}`}>
-                {options.map(opt => {
-                    const hasGeneList = opt.has_gene_list;
-                    const isSelected = value === opt.value;
+            {/* Dropdown with optional info button */}
+            <div className="relative flex items-center gap-2">
+                <select
+                    value={value || ''}
+                    onChange={(e) => {
+                        onChange(e.target.value);
+                        setActivePopup(null); // Close popup when selection changes
+                    }}
+                    className={`flex-1 px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal ${
+                        error ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    }`}
+                >
+                    <option value="">Select...</option>
+                    {options.map(opt => (
+                        <option key={opt.value} value={opt.value}>
+                            {opt.display_name}
+                            {opt.gene_count ? ` (${opt.gene_count} genes)` : ''}
+                        </option>
+                    ))}
+                </select>
 
-                    return (
-                        <div key={opt.value} className="relative">
-                            <label
-                                className={`flex items-start p-4 border rounded-lg cursor-pointer transition-all ${
-                                    isSelected
-                                        ? 'border-propel-teal bg-propel-light ring-2 ring-propel-teal'
-                                        : error
-                                            ? 'border-red-300 bg-white hover:border-propel-teal hover:bg-gray-50'
-                                            : 'border-gray-200 hover:border-propel-teal hover:bg-gray-50'
-                                }`}
-                            >
-                                <input
-                                    type="radio"
-                                    name={question.question_id}
-                                    value={opt.value}
-                                    checked={isSelected}
-                                    onChange={() => onChange(opt.value)}
-                                    className="mt-1 h-4 w-4 text-propel-teal focus:ring-propel-teal"
-                                />
-                                <div className="ml-3 flex-1">
-                                    <div className="flex items-center">
-                                        <span className="font-medium text-gray-900">{opt.display_name}</span>
-                                        {opt.gene_count && (
-                                            <span className="ml-2 text-xs text-gray-500">
-                                                ({opt.gene_count} genes)
-                                            </span>
-                                        )}
-                                        {hasGeneList && (
-                                            <GeneInfoButton
-                                                panelValue={opt.value}
-                                                isActive={activePopup === opt.value}
-                                                onClick={() => handleInfoClick(opt.value)}
-                                                buttonRef={getButtonRef(opt.value)}
-                                            />
-                                        )}
-                                    </div>
-                                    {opt.description && (
-                                        <p className="text-sm text-gray-500 mt-1">{opt.description}</p>
-                                    )}
-                                </div>
-                            </label>
+                {/* Info button - only shown when selected panel has gene list */}
+                {showInfoButton && (
+                    <button
+                        ref={infoButtonRef}
+                        type="button"
+                        onClick={() => handleInfoClick(value)}
+                        className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-sm font-medium transition-colors ${
+                            activePopup === value
+                                ? 'bg-propel-teal text-white'
+                                : 'bg-gray-200 text-gray-600 hover:bg-propel-teal hover:text-white'
+                        }`}
+                        aria-label="View gene list"
+                        title="Click to view gene list"
+                    >
+                        ?
+                    </button>
+                )}
 
-                            {/* Gene list popup - positioned relative to this option */}
-                            {activePopup === opt.value && (
-                                <GeneListPopup
-                                    isOpen={true}
-                                    onClose={closePopup}
-                                    panelType={opt.value}
-                                    anchorRef={getButtonRef(opt.value)}
-                                />
-                            )}
-                        </div>
-                    );
-                })}
+                {/* Gene list popup */}
+                {activePopup && (
+                    <GeneListPopup
+                        isOpen={true}
+                        onClose={closePopup}
+                        panelType={activePopup}
+                        anchorRef={infoButtonRef}
+                    />
+                )}
             </div>
 
+            {/* Show selected panel description */}
+            {selectedOption?.description && (
+                <p className="mt-1 text-sm text-gray-500">{selectedOption.description}</p>
+            )}
+
             {question.help_text && (
-                <p className="mt-2 text-sm text-gray-500">{question.help_text}</p>
+                <p className="mt-1 text-sm text-gray-500">{question.help_text}</p>
             )}
             {error && (
                 <p className="mt-1 text-sm text-red-600">{error}</p>
