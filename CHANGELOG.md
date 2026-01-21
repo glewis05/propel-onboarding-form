@@ -2,6 +2,26 @@
 
 All notable changes to the Providence Health Clinic Onboarding Form.
 
+## [1.0.1] - 2025-01-21
+
+### Added
+- Gene list info buttons (?) for CancerNext-Expanded test panels
+- GeneListPopup component showing gene lists in non-modal floating panel
+- TestPanelSelector component with card-style radio buttons
+- Gene data: Base panel (77 genes) and Limited Evidence Add-on (8 genes)
+
+### Changed
+- Test panel selector now uses card layout instead of dropdown
+- Updated gene counts in reference data (85 total for LEG panels)
+
+### UI/UX
+- Popup positions to right on desktop, bottom sheet on mobile
+- Multi-column gene grid for readability
+- Click outside or Escape key to close popup
+- Form selections remain visible while viewing gene list
+
+---
+
 ## [1.0.0] - 2025-01-21
 
 ### Added
