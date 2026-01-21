@@ -2948,8 +2948,10 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
 // - Proper word-break and whitespace handling
 // - Adequate spacing between step items
 
-function ProgressIndicator({ steps, currentStep, onStepClick }) {
+function ProgressIndicator({ steps, currentStep, highestCompletedStep, onStepClick }) {
     const currentStepTitle = steps[currentStep]?.title || '';
+    // Use highestCompletedStep to determine which steps are clickable
+    const maxClickableStep = highestCompletedStep ?? currentStep;
 
     // =========================================================================
     // STEP ABBREVIATIONS
@@ -2989,11 +2991,11 @@ function ProgressIndicator({ steps, currentStep, onStepClick }) {
                 </span>
             </div>
 
-            {/* Progress bar - visible on all sizes */}
+            {/* Progress bar - visible on all sizes, shows highest completed step */}
             <div className="relative">
                 <div className="overflow-hidden h-2 mb-2 sm:mb-4 text-xs flex rounded bg-gray-200">
                     <div
-                        style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+                        style={{ width: `${((maxClickableStep + 1) / steps.length) * 100}%` }}
                         className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-propel-teal transition-all duration-300"
                     />
                 </div>
@@ -3014,20 +3016,20 @@ function ProgressIndicator({ steps, currentStep, onStepClick }) {
                     <button
                         key={step.step_id}
                         onClick={() => onStepClick(index)}
-                        disabled={index > currentStep}
+                        disabled={index > maxClickableStep}
                         className={`flex flex-col items-center text-center flex-1 min-w-0 px-1 ${
-                            index <= currentStep ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            index <= maxClickableStep ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
                         }`}
                     >
                         {/* Step circle with number or checkmark */}
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mb-1 flex-shrink-0 ${
-                            index < currentStep
+                            index <= maxClickableStep && index !== currentStep
                                 ? 'bg-propel-teal text-white'
                                 : index === currentStep
                                     ? 'bg-propel-teal text-white ring-4 ring-propel-light'
                                     : 'bg-gray-200 text-gray-500'
                         }`}>
-                            {index < currentStep ? (
+                            {index <= maxClickableStep && index !== currentStep ? (
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
@@ -3059,6 +3061,13 @@ function FormWizard({ formDefinition }) {
     const [formData, setFormData] = React.useState({});
     const [errors, setErrors] = React.useState({});
     const [attemptedNext, setAttemptedNext] = React.useState(false);
+
+    // =========================================================================
+    // HIGHEST COMPLETED STEP TRACKING
+    // =========================================================================
+    // Tracks the furthest step the user has reached. This allows navigating
+    // back to any previously visited step via the top navigation bar.
+    const [highestCompletedStep, setHighestCompletedStep] = React.useState(0);
 
     // Save/restore state
     const [lastSaved, setLastSaved] = React.useState(null);
@@ -3317,8 +3326,11 @@ function FormWizard({ formDefinition }) {
     // Restore handlers
     const handleRestore = () => {
         if (pendingSavedData) {
+            const restoredStep = pendingSavedData.currentStep || 0;
             setFormData(pendingSavedData.formData || {});
-            setCurrentStep(pendingSavedData.currentStep || 0);
+            setCurrentStep(restoredStep);
+            // Restore highest completed step so user can navigate to any previously visited step
+            setHighestCompletedStep(restoredStep);
             setLastSaved(pendingSavedData.savedAt);
 
             // If restored from Supabase, set the draft ID to enable future saves
@@ -3365,8 +3377,11 @@ function FormWizard({ formDefinition }) {
             try {
                 const data = JSON.parse(e.target.result);
                 if (data.formData) {
+                    const loadedStep = data.currentStep || 0;
                     setFormData(data.formData);
-                    setCurrentStep(data.currentStep || 0);
+                    setCurrentStep(loadedStep);
+                    // Restore highest completed step so user can navigate to any previously visited step
+                    setHighestCompletedStep(loadedStep);
                     setLastSaved(new Date().toISOString());
                     setAttemptedNext(false);
                     setErrors({});
@@ -3471,6 +3486,8 @@ function FormWizard({ formDefinition }) {
             }
 
             setCurrentStep(nextStep);
+            // Update highest completed step if we're advancing beyond it
+            setHighestCompletedStep(prev => Math.max(prev, nextStep));
             setAttemptedNext(false);
             setErrors({});
             window.scrollTo(0, 0);
@@ -3487,8 +3504,9 @@ function FormWizard({ formDefinition }) {
     };
 
     const handleStepClick = (index) => {
-        // Only allow clicking on completed steps
-        if (index < currentStep) {
+        // Allow clicking on any step up to the highest completed step
+        // This enables jumping back to page 9 after visiting page 4
+        if (index <= highestCompletedStep) {
             setCurrentStep(index);
             setAttemptedNext(false);
             setErrors({});
@@ -3600,6 +3618,7 @@ function FormWizard({ formDefinition }) {
             <ProgressIndicator
                 steps={steps}
                 currentStep={currentStep}
+                highestCompletedStep={highestCompletedStep}
                 onStepClick={handleStepClick}
             />
 
