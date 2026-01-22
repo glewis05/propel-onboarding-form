@@ -565,7 +565,7 @@
           "type": "textarea",
           "label": "Custom Procedure Filter Details",
           "required": false,
-          "placeholder": "Enter procedure codes, CPT codes, or describe the specific procedures to include/exclude...",
+          "placeholder": "e.g., Include only mammo and exclude ultrasound procedures",
           "rows": 4,
           "show_when": {
             "question_id": "extract_custom_procedures",
