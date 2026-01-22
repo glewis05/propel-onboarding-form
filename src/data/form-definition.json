@@ -554,6 +554,27 @@
           "help_text": "Which appointment types should be included?"
         },
         {
+          "question_id": "extract_custom_procedures",
+          "type": "checkbox",
+          "label": "Use customized procedure filtering",
+          "required": false,
+          "help_text": "Check to specify additional procedure codes or criteria for filtering"
+        },
+        {
+          "question_id": "extract_custom_procedures_text",
+          "type": "textarea",
+          "label": "Custom Procedure Filter Details",
+          "required": false,
+          "placeholder": "Enter procedure codes, CPT codes, or describe the specific procedures to include/exclude...",
+          "rows": 4,
+          "show_when": {
+            "question_id": "extract_custom_procedures",
+            "operator": "equals",
+            "value": true
+          },
+          "help_text": "Provide details about your custom procedure filtering requirements"
+        },
+        {
           "question_id": "extract_filter_by_provider",
           "type": "checkbox",
           "label": "Filter extracts to specific provider(s)",
