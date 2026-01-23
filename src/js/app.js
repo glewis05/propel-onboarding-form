@@ -48,6 +48,27 @@ function debugLog(...args) {
 const STORAGE_KEY = 'propel_onboarding_draft';
 
 // ============================================================================
+// DEFAULT CUSTOMNEXT-CANCER GENES
+// ============================================================================
+// The 85 genes that are pre-selected by default when users choose CustomNext-Cancer®.
+// These represent the standard CustomNext panel. Users can uncheck genes to remove
+// them or check the remaining 5 genes (CFTR, CPA1, CTRC, PRSS1, SPINK1) to add them.
+// This list is intentionally separate from the full 90-gene list in reference-data.json
+// to allow clinics to see what's included by default while retaining customization.
+
+const DEFAULT_CUSTOMNEXT_GENES = [
+    "AIP", "ALK", "APC", "ATM", "ATRIP", "AXIN2", "BAP1", "BARD1", "BMPR1A", "BRCA1",
+    "BRCA2", "BRIP1", "CDC73", "CDH1", "CDK4", "CDKN1B", "CDKN2A", "CEBPA", "CHEK2",
+    "CTNNA1", "DDX41", "DICER1", "EGFR", "EGLN1", "EPCAM", "ETV6", "FH", "FLCN",
+    "GATA2", "GREM1", "HOXB13", "KIF1B", "KIT", "LZTR1", "MAX", "MBD4", "MEN1", "MET",
+    "MITF", "MLH1", "MLH3", "MSH2", "MSH3", "MSH6", "MUTYH", "NF1", "NF2", "NTHL1",
+    "PALB2", "PALLD", "PDGFRA", "PHOX2B", "PMS2", "POLD1", "POLE", "POT1", "PRKAR1A",
+    "PTCH1", "PTEN", "RAD51B", "RAD51C", "RAD51D", "RB1", "RET", "RNF43", "RPS20",
+    "RUNX1", "SDHA", "SDHAF2", "SDHB", "SDHC", "SDHD", "SMAD4", "SMARCA4", "SMARCB1",
+    "SMARCE1", "STK11", "SUFU", "TERT", "TMEM127", "TP53", "TSC1", "TSC2", "VHL", "WT1"
+];
+
+// ============================================================================
 // SUPABASE CONFIGURATION
 // ============================================================================
 // Supabase client for database operations:
@@ -1850,11 +1871,42 @@ const GeneSelector = React.memo(function GeneSelector({ question, value, onChang
     // Genes are displayed in alphabetical order (already sorted in reference-data.json)
     const [searchTerm, setSearchTerm] = React.useState('');
 
+    // Track whether we've done the initial population of default genes.
+    // This ref prevents us from overwriting user changes after the first render.
+    const hasInitializedRef = React.useRef(false);
+
     // Ensure value is always an array (handles initial undefined state)
     const selectedGenes = value || [];
 
     // Total number of available genes for the "X of Y" counter display
     const totalGenes = options.length;
+
+    // -------------------------------------------------------------------------
+    // DEFAULT GENE INITIALIZATION
+    // -------------------------------------------------------------------------
+    // When the GeneSelector first appears (user selects CustomNext-Cancer),
+    // pre-populate with the 85 standard genes. This runs once on mount.
+    // Users can then uncheck genes to remove them or check additional genes.
+    React.useEffect(() => {
+        // Only initialize if:
+        // 1. We haven't initialized before (prevents overwriting user changes)
+        // 2. The value is empty (no previous selection)
+        // 3. We have options available (genes list is loaded)
+        if (!hasInitializedRef.current && (!value || value.length === 0) && options.length > 0) {
+            hasInitializedRef.current = true;
+
+            // Filter default genes to only include those that exist in the options list.
+            // This handles any mismatches between the default list and reference data.
+            const validDefaultGenes = DEFAULT_CUSTOMNEXT_GENES.filter(gene =>
+                options.includes(gene)
+            );
+
+            if (validDefaultGenes.length > 0) {
+                debugLog(`[GeneSelector] Initializing with ${validDefaultGenes.length} default genes`);
+                onChange(validDefaultGenes);
+            }
+        }
+    }, [value, options, onChange]);
 
     // -------------------------------------------------------------------------
     // FILTERED GENE LIST
