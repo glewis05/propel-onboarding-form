@@ -709,14 +709,7 @@ function generateOutputJson(formData, formDefinition, referenceData) {
             hours_of_operation: formData.hours_of_operation || null,
             use_hours_in_emails: formData.hours_in_emails || false,
             website_main: formData.website_main || null,
-            website_clinic: formData.website_patient_facing || null,
-            satellite_locations: (formData.satellite_locations || []).map(loc => ({
-                name: loc.location_name,
-                epic_department_id: loc.location_epic_id || null,
-                address: loc.location_address || null,
-                phone: loc.location_phone || null,
-                hours_of_operation: loc.location_hours || null
-            }))
+            website_clinic: formData.website_patient_facing || null
         },
 
         // =====================================================================

@@ -17,7 +17,7 @@ Current version: 1.0
 The Propel Health program being onboarded. Determines which lab/tests are available and which fields are required.
 
 ### clinic_information
-Basic clinic details including name, address, hours, and satellite locations.
+Basic clinic details including name, address, and hours.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -28,7 +28,6 @@ Basic clinic details including name, address, hours, and satellite locations.
 | hours_of_operation | string | Yes | Operating hours description |
 | website_main | string | No | Main website URL |
 | website_patient_facing | string | No | Patient portal URL |
-| satellite_locations | array | No | Additional clinic locations |
 
 ### contacts
 Key personnel for the onboarding process. Primary contact is required.
@@ -143,8 +142,7 @@ When the JSON is imported via MCP tool, data maps to these database tables:
 
 | JSON Section | Database Table(s) |
 |--------------|-------------------|
-| clinic_information | clinics, locations |
-| clinic_information.satellite_locations | locations |
+| clinic_information | clinics |
 | contacts | (future: onboarding_contacts) |
 | stakeholders | (future: onboarding_contacts) |
 | program_customization | config_values |

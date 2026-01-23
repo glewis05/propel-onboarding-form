@@ -2,6 +2,19 @@
 
 All notable changes to the Providence Health Clinic Onboarding Form.
 
+## [1.0.2] - 2025-01-22
+
+### Removed
+- Satellite Locations step - Providence doesn't use the satellite clinic construct; all locations are clinics
+- Removed satellite_locations from JSON schema and output
+- Updated form from 10 steps to 9 steps
+
+### Changed
+- Renumbered all form steps (Contacts is now step 3, etc.)
+- Updated sample JSON files to remove satellite location references
+
+---
+
 ## [1.0.1] - 2025-01-21
 
 ### Added
@@ -36,7 +49,7 @@ All notable changes to the Providence Health Clinic Onboarding Form.
 - Form-driven architecture (JSON-defined questions)
 - Conditional field visibility based on program selection
 - Composite field types (address, contact_group, stakeholder_group)
-- Repeatable sections for satellite locations and ordering providers
+- Repeatable sections for ordering providers
 - Content Security Policy and Subresource Integrity
 
 ### Security
@@ -48,14 +61,13 @@ All notable changes to the Providence Health Clinic Onboarding Form.
 ### Form Sections
 1. Program Selection
 2. Clinic Information
-3. Satellite Locations (repeatable)
-4. Clinic Champion
-5. Additional Contacts
-6. Stakeholders
-7. Program Customization
-8. Lab Configuration
-9. Ordering Providers (repeatable)
-10. Review & Submit
+3. Contacts
+4. Key Stakeholders
+5. Lab Configuration
+6. Additional Test Panels (repeatable)
+7. Ordering Providers (repeatable)
+8. Extract Filtering
+9. Review & Download
 
 ---
 

@@ -62,13 +62,6 @@
         "website_patient_facing": {
           "type": "string",
           "description": "Patient-facing website URL"
-        },
-        "satellite_locations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/satellite_location"
-          },
-          "description": "Additional clinic locations"
         }
       }
     },
@@ -288,32 +281,6 @@
           "type": "string",
           "pattern": "^[0-9]{5}(-[0-9]{4})?$",
           "description": "ZIP code (5 or 9 digit)"
-        }
-      }
-    },
-    "satellite_location": {
-      "type": "object",
-      "required": ["name"],
-      "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Location name"
-        },
-        "epic_department_id": {
-          "type": "string",
-          "description": "Epic department identifier"
-        },
-        "address": {
-          "$ref": "#/definitions/address"
-        },
-        "hours_of_operation": {
-          "type": "string",
-          "description": "Operating hours"
-        },
-        "phone": {
-          "type": "string",
-          "description": "Location phone number"
         }
       }
     },

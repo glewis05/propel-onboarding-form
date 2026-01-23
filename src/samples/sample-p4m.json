@@ -15,21 +15,7 @@
     "timezone": "MT",
     "hours_of_operation": "Monday–Friday, 8:00 AM–5:00 PM",
     "website_main": "www.montanabreastcare.org",
-    "website_patient_facing": "www.montanabreastcare.org/patients",
-    "satellite_locations": [
-      {
-        "name": "Montana Breast Care - Bozeman",
-        "epic_department_id": "Montana Bozeman (4000099002)",
-        "address": {
-          "street": "456 Mountain View Dr",
-          "city": "Bozeman",
-          "state": "MT",
-          "zip": "59715"
-        },
-        "hours_of_operation": "Monday–Friday, 8:30 AM–4:30 PM",
-        "phone": "406-555-2000"
-      }
-    ]
+    "website_patient_facing": "www.montanabreastcare.org/patients"
   },
 
   "contacts": {
@@ -149,7 +135,7 @@
       "phone": "406-555-1111",
       "npi": "1234567890",
       "display_name": "Dr. Emily Chen, MD, FACS",
-      "locations": ["Montana Breast Care Center", "Montana Breast Care - Bozeman"]
+      "locations": ["Montana Breast Care Center"]
     },
     {
       "name": "Sarah Miller",
@@ -167,7 +153,7 @@
       "phone": "406-555-3333",
       "npi": "1122334455",
       "display_name": "Dr. James Wilson, MD",
-      "locations": ["Montana Breast Care - Bozeman"]
+      "locations": ["Montana Breast Care Center"]
     }
   ],
 

@@ -1,6 +1,6 @@
 {
   "form_id": "onboarding-questionnaire",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "title": "Providence Health Clinic Onboarding",
   "description": "Clinic onboarding questionnaire for Prevention4ME, Precision4ME, and GenoRx programs",
 
@@ -172,57 +172,10 @@
       ]
     },
     {
-      "step_id": "satellite_locations",
-      "title": "Satellite Locations",
-      "description": "Additional clinic locations (if any)",
-      "order": 3,
-      "repeatable": true,
-      "repeatable_config": {
-        "min_items": 0,
-        "max_items": 20,
-        "add_button_text": "Add Satellite Location",
-        "item_title_template": "Location {{index}}"
-      },
-      "questions": [
-        {
-          "question_id": "location_name",
-          "type": "text",
-          "label": "Location Name",
-          "required": true,
-          "placeholder": "e.g., Bozeman Clinic"
-        },
-        {
-          "question_id": "location_epic_id",
-          "type": "text",
-          "label": "Epic Department ID",
-          "required": true
-        },
-        {
-          "question_id": "location_address",
-          "type": "address",
-          "label": "Address",
-          "required": true
-        },
-        {
-          "question_id": "location_phone",
-          "type": "text",
-          "label": "Phone",
-          "required": false,
-          "placeholder": "406-555-1234"
-        },
-        {
-          "question_id": "location_hours",
-          "type": "text",
-          "label": "Hours of Operation",
-          "required": false
-        }
-      ]
-    },
-    {
       "step_id": "contacts",
       "title": "Contacts",
       "description": "Key contacts for implementation and ongoing support",
-      "order": 4,
+      "order": 3,
       "questions": [
         {
           "question_id": "clinic_champion",
@@ -284,7 +237,7 @@
       "step_id": "stakeholders",
       "title": "Key Stakeholders",
       "description": "Leadership and champions for the program",
-      "order": 5,
+      "order": 4,
       "questions": [
         {
           "_comment": "UAT ITEM 2: Made Program Champion optional per user testing feedback",
@@ -312,7 +265,7 @@
       "step_id": "lab_config",
       "title": "Lab Configuration",
       "description": "Laboratory and specimen collection settings",
-      "order": 6,
+      "order": 5,
       "questions": [
         {
           "question_id": "lab_partner",
@@ -418,7 +371,7 @@
       "step_id": "additional_test_panels",
       "title": "Additional Test Panels",
       "description": "Optional. Add panels here only if you want to offer tests beyond the default panel selected above.",
-      "order": 7,
+      "order": 6,
       "repeatable": true,
       "repeatable_config": {
         "min_items": 0,
@@ -464,7 +417,7 @@
       "step_id": "ordering_providers",
       "title": "Ordering Providers",
       "description": "Healthcare providers who will order tests",
-      "order": 8,
+      "order": 7,
       "repeatable": true,
       "repeatable_config": {
         "min_items": 1,
@@ -535,7 +488,7 @@
       "step_id": "extract_filtering",
       "title": "Extract Filtering",
       "description": "Configure which patients and appointments are included in daily extracts",
-      "order": 9,
+      "order": 8,
       "questions": [
         {
           "question_id": "extract_patient_status",
@@ -606,7 +559,7 @@
       "step_id": "review",
       "title": "Review & Download",
       "description": "Review your responses and download the JSON file",
-      "order": 10,
+      "order": 9,
       "is_review_step": true
     }
   ],

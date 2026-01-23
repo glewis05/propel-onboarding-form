@@ -184,19 +184,8 @@
 5. Verify no validation error
 6. Clear and enter \"555.123.4567\" (dots)
 7. Verify no validation error", expected_results: "All three formats accepted without validation error", prerequisites: "Form loaded, navigated to any step with phone input", priority: "Must Have" },
-            { test_id: "ONB-FORM-004-TC01", title: "Verify Add button creates new repeatable item", category: "FORM", test_type: "happy_path", test_steps: "1. Navigate to Satellite Locations step
-2. Click \"Add Satellite Location\" button
-3. Verify new location form section appears
-4. Verify section titled \"Location 1\"
-5. Verify all location fields present
-6. Click Add again
-7. Verify \"Location 2\" appears", expected_results: "New location form appears with fields for name, Epic ID, address, phone, hours", prerequisites: "Form on Satellite Locations step", priority: "Should Have" },
-            { test_id: "ONB-FORM-004-TC02", title: "Verify Remove button deletes item and renumbers", category: "FORM", test_type: "happy_path", test_steps: "1. Add 3 satellite locations with data
-2. Click Remove button on Location 2
-3. Confirm removal if prompted
-4. Verify Location 2 is removed
-5. Verify Location 3 data now shows as Location 2
-6. Verify Location 1 data unchanged", expected_results: "Location 2 removed, Location 3 renumbered to Location 2", prerequisites: "Form on Satellite Locations step with 3 locations added", priority: "Should Have" },
+            { test_id: "ONB-FORM-004-TC01", title: "Verify Add button creates new repeatable item", category: "FORM", test_type: "happy_path", test_steps: "1. Navigate to Ordering Providers step\n2. Click \"Add Provider\" button\n3. Verify new provider form section appears\n4. Verify section titled \"Provider 2\"\n5. Verify all provider fields present\n6. Click Add again\n7. Verify \"Provider 3\" appears", expected_results: "New provider form appears with fields for name, title, email, phone, NPI, address, specialty", prerequisites: "Form on Ordering Providers step", priority: "Should Have" },
+            { test_id: "ONB-FORM-004-TC02", title: "Verify Remove button deletes item and renumbers", category: "FORM", test_type: "happy_path", test_steps: "1. Add 3 ordering providers with data\n2. Click Remove button on Provider 2\n3. Confirm removal if prompted\n4. Verify Provider 2 is removed\n5. Verify Provider 3 data now shows as Provider 2\n6. Verify Provider 1 data unchanged", expected_results: "Provider 2 removed, Provider 3 renumbered to Provider 2", prerequisites: "Form on Ordering Providers step with 3 providers added", priority: "Should Have" },
             { test_id: "ONB-FORM-005-TC01", title: "Verify address composite renders all subfields", category: "FORM", test_type: "happy_path", test_steps: "1. Navigate to Clinic Information step
 2. Locate clinic address section
 3. Verify Street Address field present

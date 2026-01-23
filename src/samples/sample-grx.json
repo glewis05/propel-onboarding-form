@@ -15,8 +15,7 @@
     "timezone": "PT",
     "hours_of_operation": "Monday–Friday, 7:30 AM–6:00 PM",
     "website_main": "www.facey.com",
-    "website_patient_facing": "www.facey.com/burbank",
-    "satellite_locations": []
+    "website_patient_facing": "www.facey.com/burbank"
   },
 
   "contacts": {
