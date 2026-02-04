@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from './AuthProvider';
-import LoginModal from './LoginModal';
 
 /**
- * AuthButton - Sign in/out button with user display
+ * AuthButton - Shows user info and sign-out button in the header
+ * Login is handled by the full-page LoginPage, so this only shows when authenticated
  */
 function AuthButton() {
-    const { user, isAuthenticated, signOut, loading } = useAuth();
-    const [showLoginModal, setShowLoginModal] = useState(false);
+    const { user, isAuthenticated, signOut } = useAuth();
     const [isSigningOut, setIsSigningOut] = useState(false);
 
     const handleSignOut = async () => {
@@ -21,63 +20,21 @@ function AuthButton() {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="w-4 h-4 border-2 border-gray-300 border-t-propel-teal rounded-full animate-spin"></div>
-                <span>Loading...</span>
-            </div>
-        );
-    }
-
-    if (isAuthenticated) {
-        return (
-            <div className="flex items-center gap-3">
-                {/* User info */}
-                <div className="flex items-center gap-2">
-                    {user.user_metadata?.avatar_url ? (
-                        <img
-                            src={user.user_metadata.avatar_url}
-                            alt=""
-                            className="w-8 h-8 rounded-full"
-                        />
-                    ) : (
-                        <div className="w-8 h-8 bg-propel-teal rounded-full flex items-center justify-center text-white text-sm font-medium">
-                            {(user.email?.[0] || 'U').toUpperCase()}
-                        </div>
-                    )}
-                    <span className="text-sm text-gray-700 hidden sm:inline">
-                        {user.user_metadata?.full_name || user.email}
-                    </span>
-                </div>
-
-                {/* Sign out button */}
-                <button
-                    onClick={handleSignOut}
-                    disabled={isSigningOut}
-                    className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
-                >
-                    {isSigningOut ? 'Signing out...' : 'Sign out'}
-                </button>
-            </div>
-        );
-    }
+    if (!isAuthenticated) return null;
 
     return (
-        <>
+        <div className="flex items-center gap-3">
+            <span className="text-sm text-white/70 hidden sm:inline">
+                {user.email}
+            </span>
             <button
-                onClick={() => setShowLoginModal(true)}
-                className="px-4 py-2 text-sm font-medium text-white bg-propel-teal rounded-md hover:bg-opacity-90 transition-colors"
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+                className="px-3 py-1.5 text-sm text-white/80 border border-white/30 rounded-md hover:bg-white/10 transition-colors disabled:opacity-50"
             >
-                Sign in
+                {isSigningOut ? 'Signing out...' : 'Sign out'}
             </button>
-
-            <LoginModal
-                isOpen={showLoginModal}
-                onClose={() => setShowLoginModal(false)}
-                onSuccess={() => setShowLoginModal(false)}
-            />
-        </>
+        </div>
     );
 }
 
