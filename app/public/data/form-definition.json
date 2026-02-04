@@ -1,0 +1,623 @@
+{
+  "form_id": "onboarding-questionnaire",
+  "version": "1.0.2",
+  "title": "Providence Health Clinic Onboarding",
+  "description": "Clinic onboarding questionnaire for Prevention4ME, Precision4ME, and GenoRx programs",
+
+  "steps": [
+    {
+      "step_id": "program_selection",
+      "title": "Program Selection",
+      "description": "Select the program this clinic will participate in",
+      "order": 1,
+      "questions": [
+        {
+          "question_id": "program",
+          "type": "radio",
+          "label": "Select Program",
+          "required": true,
+          "options_ref": "programs",
+          "help_text": "This determines which lab and test options are available"
+        }
+      ]
+    },
+    {
+      "step_id": "clinic_info",
+      "title": "Clinic Information",
+      "description": "Basic information about the primary clinic location",
+      "order": 2,
+      "questions": [
+        {
+          "question_id": "clinic_name",
+          "type": "text",
+          "label": "Clinic Name",
+          "required": true,
+          "max_length": 200,
+          "placeholder": "e.g., Montana Breast Care Center"
+        },
+        {
+          "question_id": "clinic_name_patient_use",
+          "type": "checkbox",
+          "label": "Use this clinic name for patient emails and SMS",
+          "required": false
+        },
+        {
+          "_comment": "FIX 1: Removed epic_department_id - only clinic_epic_id is needed",
+          "question_id": "clinic_epic_id",
+          "type": "text",
+          "label": "Clinic EPIC ID",
+          "required": true,
+          "help_text": "Your clinic's identifier in the EPIC system",
+          "placeholder": "e.g., 12345"
+        },
+        {
+          "question_id": "clinic_address",
+          "type": "address",
+          "label": "Clinic Address",
+          "required": true
+        },
+        {
+          "question_id": "timezone",
+          "type": "select",
+          "label": "Timezone",
+          "required": true,
+          "options_ref": "timezones"
+        },
+        {
+          "_comment": "UAT ITEM 1: Clinic phone always visible (not conditional)",
+          "question_id": "clinic_phone",
+          "type": "text",
+          "label": "Clinic Office Phone Number",
+          "required": true,
+          "placeholder": "555-123-4567",
+          "pattern": "^[0-9]{3}[-.]?[0-9]{3}[-.]?[0-9]{4}$",
+          "help_text": "Main clinic phone number (10 digits)"
+        },
+        {
+          "_comment": "UAT ITEM 1: Permission to use clinic phone in patient communications",
+          "question_id": "clinic_phone_patient_use",
+          "type": "checkbox",
+          "label": "Use this clinic phone number for patient emails and SMS",
+          "required": false
+        },
+        {
+          "question_id": "hours_of_operation",
+          "type": "text",
+          "label": "Hours of Operation",
+          "required": false,
+          "placeholder": "e.g., Monday-Friday, 8:00 AM - 5:00 PM"
+        },
+        {
+          "question_id": "hours_in_emails",
+          "type": "checkbox",
+          "label": "Use these hours of operation for patient emails and SMS",
+          "required": false
+        },
+        {
+          "_comment": "UAT: Helpdesk phone fields remain conditional for clinics with separate helpline",
+          "question_id": "has_helpdesk_phone",
+          "type": "checkbox",
+          "label": "Does this clinic have a separate patient-facing helpline?",
+          "required": false,
+          "help_text": "Check this if patients call a different number than the main clinic line for program-related questions"
+        },
+        {
+          "_comment": "UAT ITEM 4: Added phone validation pattern",
+          "question_id": "helpdesk_phone",
+          "type": "text",
+          "label": "Patient Helpline Phone Number",
+          "required": false,
+          "placeholder": "555-123-4567",
+          "pattern": "^[0-9]{3}[-.]?[0-9]{3}[-.]?[0-9]{4}$",
+          "show_when": {
+            "question_id": "has_helpdesk_phone",
+            "operator": "equals",
+            "value": true
+          },
+          "help_text": "The phone number patients will call for program-related questions (10 digits)"
+        },
+        {
+          "_comment": "REDUNDANCY FIX: Added helpdesk hours field (separate from main clinic hours)",
+          "question_id": "helpdesk_hours",
+          "type": "text",
+          "label": "Helpline Hours of Operation",
+          "required": false,
+          "placeholder": "Mon-Fri 8am-5pm",
+          "show_when": {
+            "question_id": "has_helpdesk_phone",
+            "operator": "equals",
+            "value": true
+          },
+          "help_text": "Hours when the patient helpline is staffed"
+        },
+        {
+          "question_id": "helpdesk_hours_in_emails",
+          "type": "checkbox",
+          "label": "Use these patient helpline hours for patient emails and SMS",
+          "required": false,
+          "show_when": {
+            "question_id": "has_helpdesk_phone",
+            "operator": "equals",
+            "value": true
+          }
+        },
+        {
+          "question_id": "helpdesk_phone_in_emails",
+          "type": "checkbox",
+          "label": "Include this helpline number in invitation and reminder emails",
+          "required": false,
+          "show_when": {
+            "question_id": "has_helpdesk_phone",
+            "operator": "equals",
+            "value": true
+          },
+          "help_text": "If checked, this helpdesk number will appear in patient communications"
+        },
+        {
+          "question_id": "website_main",
+          "type": "text",
+          "label": "Main Hospital Website",
+          "required": false,
+          "placeholder": "https://www.providence.org",
+          "help_text": "Example: providence.org"
+        },
+        {
+          "question_id": "website_patient_facing",
+          "type": "text",
+          "label": "Clinic Website",
+          "required": false,
+          "placeholder": "https://www.mammoclinic.providence.org",
+          "help_text": "We use clinic websites to understand your branding, tone, etc."
+        }
+      ]
+    },
+    {
+      "step_id": "contacts",
+      "title": "Contacts",
+      "description": "Key contacts for implementation and ongoing support",
+      "order": 3,
+      "questions": [
+        {
+          "question_id": "clinic_champion",
+          "type": "contact_group",
+          "label": "Clinic Champion",
+          "required": true,
+          "help_text": "The champion is the final decision maker for implementation"
+        },
+        {
+          "question_id": "champion_is_primary",
+          "type": "checkbox",
+          "label": "Clinic Champion is also the Primary Point of Contact",
+          "required": false,
+          "help_text": "Check if the champion should receive all implementation communications"
+        },
+        {
+          "_comment": "FIX 1: Primary Contact - uses 'not_equals: true' instead of 'equals: false' because unchecked checkbox is undefined, not false",
+          "question_id": "contact_primary",
+          "type": "contact_group",
+          "label": "Primary Contact",
+          "required": true,
+          "help_text": "Main point of contact for implementation",
+          "show_when": {
+            "question_id": "champion_is_primary",
+            "operator": "not_equals",
+            "value": true
+          }
+        },
+        {
+          "question_id": "genetic_counselor",
+          "type": "contact_group",
+          "label": "Genetic Counselor",
+          "required": true,
+          "help_text": "Primary genetic counselor for the program"
+        },
+        {
+          "question_id": "contact_secondary",
+          "type": "contact_group",
+          "label": "Secondary Contact",
+          "required": false
+        },
+        {
+          "question_id": "contact_it",
+          "type": "contact_group",
+          "label": "IT Contact",
+          "required": false,
+          "help_text": "For Epic integration and technical questions"
+        },
+        {
+          "question_id": "contact_lab",
+          "type": "contact_group",
+          "label": "Lab Contact",
+          "required": false,
+          "help_text": "For specimen collection coordination"
+        }
+      ]
+    },
+    {
+      "step_id": "stakeholders",
+      "title": "Key Stakeholders",
+      "description": "Leadership and champions for the program",
+      "order": 4,
+      "questions": [
+        {
+          "_comment": "UAT ITEM 2: Made Program Champion optional per user testing feedback",
+          "question_id": "stakeholder_champion",
+          "type": "stakeholder_group",
+          "label": "Program Champion",
+          "required": false,
+          "help_text": "Clinical leader driving program adoption (optional)"
+        },
+        {
+          "question_id": "stakeholder_executive",
+          "type": "stakeholder_group",
+          "label": "Executive Sponsor",
+          "required": false
+        },
+        {
+          "question_id": "stakeholder_it_director",
+          "type": "stakeholder_group",
+          "label": "IT Director",
+          "required": false
+        }
+      ]
+    },
+    {
+      "step_id": "lab_config",
+      "title": "Lab Configuration",
+      "description": "Laboratory and specimen collection settings",
+      "order": 5,
+      "questions": [
+        {
+          "question_id": "lab_partner",
+          "type": "select",
+          "label": "Lab Partner",
+          "required": true,
+          "options_ref": "labs",
+          "conditional_options": {
+            "depends_on": "program",
+            "mapping": {
+              "P4M": ["AMBRY"],
+              "PR4M": ["AMBRY"],
+              "GRX": ["HELIX"]
+            }
+          }
+        },
+        {
+          "_comment": "FIX 2a: Renamed 'Test Panel' → 'Default Test Panel' for clarity",
+          "question_id": "test_panel",
+          "type": "select",
+          "label": "Default Test Panel",
+          "required": true,
+          "options_ref": "test_panels",
+          "help_text": "Select the primary genetic test panel for this program. Additional panels can be added on the next page."
+        },
+        {
+          "question_id": "include_rna_insight",
+          "type": "checkbox",
+          "label": "Include RNAInsight®",
+          "required": false,
+          "show_when": {
+            "question_id": "test_panel",
+            "operator": "not_empty"
+          },
+          "help_text": "Add RNAInsight® RNA analysis to the selected test panel for enhanced variant interpretation"
+        },
+        {
+          "question_id": "custom_genes",
+          "type": "gene_selector",
+          "label": "Select Genes for CustomNext-Cancer Panel",
+          "required": true,
+          "options_ref": "customnext_cancer_genes",
+          "show_when": {
+            "question_id": "test_panel",
+            "operator": "equals",
+            "value": "customnext_cancer"
+          },
+          "help_text": "Select the specific genes to include in your custom panel (up to 90 genes available)"
+        },
+        {
+          "_comment": "UAT ITEM 3: Reworded alternates checkbox label per user testing feedback",
+          "question_id": "specimen_type",
+          "type": "select_with_alternates",
+          "label": "Default Specimen Collection Type",
+          "required": true,
+          "options_ref": "specimen_types",
+          "help_text": "Select the primary collection method. You can enable alternative options below.",
+          "alternates_label": "Offer additional sample type options",
+          "alternates_help_text": "Select additional collection methods staff can offer patients (e.g., blood draw, buccal swab)"
+        },
+        {
+          "question_id": "billing_method",
+          "type": "select",
+          "label": "Billing Method",
+          "required": true,
+          "options_ref": "billing_methods"
+        },
+        {
+          "question_id": "send_kit_to_patient",
+          "type": "radio",
+          "label": "Send Kit to Patient's Home?",
+          "required": true,
+          "options_ref": "send_kit_options"
+        },
+        {
+          "question_id": "indication",
+          "type": "select",
+          "label": "Default Indication",
+          "required": true,
+          "options_ref": "indications",
+          "show_when": {
+            "question_id": "program",
+            "operator": "in",
+            "value": ["P4M", "PR4M"]
+          }
+        },
+        {
+          "question_id": "criteria_for_testing",
+          "type": "select",
+          "label": "Default Criteria",
+          "required": true,
+          "options_ref": "criteria_for_testing",
+          "show_when": {
+            "question_id": "program",
+            "operator": "in",
+            "value": ["P4M", "PR4M"]
+          }
+        }
+      ]
+    },
+    {
+      "_comment": "FIX 4: Renamed from 'Test Products' to 'Additional Test Panels', made optional",
+      "step_id": "additional_test_panels",
+      "title": "Additional Test Panels",
+      "description": "Optional. Add panels here only if you want to offer tests beyond the default panel selected above.",
+      "order": 6,
+      "repeatable": true,
+      "repeatable_config": {
+        "min_items": 0,
+        "max_items": 10,
+        "add_button_text": "Add Test Panel",
+        "item_title_template": "Panel {{index}}"
+      },
+      "questions": [
+        {
+          "_comment": "FIX 4d: Shows ALL 5 Ambry tests, not filtered by Page 6 selection",
+          "question_id": "test_code",
+          "type": "select",
+          "label": "Test Panel",
+          "required": true,
+          "options_ref": "all_test_panels",
+          "help_text": "Select an additional test panel to offer"
+        },
+        {
+          "_comment": "FIX 4e: Gene selector for CustomNext-Cancer (same as Page 6)",
+          "question_id": "panel_custom_genes",
+          "type": "gene_selector",
+          "label": "Select Genes for CustomNext-Cancer Panel",
+          "required": true,
+          "options_ref": "customnext_cancer_genes",
+          "show_when": {
+            "question_id": "test_code",
+            "operator": "equals",
+            "value": "customnext_cancer"
+          },
+          "help_text": "Select the specific genes to include in this custom panel"
+        },
+        {
+          "question_id": "test_modifications",
+          "type": "textarea",
+          "label": "Modifications / Notes",
+          "required": false,
+          "placeholder": "Any customizations or special instructions for this test",
+          "rows": 3
+        }
+      ]
+    },
+    {
+      "step_id": "ordering_providers",
+      "title": "Ordering Providers",
+      "description": "Healthcare providers who will order tests",
+      "order": 7,
+      "repeatable": true,
+      "repeatable_config": {
+        "min_items": 1,
+        "max_items": 50,
+        "add_button_text": "Add Provider",
+        "item_title_template": "Provider {{index}}"
+      },
+      "questions": [
+        {
+          "question_id": "provider_name",
+          "type": "text",
+          "label": "Provider Name",
+          "required": true,
+          "placeholder": "Dr. Jane Smith"
+        },
+        {
+          "question_id": "provider_title",
+          "type": "text",
+          "label": "Title",
+          "required": false,
+          "placeholder": "e.g., Medical Director"
+        },
+        {
+          "_comment": "UAT ITEM 4: Improved email validation pattern",
+          "question_id": "provider_email",
+          "type": "text",
+          "label": "Email",
+          "required": true,
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+          "placeholder": "jane.smith@clinic.org"
+        },
+        {
+          "_comment": "UAT ITEM 4: Added phone validation pattern",
+          "question_id": "provider_phone",
+          "type": "text",
+          "label": "Phone Number",
+          "required": true,
+          "placeholder": "406-555-1234",
+          "pattern": "^[0-9]{3}[-.]?[0-9]{3}[-.]?[0-9]{4}$",
+          "help_text": "Provider's contact phone number (10 digits)"
+        },
+        {
+          "question_id": "provider_npi",
+          "type": "text",
+          "label": "NPI",
+          "required": true,
+          "pattern": "^[0-9]{10}$",
+          "placeholder": "1234567890",
+          "help_text": "10-digit National Provider Identifier"
+        },
+        {
+          "question_id": "provider_office_address",
+          "type": "address",
+          "label": "Office Address",
+          "required": true,
+          "help_text": "Provider's office address for lab order documentation"
+        },
+        {
+          "question_id": "provider_specialty",
+          "type": "select",
+          "label": "Specialty",
+          "required": false,
+          "options_ref": "specialties"
+        }
+      ]
+    },
+    {
+      "step_id": "extract_filtering",
+      "title": "Extract Filtering",
+      "description": "Configure which patients and appointments are included in daily extracts",
+      "order": 8,
+      "questions": [
+        {
+          "question_id": "extract_patient_status",
+          "type": "select",
+          "label": "Patient Status Filter",
+          "required": true,
+          "options_ref": "extract_patient_status_options",
+          "help_text": "Which patients should be included in the daily extract?"
+        },
+        {
+          "question_id": "extract_procedure_type",
+          "type": "select",
+          "label": "Procedure Type Filter",
+          "required": true,
+          "options_ref": "extract_procedure_type_options",
+          "help_text": "Which appointment types should be included?"
+        },
+        {
+          "question_id": "extract_custom_procedures",
+          "type": "checkbox",
+          "label": "Use customized procedure filtering",
+          "required": false,
+          "help_text": "Check to specify additional procedure codes or criteria for filtering"
+        },
+        {
+          "question_id": "extract_custom_procedures_text",
+          "type": "textarea",
+          "label": "Custom Procedure Filter Details",
+          "required": false,
+          "placeholder": "e.g., Include only mammo and exclude ultrasound procedures",
+          "rows": 4,
+          "show_when": {
+            "question_id": "extract_custom_procedures",
+            "operator": "equals",
+            "value": true
+          },
+          "help_text": "Provide details about your custom procedure filtering requirements"
+        },
+        {
+          "question_id": "extract_filter_by_provider",
+          "type": "checkbox",
+          "label": "Filter extracts to specific provider(s)",
+          "required": false,
+          "help_text": "Check if only appointments for certain providers should be extracted"
+        },
+        {
+          "_comment": "UAT ITEM 5/6: Replaced textarea with structured first/last name repeatable. At least 1 provider required when filter is checked.",
+          "question_id": "extract_filter_providers",
+          "type": "provider_filter_list",
+          "label": "Providers to Include in Extract",
+          "required": true,
+          "show_when": {
+            "question_id": "extract_filter_by_provider",
+            "operator": "equals",
+            "value": true
+          },
+          "repeatable_config": {
+            "min_items": 1,
+            "max_items": 20,
+            "add_button_text": "Add Another Provider",
+            "item_title_template": "Provider {{index}}"
+          },
+          "help_text": "Add the providers whose appointments should be included in extracts."
+        }
+      ]
+    },
+    {
+      "step_id": "review",
+      "title": "Review & Download",
+      "description": "Review your responses and download the JSON file",
+      "order": 9,
+      "is_review_step": true
+    }
+  ],
+
+  "composite_types": {
+    "address": {
+      "fields": [
+        {"field_id": "street", "label": "Street Address", "type": "text", "required": true, "placeholder": "123 Main Street"},
+        {"field_id": "city", "label": "City", "type": "text", "required": true, "placeholder": "Helena"},
+        {"field_id": "state", "label": "State", "type": "select", "options_ref": "us_states", "required": true},
+        {"field_id": "zip", "label": "ZIP Code", "type": "text", "pattern": "^[0-9]{5}(-[0-9]{4})?$", "required": true, "placeholder": "59601"}
+      ]
+    },
+    "contact_group": {
+      "_comment": "UAT ITEM 4: Added phone validation pattern",
+      "fields": [
+        {"field_id": "name", "label": "Name", "type": "text", "required": true, "placeholder": "Jane Smith"},
+        {"field_id": "title", "label": "Title", "type": "text", "required": false, "placeholder": "Clinical Director"},
+        {"field_id": "email", "label": "Email", "type": "text", "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", "required": true, "placeholder": "jane.smith@clinic.org"},
+        {"field_id": "phone", "label": "Phone", "type": "text", "required": false, "placeholder": "406-555-1234", "pattern": "^[0-9]{3}[-.]?[0-9]{3}[-.]?[0-9]{4}$"},
+        {"field_id": "preferred_channel", "label": "Preferred Contact Method", "type": "select", "options_ref": "communication_channels", "required": false},
+        {"field_id": "preferred_time", "label": "Best Time to Reach", "type": "select", "options_ref": "preferred_times", "required": false}
+      ]
+    },
+    "stakeholder_group": {
+      "_comment": "UAT ITEM 4: Added phone/email validation patterns",
+      "fields": [
+        {"field_id": "name", "label": "Name", "type": "text", "required": true, "placeholder": "Dr. Robert Brown"},
+        {"field_id": "title", "label": "Title", "type": "text", "required": false, "placeholder": "Chief Medical Officer"},
+        {"field_id": "email", "label": "Email", "type": "text", "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", "required": true, "placeholder": "robert.brown@clinic.org"},
+        {"field_id": "phone", "label": "Phone", "type": "text", "required": false, "placeholder": "406-555-1234", "pattern": "^[0-9]{3}[-.]?[0-9]{3}[-.]?[0-9]{4}$"},
+        {"field_id": "is_ordering_provider", "label": "This stakeholder is also an ordering provider", "type": "checkbox", "required": false, "help_text": "If checked, this person will be added as Ordering Provider #1 on Page 8"}
+      ]
+    },
+    "select_with_alternates": {
+      "description": "Select a default value with optional additional choices",
+      "value_structure": {
+        "default": "string - the primary/default selection",
+        "offer_alternates": "boolean - whether additional options are enabled",
+        "alternates": "array of strings - additional options to offer"
+      },
+      "fields": [
+        {"field_id": "default", "label_suffix": "(Default)", "type": "select", "required": true},
+        {"field_id": "offer_alternates", "label": "Offer additional options?", "type": "checkbox"},
+        {"field_id": "alternates", "label": "Additional options to offer:", "type": "multi_select", "show_when_checked": "offer_alternates"}
+      ]
+    },
+    "provider_filter_list": {
+      "_comment": "UAT ITEM 5: Provider filter with first/last name for extract filtering",
+      "description": "Repeatable list of providers with first and last name",
+      "is_repeatable": true,
+      "value_structure": {
+        "items": "array of {first_name, last_name} objects"
+      },
+      "fields": [
+        {"field_id": "first_name", "label": "First Name", "type": "text", "required": true, "placeholder": "Jane"},
+        {"field_id": "last_name", "label": "Last Name", "type": "text", "required": true, "placeholder": "Smith"}
+      ]
+    }
+  }
+}

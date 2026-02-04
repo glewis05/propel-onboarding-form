@@ -1,0 +1,458 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://propelhealth.com/schemas/onboarding-questionnaire-v1.0.json",
+  "title": "Propel Health Onboarding Questionnaire",
+  "description": "Schema for client onboarding questionnaire responses",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "program",
+    "clinic_information",
+    "contacts",
+    "program_customization",
+    "lab_order_configuration",
+    "ordering_providers"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Version of this schema",
+      "const": "1.0"
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of form submission"
+    },
+    "program": {
+      "type": "string",
+      "enum": ["P4M", "PR4M", "GRX"],
+      "description": "Propel Health program being onboarded"
+    },
+    "clinic_information": {
+      "type": "object",
+      "required": ["clinic_name", "hours_of_operation"],
+      "properties": {
+        "clinic_name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Official clinic name"
+        },
+        "epic_department_id": {
+          "type": "string",
+          "description": "Epic department identifier"
+        },
+        "address": {
+          "$ref": "#/definitions/address"
+        },
+        "timezone": {
+          "type": "string",
+          "enum": ["PT", "MT", "CT", "ET"],
+          "description": "Clinic timezone"
+        },
+        "hours_of_operation": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Operating hours (e.g., 'Monday–Friday, 8:00 AM–5:00 PM')"
+        },
+        "website_main": {
+          "type": "string",
+          "description": "Main website URL"
+        },
+        "website_patient_facing": {
+          "type": "string",
+          "description": "Patient-facing website URL"
+        }
+      }
+    },
+    "contacts": {
+      "type": "object",
+      "required": ["primary"],
+      "properties": {
+        "primary": {
+          "allOf": [
+            { "$ref": "#/definitions/contact" },
+            {
+              "required": ["name", "email"]
+            }
+          ],
+          "description": "Primary contact for onboarding"
+        },
+        "secondary": {
+          "$ref": "#/definitions/contact",
+          "description": "Secondary/backup contact"
+        },
+        "marketing": {
+          "$ref": "#/definitions/contact",
+          "description": "Marketing contact"
+        },
+        "project_manager": {
+          "$ref": "#/definitions/contact",
+          "description": "IT/Project management contact"
+        },
+        "workflow_lead": {
+          "$ref": "#/definitions/contact",
+          "description": "Clinical workflow lead"
+        }
+      }
+    },
+    "stakeholders": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/stakeholder"
+      },
+      "description": "Additional stakeholders to be informed"
+    },
+    "program_customization": {
+      "type": "object",
+      "required": ["helpdesk"],
+      "properties": {
+        "modules": {
+          "type": "object",
+          "properties": {
+            "tc_enabled": {
+              "type": "boolean",
+              "description": "Enable Tyrer-Cuzick scoring (P4M/PR4M only)"
+            },
+            "nccn_enabled": {
+              "type": "boolean",
+              "description": "Enable NCCN guidelines (P4M/PR4M only)"
+            }
+          }
+        },
+        "helpdesk": {
+          "type": "object",
+          "required": ["phone"],
+          "properties": {
+            "email": {
+              "type": "string",
+              "format": "email",
+              "description": "Helpdesk email address"
+            },
+            "phone": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Helpdesk phone number"
+            }
+          }
+        },
+        "invitation_signature": {
+          "type": "string",
+          "description": "Signature block for patient invitations"
+        }
+      }
+    },
+    "lab_order_configuration": {
+      "type": "object",
+      "required": ["test_provider", "test_products"],
+      "properties": {
+        "test_provider": {
+          "type": "string",
+          "enum": ["AMBRY", "HELIX"],
+          "description": "Laboratory partner"
+        },
+        "test_products": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/test_product"
+          },
+          "description": "Available test products (exactly one must be default)"
+        },
+        "specimen_type": {
+          "$ref": "#/definitions/option_config",
+          "description": "Specimen collection type options"
+        },
+        "send_kit_to_patient": {
+          "$ref": "#/definitions/option_config",
+          "description": "Kit shipping options"
+        },
+        "billing_method": {
+          "$ref": "#/definitions/option_config",
+          "description": "Billing method options"
+        },
+        "indication": {
+          "$ref": "#/definitions/option_config",
+          "description": "Testing indication options (P4M/PR4M only)"
+        },
+        "criteria_for_testing": {
+          "$ref": "#/definitions/option_config",
+          "description": "Testing criteria options (P4M/PR4M only)"
+        }
+      }
+    },
+    "ordering_providers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/ordering_provider"
+      },
+      "description": "Providers authorized to order tests"
+    },
+    "branding": {
+      "type": "object",
+      "properties": {
+        "style_guide_received": {
+          "type": "boolean",
+          "description": "Style guide has been received"
+        },
+        "logo_received": {
+          "type": "boolean",
+          "description": "Logo files have been received"
+        },
+        "compliance_docs_received": {
+          "type": "boolean",
+          "description": "Compliance documentation received"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional branding notes"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "form_version": {
+          "type": "string",
+          "description": "Version of the questionnaire form"
+        },
+        "responder_name": {
+          "type": "string",
+          "description": "Name of person completing the form"
+        },
+        "responder_email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email of person completing the form"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "program": { "enum": ["P4M", "PR4M"] }
+        }
+      },
+      "then": {
+        "properties": {
+          "program_customization": {
+            "properties": {
+              "modules": {
+                "required": ["tc_enabled", "nccn_enabled"]
+              }
+            }
+          },
+          "lab_order_configuration": {
+            "required": ["test_provider", "test_products", "indication", "criteria_for_testing"],
+            "properties": {
+              "indication": {
+                "required": ["default"]
+              },
+              "criteria_for_testing": {
+                "required": ["default"]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "address": {
+      "type": "object",
+      "properties": {
+        "street": {
+          "type": "string",
+          "description": "Street address"
+        },
+        "city": {
+          "type": "string",
+          "description": "City"
+        },
+        "state": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "description": "Two-letter state code"
+        },
+        "zip": {
+          "type": "string",
+          "pattern": "^[0-9]{5}(-[0-9]{4})?$",
+          "description": "ZIP code (5 or 9 digit)"
+        }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Contact full name"
+        },
+        "title": {
+          "type": "string",
+          "description": "Job title"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number"
+        },
+        "preferred_channel": {
+          "type": "string",
+          "enum": ["EMAIL", "TEAMS", "SLACK", "ZOOM"],
+          "description": "Preferred communication channel"
+        },
+        "preferred_time": {
+          "type": "string",
+          "enum": ["MORNING", "AFTERNOON"],
+          "description": "Preferred contact time"
+        },
+        "preferred_tools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Preferred project management tools"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes about this contact"
+        }
+      }
+    },
+    "stakeholder": {
+      "type": "object",
+      "required": ["name", "email"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stakeholder name"
+        },
+        "title": {
+          "type": "string",
+          "description": "Job title"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address"
+        },
+        "display_name": {
+          "type": "string",
+          "description": "Display name with credentials"
+        }
+      }
+    },
+    "test_product": {
+      "type": "object",
+      "required": ["test_code", "test_name", "is_default"],
+      "properties": {
+        "test_code": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Lab test code"
+        },
+        "test_name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Test name"
+        },
+        "is_default": {
+          "type": "boolean",
+          "description": "Whether this is the default test"
+        },
+        "modifications": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["LIMITED_EVIDENCE_GENES", "GENE_REMOVAL"],
+                  "description": "Type of modification"
+                },
+                "option": {
+                  "type": "string",
+                  "enum": ["STANDARD", "CUSTOM"],
+                  "description": "Limited evidence option"
+                },
+                "genes_removed": {
+                  "oneOf": [
+                    { "type": "null" },
+                    {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "List of genes to remove"
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "description": "Test modifications"
+        }
+      }
+    },
+    "option_config": {
+      "type": "object",
+      "required": ["default"],
+      "properties": {
+        "available": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Available options"
+        },
+        "default": {
+          "type": "string",
+          "description": "Default option value"
+        }
+      }
+    },
+    "ordering_provider": {
+      "type": "object",
+      "required": ["name", "email", "npi"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Provider full name"
+        },
+        "title": {
+          "type": "string",
+          "description": "Professional title"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number"
+        },
+        "npi": {
+          "type": "string",
+          "pattern": "^[0-9]{10}$",
+          "description": "National Provider Identifier (10 digits)"
+        },
+        "display_name": {
+          "type": "string",
+          "description": "Display name with credentials"
+        },
+        "locations": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Locations where this provider practices"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,262 @@
+{
+  "_comment": "Reference data for Propel Health Onboarding Questionnaire dropdown options",
+
+  "programs": [
+    {"value": "P4M", "display_name": "Prevention4ME", "description": "Hereditary cancer prevention program"},
+    {"value": "PR4M", "display_name": "Precision4ME", "description": "Precision medicine program"},
+    {"value": "GRX", "display_name": "GenoRx", "description": "Pharmacogenomics program"}
+  ],
+
+  "_comment_test_panels": "Ambry Genetics test panel options - 3 base tests with separate RNA checkbox",
+  "_comment_test_codes": "Each test has a base code and RNA code. RNA checkbox adds RNAInsight® and uses test_code_rna",
+  "test_panels": [
+    {
+      "value": "customnext_cancer",
+      "display_name": "CustomNext-Cancer®",
+      "test_code": "8824",
+      "test_code_rna": "8824-R",
+      "description": "Build a custom panel from 90 available cancer-related genes",
+      "gene_count": null,
+      "is_custom": true
+    },
+    {
+      "value": "cancernext_expanded",
+      "display_name": "CancerNext-Expanded®",
+      "test_code": "8875",
+      "test_code_rna": "8875-R",
+      "description": "Comprehensive hereditary cancer panel (77 genes)",
+      "gene_count": 77,
+      "is_custom": false,
+      "has_gene_list": true
+    },
+    {
+      "value": "cancernext_expanded_leg",
+      "display_name": "CancerNext-Expanded® + Limited Evidence Genes",
+      "test_code": "8875-LEG",
+      "test_code_rna": "8875-R-LEG",
+      "description": "Expanded panel with base panel (77 genes) + limited evidence genes (8 genes) = 85 total",
+      "gene_count": 85,
+      "is_custom": false,
+      "has_gene_list": true,
+      "includes_limited_evidence": true
+    }
+  ],
+
+  "_comment_gene_lists": "Gene lists for CancerNext-Expanded panels with info button popups",
+  "gene_lists": {
+    "cancernext_expanded_base": {
+      "name": "CancerNext-Expanded Base Panel",
+      "gene_count": 77,
+      "genes": [
+        "AIP", "ALK", "APC", "ATM", "AXIN2", "BAP1", "BARD1", "BMPR1A", "BRCA1", "BRCA2",
+        "BRIP1", "CDC73", "CDH1", "CDK4", "CDKN1B", "CDKN2A", "CEBPA", "CHEK2", "CTNNA1",
+        "DDX41", "DICER1", "EGFR", "EPCAM", "ETV6", "FH", "FLCN", "GATA2", "GREM1", "HOXB13",
+        "KIT", "LZTR1", "MAX", "MBD4", "MEN1", "MET", "MITF", "MLH1", "MSH2", "MSH3", "MSH6",
+        "MUTYH", "NF1", "NF2", "NTHL1", "PALB2", "PDGFRA", "PHOX2B", "PMS2", "POLD1", "POLE",
+        "POT1", "PRKAR1A", "PTCH1", "PTEN", "RAD51C", "RAD51D", "RB1", "RET", "RPS20", "RUNX1",
+        "SDHA", "SDHAF2", "SDHB", "SDHC", "SDHD", "SMAD4", "SMARCA4", "SMARCB1", "SMARCE1",
+        "STK11", "SUFU", "TMEM127", "TP53", "TSC1", "TSC2", "VHL", "WT1"
+      ]
+    },
+    "limited_evidence_addon": {
+      "name": "Limited Evidence Genes Add-on",
+      "gene_count": 8,
+      "genes": [
+        "ATRIP", "EGLN1", "KIF1B", "MLH3", "PALLD", "RAD51B", "RNF43", "TERT"
+      ]
+    }
+  },
+
+  "_comment_all_test_panels": "FIX 4d: Complete list of ALL available tests for Additional Test Panels (Page 7)",
+  "all_test_panels": [
+    {
+      "value": "customnext_cancer",
+      "display_name": "CustomNext-Cancer®",
+      "test_code": "8824",
+      "description": "Build a custom panel from 90 available cancer-related genes",
+      "is_custom": true
+    },
+    {
+      "value": "cancernext_expanded",
+      "display_name": "CancerNext-Expanded®",
+      "test_code": "8875",
+      "description": "Comprehensive hereditary cancer panel (77 genes)",
+      "gene_count": 77,
+      "has_gene_list": true
+    },
+    {
+      "value": "cancernext_expanded_rna",
+      "display_name": "CancerNext-Expanded® +RNAInsight®",
+      "test_code": "8875-R",
+      "description": "CancerNext-Expanded (77 genes) with RNA analysis for enhanced variant interpretation",
+      "gene_count": 77,
+      "has_gene_list": true
+    },
+    {
+      "value": "cancernext_expanded_leg",
+      "display_name": "CancerNext-Expanded® + Limited Evidence Genes",
+      "test_code": "8875-LEG",
+      "description": "Base panel (77 genes) + limited evidence genes (8 genes) = 85 total",
+      "gene_count": 85,
+      "has_gene_list": true,
+      "includes_limited_evidence": true
+    },
+    {
+      "value": "cancernext_expanded_leg_rna",
+      "display_name": "CancerNext-Expanded® + Limited Evidence Genes +RNAInsight®",
+      "test_code": "8875-R-LEG",
+      "description": "Full expanded panel (85 genes) with RNA analysis",
+      "gene_count": 85,
+      "has_gene_list": true,
+      "includes_limited_evidence": true
+    }
+  ],
+
+  "_comment_genes": "90 genes available for CustomNext-Cancer® custom panel selection (alphabetical order)",
+  "customnext_cancer_genes": [
+    "AIP", "ALK", "APC", "ATM", "ATRIP", "AXIN2", "BAP1", "BARD1", "BMPR1A", "BRCA1",
+    "BRCA2", "BRIP1", "CDC73", "CDH1", "CDK4", "CDKN1B", "CDKN2A", "CEBPA", "CFTR", "CHEK2",
+    "CPA1", "CTNNA1", "CTRC", "DDX41", "DICER1", "EGFR", "EGLN1", "EPCAM", "ETV6", "FH",
+    "FLCN", "GATA2", "GREM1", "HOXB13", "KIF1B", "KIT", "LZTR1", "MAX", "MBD4", "MEN1",
+    "MET", "MITF", "MLH1", "MLH3", "MSH2", "MSH3", "MSH6", "MUTYH", "NF1", "NF2",
+    "NTHL1", "PALB2", "PALLD", "PDGFRA", "PHOX2B", "PMS2", "POLD1", "POLE", "POT1", "PRKAR1A",
+    "PRSS1", "PTCH1", "PTEN", "RAD51B", "RAD51C", "RAD51D", "RB1", "RET", "RNF43", "RPS20",
+    "RUNX1", "SDHA", "SDHAF2", "SDHB", "SDHC", "SDHD", "SMAD4", "SMARCA4", "SMARCB1", "SMARCE1",
+    "SPINK1", "STK11", "SUFU", "TERT", "TMEM127", "TP53", "TSC1", "TSC2", "VHL", "WT1"
+  ],
+  "labs": [
+    {"value": "AMBRY", "display_name": "Ambry Genetics"},
+    {"value": "HELIX", "display_name": "Helix"}
+  ],
+  "specimen_types": [
+    {"value": "BLOOD", "display_name": "Blood"},
+    {"value": "BUCCAL_SWAB", "display_name": "Buccal Swab"},
+    {"value": "SALIVA", "display_name": "Saliva"}
+  ],
+
+  "_comment_extract_filters": "Options for extract filtering configuration",
+  "extract_patient_status_options": [
+    {"value": "new_only", "display_name": "New patients only"},
+    {"value": "all", "display_name": "All patients (no filter)"}
+  ],
+  "extract_procedure_type_options": [
+    {"value": "screening_only", "display_name": "Screening only"},
+    {"value": "screening_diagnostic", "display_name": "Screening and Diagnostic"},
+    {"value": "all", "display_name": "All procedure types"}
+  ],
+  "billing_methods": [
+    {"value": "INSURANCE", "display_name": "Bill insurance"},
+    {"value": "SELF_PAY", "display_name": "Patient self-pay"}
+  ],
+  "send_kit_options": [
+    {"value": "YES", "display_name": "Yes"},
+    {"value": "NO", "display_name": "No"},
+    {"value": "SITUATION_DEPENDENT", "display_name": "Situation dependent"}
+  ],
+  "indications": [
+    {"value": "DIAGNOSTIC", "display_name": "Diagnostic"},
+    {"value": "DIAGNOSTIC_FAMILY_HISTORY", "display_name": "Diagnostic/Family History"},
+    {"value": "CARRIER_SCREENING", "display_name": "Carrier Screening"},
+    {"value": "CARRIER_SCREENING_FAMILY_HISTORY", "display_name": "Carrier Screening/Family History"},
+    {"value": "FAMILY_HISTORY", "display_name": "Family History"}
+  ],
+  "criteria_for_testing": [
+    {"value": "HBOC", "display_name": "Hereditary Breast and Ovarian Cancer (HBOC)"},
+    {"value": "LYNCH", "display_name": "Lynch Syndrome"},
+    {"value": "HEREDITARY_POLYPOSIS", "display_name": "Hereditary Polyposis"},
+    {"value": "NCCN_GUIDELINES", "display_name": "NCCN Guidelines"},
+    {"value": "CLINICAL_JUDGMENT", "display_name": "Clinical Judgment"},
+    {"value": "NONE", "display_name": "None of the Above"}
+  ],
+  "communication_channels": [
+    {"value": "EMAIL", "display_name": "Email"},
+    {"value": "PHONE", "display_name": "Phone"},
+    {"value": "TEAMS", "display_name": "Microsoft Teams"},
+    {"value": "SLACK", "display_name": "Slack"},
+    {"value": "ZOOM", "display_name": "Zoom"}
+  ],
+  "preferred_times": [
+    {"value": "MORNING", "display_name": "Morning (8 AM - 12 PM)"},
+    {"value": "AFTERNOON", "display_name": "Afternoon (12 PM - 5 PM)"},
+    {"value": "ANYTIME", "display_name": "Anytime"}
+  ],
+  "timezones": [
+    {"value": "PT", "display_name": "Pacific Time (PT)"},
+    {"value": "MT", "display_name": "Mountain Time (MT)"},
+    {"value": "CT", "display_name": "Central Time (CT)"},
+    {"value": "ET", "display_name": "Eastern Time (ET)"},
+    {"value": "AKT", "display_name": "Alaska Time (AKT)"},
+    {"value": "HST", "display_name": "Hawaii Time (HST)"}
+  ],
+  "specialties": [
+    {"value": "ONCOLOGY", "display_name": "Oncology"},
+    {"value": "MEDICAL_GENETICS", "display_name": "Medical Genetics"},
+    {"value": "GENETIC_COUNSELING", "display_name": "Genetic Counseling"},
+    {"value": "INTERNAL_MEDICINE", "display_name": "Internal Medicine"},
+    {"value": "FAMILY_MEDICINE", "display_name": "Family Medicine"},
+    {"value": "OBGYN", "display_name": "OB/GYN"},
+    {"value": "BREAST_SURGERY", "display_name": "Breast Surgery"},
+    {"value": "SURGICAL_ONCOLOGY", "display_name": "Surgical Oncology"},
+    {"value": "GASTROENTEROLOGY", "display_name": "Gastroenterology"},
+    {"value": "UROLOGY", "display_name": "Urology"},
+    {"value": "DERMATOLOGY", "display_name": "Dermatology"},
+    {"value": "PSYCHIATRY", "display_name": "Psychiatry"},
+    {"value": "CARDIOLOGY", "display_name": "Cardiology"},
+    {"value": "NURSE_PRACTITIONER", "display_name": "Nurse Practitioner"},
+    {"value": "PHYSICIAN_ASSISTANT", "display_name": "Physician Assistant"},
+    {"value": "OTHER", "display_name": "Other"}
+  ],
+  "us_states": [
+    {"value": "AL", "display_name": "Alabama"},
+    {"value": "AK", "display_name": "Alaska"},
+    {"value": "AZ", "display_name": "Arizona"},
+    {"value": "AR", "display_name": "Arkansas"},
+    {"value": "CA", "display_name": "California"},
+    {"value": "CO", "display_name": "Colorado"},
+    {"value": "CT", "display_name": "Connecticut"},
+    {"value": "DE", "display_name": "Delaware"},
+    {"value": "FL", "display_name": "Florida"},
+    {"value": "GA", "display_name": "Georgia"},
+    {"value": "HI", "display_name": "Hawaii"},
+    {"value": "ID", "display_name": "Idaho"},
+    {"value": "IL", "display_name": "Illinois"},
+    {"value": "IN", "display_name": "Indiana"},
+    {"value": "IA", "display_name": "Iowa"},
+    {"value": "KS", "display_name": "Kansas"},
+    {"value": "KY", "display_name": "Kentucky"},
+    {"value": "LA", "display_name": "Louisiana"},
+    {"value": "ME", "display_name": "Maine"},
+    {"value": "MD", "display_name": "Maryland"},
+    {"value": "MA", "display_name": "Massachusetts"},
+    {"value": "MI", "display_name": "Michigan"},
+    {"value": "MN", "display_name": "Minnesota"},
+    {"value": "MS", "display_name": "Mississippi"},
+    {"value": "MO", "display_name": "Missouri"},
+    {"value": "MT", "display_name": "Montana"},
+    {"value": "NE", "display_name": "Nebraska"},
+    {"value": "NV", "display_name": "Nevada"},
+    {"value": "NH", "display_name": "New Hampshire"},
+    {"value": "NJ", "display_name": "New Jersey"},
+    {"value": "NM", "display_name": "New Mexico"},
+    {"value": "NY", "display_name": "New York"},
+    {"value": "NC", "display_name": "North Carolina"},
+    {"value": "ND", "display_name": "North Dakota"},
+    {"value": "OH", "display_name": "Ohio"},
+    {"value": "OK", "display_name": "Oklahoma"},
+    {"value": "OR", "display_name": "Oregon"},
+    {"value": "PA", "display_name": "Pennsylvania"},
+    {"value": "RI", "display_name": "Rhode Island"},
+    {"value": "SC", "display_name": "South Carolina"},
+    {"value": "SD", "display_name": "South Dakota"},
+    {"value": "TN", "display_name": "Tennessee"},
+    {"value": "TX", "display_name": "Texas"},
+    {"value": "UT", "display_name": "Utah"},
+    {"value": "VT", "display_name": "Vermont"},
+    {"value": "VA", "display_name": "Virginia"},
+    {"value": "WA", "display_name": "Washington"},
+    {"value": "WV", "display_name": "West Virginia"},
+    {"value": "WI", "display_name": "Wisconsin"},
+    {"value": "WY", "display_name": "Wyoming"},
+    {"value": "DC", "display_name": "District of Columbia"}
+  ]
+}

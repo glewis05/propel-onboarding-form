@@ -1,0 +1,36 @@
+{
+  "AMBRY": {
+    "lab_name": "Ambry Genetics",
+    "programs": ["P4M", "PR4M"],
+    "tests": [
+      {
+        "test_code": "8874",
+        "test_name": "CancerNext-Expanded",
+        "has_limited_evidence_option": true,
+        "limited_evidence_options": ["STANDARD", "CUSTOM"],
+        "sample_types": ["SALIVA", "BLOOD"],
+        "default_sample_type": "SALIVA"
+      },
+      {
+        "test_code": "9510-R",
+        "test_name": "CustomNext-Cancer 86 Gene + RNAInsight",
+        "has_limited_evidence_option": false,
+        "sample_types": ["SALIVA", "BLOOD"],
+        "default_sample_type": "SALIVA"
+      }
+    ]
+  },
+  "HELIX": {
+    "lab_name": "Helix",
+    "programs": ["GRX"],
+    "tests": [
+      {
+        "test_code": "PLVA1",
+        "test_name": "Pharmacogenomics (PGx) Level A Panel",
+        "has_limited_evidence_option": false,
+        "sample_types": ["SALIVA"],
+        "default_sample_type": "SALIVA"
+      }
+    ]
+  }
+}

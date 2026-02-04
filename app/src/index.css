@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+/* Source path for Tailwind CSS v4 */
+@source "../";
+
+/* Custom theme configuration for Providence Propel */
+@theme {
+    --color-propel-navy: #003366;
+    --color-propel-teal: #007377;
+    --color-propel-light: #E6F5F5;
+    --color-propel-coral: #E8927C;
+    --color-propel-gold: #B8860B;
+
+    --font-family-sans: 'Inter', system-ui, sans-serif;
+}
+
+/* Custom styles for the Providence Onboarding Form */
+
+/* Ensure smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom focus styles for accessibility */
+:focus-visible {
+    outline: 2px solid #007377;
+    outline-offset: 2px;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* Form input focus states */
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #007377;
+    box-shadow: 0 0 0 3px rgba(0, 115, 119, 0.1);
+}
+
+/* Mobile-friendly touch targets */
+@media (max-width: 640px) {
+    button,
+    input[type="checkbox"],
+    input[type="radio"] {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
