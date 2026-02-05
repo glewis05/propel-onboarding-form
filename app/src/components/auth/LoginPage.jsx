@@ -108,7 +108,7 @@ function LoginPage() {
                         Clinic Onboarding Questionnaire
                     </p>
                     <p className="text-white/50 text-sm mt-2">
-                        Streamlined setup for EICI program
+                        Streamlined setup for PICI Programs
                     </p>
                 </div>
 
