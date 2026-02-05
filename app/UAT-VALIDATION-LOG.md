@@ -24,6 +24,7 @@
 | **Evidence** | Supabase auth logs show: `user_confirmation_requested` at 21:17:16 with `mail_type: confirmation`. Token consumed by scanner IP `35.171.99.211` at 21:17:50. User IP `76.146.208.176` gets "One-time token not found" at 21:18:59. |
 | **Fix Applied** | Rewrote `LoginPage.jsx` to use OTP code entry instead of relying on magic link clicks. Two-step flow: (1) enter email, (2) enter 6-digit code from email. Uses `supabase.auth.verifyOtp()` which is immune to link scanners since it requires manual code entry. Magic links still work as a fallback. |
 | **Files Changed** | `src/components/auth/LoginPage.jsx` |
+| **Supabase Config** | Updated email templates (Dashboard → Auth → Templates) to include `{{ .Token }}` for 6-digit OTP code display. Both "Confirm signup" and "Magic Link" templates updated. |
 | **Retest Required** | Yes — verify both new and existing users can sign in using the 6-digit code flow |
 
 ### FAIL 12.1 — Cloud Sync / Auto-Save to Supabase
