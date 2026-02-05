@@ -17,7 +17,7 @@ function ContactGroup({ question, value, onChange, errors, referenceData }) {
 
     // Check for errors using the correct key pattern: question_id_field_id
     const getFieldError = (fieldId) => errors?.[`${question.question_id}_${fieldId}`];
-    const hasAnyError = ['name', 'email'].some(f => getFieldError(f));
+    const hasAnyError = ['name', 'email', 'phone'].some(f => getFieldError(f));
 
     return (
         <div className="mb-6">
@@ -73,8 +73,13 @@ function ContactGroup({ question, value, onChange, errors, referenceData }) {
                             value={contactValue.phone || ''}
                             onChange={(e) => handleFieldChange('phone', e.target.value)}
                             placeholder="406-555-1234"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal"
+                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal ${
+                                getFieldError('phone') ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
                         />
+                        {getFieldError('phone') && (
+                            <p className="mt-1 text-xs text-red-600">{getFieldError('phone')}</p>
+                        )}
                     </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">

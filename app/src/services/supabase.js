@@ -30,10 +30,12 @@ debugLog('[Supabase] Client initialized');
  */
 export async function fetchProgramsFromSupabase() {
     try {
+        // Exclude Platform and Discover — not selectable for clinic onboarding
         const { data, error } = await supabase
             .from('programs')
             .select('program_id, name, prefix')
             .eq('status', 'Active')
+            .not('name', 'in', '("Platform","Discover")')
             .order('name');
 
         if (error) throw error;
@@ -67,13 +69,24 @@ export async function fetchProgramsFromSupabase() {
  */
 export async function saveOnboardingSubmission({ submitter_email, submitter_name, program_id, form_data, status, user_id = null }) {
     try {
-        // Check if a draft already exists for this email
-        const { data: existing } = await supabase
-            .from('onboarding_submissions')
-            .select('submission_id')
-            .eq('submitter_email', submitter_email)
-            .eq('submission_status', 'draft')
-            .single();
+        // If no user_id provided, try to get it from the current session
+        if (!user_id) {
+            const { data: { user } } = await supabase.auth.getUser();
+            user_id = user?.id || null;
+        }
+
+        // Check if a draft already exists for this user
+        let existing = null;
+        if (user_id) {
+            const { data } = await supabase
+                .from('onboarding_submissions')
+                .select('submission_id')
+                .eq('user_id', user_id)
+                .eq('submission_status', 'draft')
+                .limit(1)
+                .maybeSingle();
+            existing = data;
+        }
 
         const submissionData = {
             submitter_email,
@@ -81,13 +94,9 @@ export async function saveOnboardingSubmission({ submitter_email, submitter_name
             program_prefix: program_id,
             form_data,
             submission_status: status,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
+            user_id
         };
-
-        // Add user_id if provided (for authenticated users)
-        if (user_id) {
-            submissionData.user_id = user_id;
-        }
 
         if (status === 'submitted') {
             submissionData.submitted_at = new Date().toISOString();
@@ -268,11 +277,9 @@ export async function loadDraftByEmail(email) {
             .eq('submission_status', 'draft')
             .order('updated_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-            throw error;
-        }
+        if (error) throw error;
 
         if (data) {
             debugLog('[Supabase] Found draft for email:', email);

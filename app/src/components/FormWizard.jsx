@@ -3,6 +3,7 @@ import { STORAGE_KEY } from '../constants';
 import { validateStep } from '../utils/validation';
 import { debugLog } from '../utils/debug';
 import { saveOnboardingSubmission } from '../services/supabase';
+import { useAuth } from './auth/AuthProvider';
 import RestorePrompt from './RestorePrompt';
 import ResumeModal from './ResumeModal';
 import SaveStatusBar from './SaveStatusBar';
@@ -15,6 +16,7 @@ import AuthButton from './auth/AuthButton';
  * FormWizard - Main component that orchestrates step navigation
  */
 function FormWizard({ formDefinition }) {
+    const { user } = useAuth();
     const [currentStep, setCurrentStep] = useState(0);
     const [formData, setFormData] = useState({});
     const [errors, setErrors] = useState({});
@@ -130,7 +132,8 @@ function FormWizard({ formDefinition }) {
                     submitter_name: submitterName,
                     program_id: formData.program || '',
                     form_data: { formData, currentStep },
-                    status: 'draft'
+                    status: 'draft',
+                    user_id: user?.id
                 });
 
                 setSupabaseDraftId(result.submission_id);
@@ -141,12 +144,48 @@ function FormWizard({ formDefinition }) {
             } catch (error) {
                 console.error('[Supabase] Draft auto-save failed:', error);
                 setSupabaseSaveStatus('error');
-                setTimeout(() => setSupabaseSaveStatus(null), 3000);
             }
         }, 2000);
 
         return () => clearTimeout(timeoutId);
     }, [formData, currentStep, isTabVisible]);
+
+    // Manual retry for cloud sync
+    const handleRetryCloudSync = async () => {
+        const submitterEmail = formData.submitter_email
+            || formData.clinic_champion?.email
+            || formData.contact_primary?.email
+            || formData.genetic_counselor?.email;
+
+        if (!submitterEmail) return;
+
+        setSupabaseSaveStatus('saving');
+
+        try {
+            const submitterName = formData.submitter_name
+                || formData.clinic_champion?.name
+                || formData.contact_primary?.name
+                || '';
+
+            const result = await saveOnboardingSubmission({
+                submitter_email: submitterEmail,
+                submitter_name: submitterName,
+                program_id: formData.program || '',
+                form_data: { formData, currentStep },
+                status: 'draft',
+                user_id: user?.id
+            });
+
+            setSupabaseDraftId(result.submission_id);
+            setSupabaseSaveStatus('saved');
+            debugLog('[Supabase] Draft retry-saved:', result.submission_id);
+
+            setTimeout(() => setSupabaseSaveStatus(null), 2000);
+        } catch (error) {
+            console.error('[Supabase] Draft retry-save failed:', error);
+            setSupabaseSaveStatus('error');
+        }
+    };
 
     // Restore handlers
     const handleRestore = () => {
@@ -439,6 +478,7 @@ function FormWizard({ formDefinition }) {
                 onLoadDraft={handleLoadDraft}
                 onStartOver={handleStartOver}
                 supabaseSaveStatus={supabaseSaveStatus}
+                onRetryCloudSync={handleRetryCloudSync}
             />
 
             {/* Progress indicator */}
@@ -487,18 +527,15 @@ function FormWizard({ formDefinition }) {
             {/* Navigation buttons */}
             <div className="mt-6 sm:mt-8">
                 <div className="flex gap-3">
-                    <button
-                        type="button"
-                        onClick={handlePrevious}
-                        disabled={isFirstStep}
-                        className={`flex-1 sm:flex-none px-4 sm:px-6 py-3 sm:py-2 rounded-lg font-medium text-base sm:text-sm transition-colors ${
-                            isFirstStep
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                    >
-                        Previous
-                    </button>
+                    {!isFirstStep && (
+                        <button
+                            type="button"
+                            onClick={handlePrevious}
+                            className="flex-1 sm:flex-none px-4 sm:px-6 py-3 sm:py-2 rounded-lg font-medium text-base sm:text-sm transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        >
+                            Previous
+                        </button>
+                    )}
 
                     {!isReviewStep && (
                         <button

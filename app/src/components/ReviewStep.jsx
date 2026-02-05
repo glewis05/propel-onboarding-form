@@ -5,6 +5,7 @@ import { STORAGE_KEY, FORMSPREE_ENDPOINT } from '../constants';
 import { generateOutputJson } from '../utils/output-formatter';
 import { evaluateCondition } from '../utils/validation';
 import { saveOnboardingSubmission } from '../services/supabase';
+import { useAuth } from './auth/AuthProvider';
 import { debugLog } from '../utils/debug';
 
 /**
@@ -13,6 +14,7 @@ import { debugLog } from '../utils/debug';
  */
 function ReviewStep({ formData, formDefinition, onEdit }) {
     const { referenceData } = useContext(FormContext);
+    const { user } = useAuth();
 
     // Submission state
     const [submitting, setSubmitting] = useState(false);
@@ -61,7 +63,8 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                 submitter_name: submitterName,
                 program_id: formData.program || '',
                 form_data: outputData,
-                status: 'submitted'
+                status: 'submitted',
+                user_id: user?.id
             });
 
             setSubmitted(true);

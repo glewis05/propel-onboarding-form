@@ -14,6 +14,10 @@ function StakeholderGroup({ question, value, onChange, errors, referenceData }) 
         });
     };
 
+    // Check for errors using the correct key pattern: question_id_field_id
+    const getFieldError = (fieldId) => errors?.[`${question.question_id}_${fieldId}`];
+    const hasAnyError = ['name', 'email', 'phone'].some(f => getFieldError(f));
+
     return (
         <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -23,7 +27,7 @@ function StakeholderGroup({ question, value, onChange, errors, referenceData }) 
             {question.help_text && (
                 <p className="text-sm text-gray-500 mb-2">{question.help_text}</p>
             )}
-            <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className={`space-y-3 p-4 bg-gray-50 rounded-lg border ${hasAnyError ? 'border-red-500' : 'border-gray-200'}`}>
                 {/* Row 1: Name and Title */}
                 <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -33,7 +37,9 @@ function StakeholderGroup({ question, value, onChange, errors, referenceData }) 
                             value={stakeholderValue.name || ''}
                             onChange={(e) => handleFieldChange('name', e.target.value)}
                             placeholder="Dr. Robert Brown"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal"
+                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal ${
+                                getFieldError('name') ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
                         />
                     </div>
                     <div>
@@ -56,7 +62,9 @@ function StakeholderGroup({ question, value, onChange, errors, referenceData }) 
                             value={stakeholderValue.email || ''}
                             onChange={(e) => handleFieldChange('email', e.target.value)}
                             placeholder="robert.brown@clinic.org"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal"
+                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal ${
+                                getFieldError('email') ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
                         />
                     </div>
                     <div>
@@ -66,8 +74,13 @@ function StakeholderGroup({ question, value, onChange, errors, referenceData }) 
                             value={stakeholderValue.phone || ''}
                             onChange={(e) => handleFieldChange('phone', e.target.value)}
                             placeholder="406-555-1234"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal"
+                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-propel-teal focus:border-propel-teal ${
+                                getFieldError('phone') ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                            }`}
                         />
+                        {getFieldError('phone') && (
+                            <p className="mt-1 text-xs text-red-600">{getFieldError('phone')}</p>
+                        )}
                     </div>
                 </div>
                 {/* "Is Ordering Provider" checkbox - hidden for IT Director */}
@@ -90,6 +103,9 @@ function StakeholderGroup({ question, value, onChange, errors, referenceData }) 
                     </div>
                 )}
             </div>
+            {hasAnyError && (
+                <p className="mt-1 text-sm text-red-600">Please complete all required stakeholder fields</p>
+            )}
         </div>
     );
 }

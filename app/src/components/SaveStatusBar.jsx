@@ -3,7 +3,7 @@ import { useState } from 'react';
 /**
  * SaveStatusBar - Shows auto-save status with save/load/clear buttons and help section
  */
-function SaveStatusBar({ lastSaved, onSaveDraft, onLoadDraft, onStartOver, supabaseSaveStatus }) {
+function SaveStatusBar({ lastSaved, onSaveDraft, onLoadDraft, onStartOver, supabaseSaveStatus, onRetryCloudSync }) {
     const [showHelp, setShowHelp] = useState(false);
 
     const formatTime = (date) => {
@@ -24,7 +24,7 @@ function SaveStatusBar({ lastSaved, onSaveDraft, onLoadDraft, onStartOver, supab
                                 <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                 </svg>
-                                <span>Auto-saved at {formatTime(lastSaved)}</span>
+                                <span>Saved locally at {formatTime(lastSaved)}</span>
                             </>
                         ) : (
                             <>
@@ -62,7 +62,15 @@ function SaveStatusBar({ lastSaved, onSaveDraft, onLoadDraft, onStartOver, supab
                                     <svg className="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
-                                    <span className="hidden sm:inline text-amber-600">Cloud sync failed</span>
+                                    <span className="text-amber-600 text-xs sm:text-sm">Cloud sync failed</span>
+                                    {onRetryCloudSync && (
+                                        <button
+                                            onClick={onRetryCloudSync}
+                                            className="ml-1 text-xs text-propel-teal hover:text-propel-teal/80 underline font-medium"
+                                        >
+                                            Retry
+                                        </button>
+                                    )}
                                 </>
                             )}
                         </div>
@@ -127,8 +135,12 @@ function SaveStatusBar({ lastSaved, onSaveDraft, onLoadDraft, onStartOver, supab
                     <h4 className="font-medium text-gray-700 mb-2">Saving Your Progress</h4>
                     <ul className="space-y-1.5">
                         <li className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
-                            <span className="text-propel-teal font-bold whitespace-nowrap">Auto-save:</span>
+                            <span className="text-propel-teal font-bold whitespace-nowrap">Local save:</span>
                             <span>Your responses are automatically saved to this browser. Resume later on the same device.</span>
+                        </li>
+                        <li className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
+                            <span className="text-propel-teal font-bold whitespace-nowrap">Cloud sync:</span>
+                            <span>When signed in, your progress also syncs to the cloud so you can resume on any device.</span>
                         </li>
                         <li className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
                             <span className="text-propel-teal font-bold whitespace-nowrap">Save Draft:</span>
