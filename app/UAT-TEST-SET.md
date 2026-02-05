@@ -14,9 +14,9 @@
 
 | # | Test Case | Steps | Expected Result | Result | Notes |
 |---|-----------|-------|-----------------|--------|-------|
-| 1.1 | Login page displays on first visit | Navigate to the app URL | Login page shows with Providence logo, "Propel Onboarding" title, email input, and "Send magic link" button | | |
-| 1.2 | Magic link sent for valid email | Enter a valid email address, click "Send magic link" | Green success message: "Check your email for the magic link to sign in." | | |
-| 1.3 | Error shown for invalid email | Enter an invalid email (e.g., "notanemail"), click "Send magic link" | Browser validation prevents submission OR error message displays | | |
+| 1.1 | Login page displays on first visit | Navigate to the app URL | Login page shows with "Propel Onboarding" title, email input, and "Send sign-in link" button | | |
+| 1.2 | Magic link sent for valid email | Enter a valid email address, click "Send sign-in link" | "Check your email" screen displays with email icon and the user's email address | | |
+| 1.3 | Error shown for invalid email | Enter an invalid email (e.g., "notanemail"), click "Send sign-in link" | Browser validation prevents submission OR error message displays | | |
 | 1.4 | Magic link authenticates user | Click the magic link received via email | User is redirected to the app and sees the form wizard (loading spinner, then form) | | |
 | 1.5 | Sign out works | Click the user/auth button in the header, sign out | User returns to login page; refreshing page still shows login | | |
 
