@@ -22,9 +22,9 @@
 ## Architecture Notes
 
 ### Authentication
-- Supabase Auth with magic links (PKCE flow)
-- **Critical**: `AuthProvider.jsx` must call `exchangeCodeForSession(code)` on mount to exchange the URL `code` param for a session — without this, users land on login page after clicking magic link
-- OTP code entry does NOT work for Providence (enterprise email systems block the emails)
+- **Magic link only** — no OTP code entry (Providence enterprise email blocks OTP emails)
+- Flow: Enter email → receive magic link → click link → logged in
+- **Critical**: `AuthProvider.jsx` calls `exchangeCodeForSession(code)` on mount to exchange the URL `code` param for a session — without this, users land on login page after clicking magic link
 - Supabase Dashboard: "Confirm email" is disabled (Auth → Providers → Email) to avoid double-email flow
 - Auth state managed by `AuthProvider.jsx` → `useAuth()` hook
 
