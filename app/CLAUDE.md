@@ -22,11 +22,11 @@
 ## Architecture Notes
 
 ### Authentication
-- **Magic link only** — no OTP code entry (Providence enterprise email blocks OTP emails)
-- Flow: Enter email → receive magic link → click link → logged in
-- **Critical**: `AuthProvider.jsx` calls `exchangeCodeForSession(code)` on mount to exchange the URL `code` param for a session — without this, users land on login page after clicking magic link
-- Supabase Dashboard: "Confirm email" is disabled (Auth → Providers → Email) to avoid double-email flow
-- Auth state managed by `AuthProvider.jsx` → `useAuth()` hook
+- **TEMPORARILY DISABLED** for UAT testing (Supabase magic link flow has issues)
+- To re-enable: restore `useAuth`, `isAuthenticated` checks, and `LoginPage` import in `App.jsx`
+- When enabled: Magic link only (no OTP code entry — Providence enterprise email blocks OTP emails)
+- `AuthProvider.jsx` has `exchangeCodeForSession(code)` for PKCE flow
+- Cloud sync requires authenticated user; currently disabled with auth off
 
 ### Auto-Save
 - **Local**: localStorage, 2-second debounce, always active
