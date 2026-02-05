@@ -19,13 +19,13 @@
 |-------|--------|
 | **Test Case** | 1.4 — Enter a never-used email, request magic link, click link, verify account created and user lands on form |
 | **Result** | FAIL |
-| **Observed** | New user gets confirmation email (not magic link). Email security scanners (Microsoft Safe Links) pre-click the confirmation URL, consuming the one-time token before the user can click it. User sees "Email link is invalid or has expired." Must request another link (which now sends a magic_link type since account exists). |
-| **Root Cause** | Two issues: (1) Supabase sends `mail_type: confirmation` for new users instead of `magic_link` — this requires a second email to actually sign in. (2) Microsoft Safe Links (IPs `35.171.99.211`, `104.47.58.254`, `134.199.66.170`, `209.50.249.181`) pre-click links in emails, consuming one-time tokens before users can use them. |
-| **Evidence** | Supabase auth logs show: `user_confirmation_requested` at 21:17:16 with `mail_type: confirmation`. Token consumed by scanner IP `35.171.99.211` at 21:17:50. User IP `76.146.208.176` gets "One-time token not found" at 21:18:59. |
-| **Fix Applied** | (1) Updated `AuthProvider.jsx` to call `exchangeCodeForSession(code)` on mount when URL contains `code` param — this exchanges the PKCE code for a session so users land logged in. (2) Simplified `LoginPage.jsx` to magic-link-only flow (removed OTP code entry — those emails don't get through Providence enterprise systems). |
-| **Files Changed** | `src/components/auth/AuthProvider.jsx`, `src/components/auth/LoginPage.jsx` |
-| **Supabase Config** | Disabled "Confirm email" in Dashboard → Auth → Providers → Email (avoids double-email flow for new users). |
-| **Retest Required** | Yes — verify both new and existing users can sign in via magic link click |
+| **Observed** | New user gets confirmation email (not magic link). Email security scanners (Microsoft Safe Links) pre-click the confirmation URL, consuming the one-time token before the user can click it. User sees "Email link is invalid or has expired." Supabase OTP emails also blocked by Providence enterprise email security. |
+| **Root Cause** | Providence enterprise email security blocks both: (1) Magic link emails — Safe Links pre-clicks URLs, consuming tokens. (2) OTP code emails — blocked entirely by email filters. No email-based auth method works reliably. |
+| **Evidence** | Supabase auth logs show: `user_confirmation_requested` at 21:17:16 with `mail_type: confirmation`. Token consumed by scanner IP `35.171.99.211` at 21:17:50. User IP `76.146.208.176` gets "One-time token not found" at 21:18:59. OTP emails never arrive. |
+| **Fix Applied** | Implemented admin-generated code system that bypasses email entirely: (1) Created `manual_login_codes` table with `generate_login_code()` SQL function. (2) Admin generates code via Supabase SQL, shares via Slack/Teams. (3) User enters email + 6-digit code on login page. (4) Code verified against table, 24hr session stored in localStorage. (5) Added RLS policies for anonymous cloud sync. |
+| **Files Changed** | `src/components/auth/AuthProvider.jsx`, `src/components/auth/LoginPage.jsx`, `src/App.jsx` |
+| **Supabase Config** | Created `manual_login_codes` table. Added `generate_login_code()` function. Added UAT anonymous RLS policies on `onboarding_submissions`. |
+| **Retest Required** | Yes — verify admin-generated code login flow works |
 
 ### FAIL 12.1 — Cloud Sync / Auto-Save to Supabase
 
@@ -95,8 +95,9 @@
 
 | File | Changes |
 |------|---------|
-| `src/components/auth/LoginPage.jsx` | Magic-link-only flow (no OTP code entry — blocked by Providence email), removed Providence logo, updated tagline |
-| `src/components/auth/AuthProvider.jsx` | Added `exchangeCodeForSession(code)` to handle PKCE magic link redirects |
+| `src/components/auth/LoginPage.jsx` | Admin-generated code entry (email + 6-digit code), removed Providence logo, updated tagline |
+| `src/components/auth/AuthProvider.jsx` | Added `verifyManualCode()` for admin code auth, localStorage session persistence (24hr) |
+| `src/App.jsx` | Re-enabled authentication with admin code flow |
 | `src/components/FormWizard.jsx` | Added `useAuth()` + `user_id` to saves, hidden Previous on Step 1, added cloud sync retry handler |
 | `src/components/ReviewStep.jsx` | Added `useAuth()` + `user_id` to final submission save |
 | `src/components/SaveStatusBar.jsx` | Persistent error state, Retry button, local/cloud messaging, help text |
@@ -119,8 +120,8 @@
 
 All items below require retesting in the next UAT round:
 
-- [ ] **1.4** — New user sign-up via magic link click (both new and existing users)
-- [ ] **1.1** — Login page UI (no Providence logo, correct tagline)
+- [ ] **1.1-1.7** — Admin-generated code login (email + code entry, invalid code error, session persistence)
+- [ ] **1.1** — Login page UI (no Providence logo, correct tagline, code entry field)
 - [ ] **2.1** — No Previous button on Step 1; Platform/Discover not in program list
 - [ ] **4.5** — Phone validation error indicator in Contact groups
 - [ ] **5.3** — Phone/email validation error indicator in Stakeholder groups

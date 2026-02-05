@@ -14,11 +14,13 @@
 
 | # | Test Case | Steps | Expected Result | Result | Notes |
 |---|-----------|-------|-----------------|--------|-------|
-| 1.1 | Login page displays on first visit | Navigate to the app URL | Login page shows with "Propel Onboarding" title, email input, and "Send sign-in link" button | | |
-| 1.2 | Magic link sent for valid email | Enter a valid email address, click "Send sign-in link" | "Check your email" screen displays with email icon and the user's email address | | |
-| 1.3 | Error shown for invalid email | Enter an invalid email (e.g., "notanemail"), click "Send sign-in link" | Browser validation prevents submission OR error message displays | | |
-| 1.4 | Magic link authenticates user | Click the magic link received via email | User is redirected to the app and sees the form wizard (loading spinner, then form) | | |
-| 1.5 | Sign out works | Click the user/auth button in the header, sign out | User returns to login page; refreshing page still shows login | | |
+| 1.1 | Login page displays on first visit | Navigate to the app URL | Login page shows with "Propel Onboarding" title, email input, 6-digit code input, and "Sign in" button | | |
+| 1.2 | Code required for login | Enter email only, observe "Sign in" button | Button is disabled until 6-digit code is entered | | |
+| 1.3 | Error shown for invalid email | Enter an invalid email (e.g., "notanemail"), enter code, click "Sign in" | Browser validation prevents submission OR error message displays | | |
+| 1.4 | Valid code authenticates user | Enter email and valid 6-digit code (from admin), click "Sign in" | User sees loading spinner, then form wizard appears | | |
+| 1.5 | Invalid code shows error | Enter email and wrong code (e.g., "000000"), click "Sign in" | Error message: "Invalid or expired code" | | |
+| 1.6 | Sign out works | Click the user/auth button in the header, sign out | User returns to login page; refreshing page still shows login | | |
+| 1.7 | Session persists on refresh | After logging in, refresh the page | User remains logged in (24hr session in localStorage) | | |
 
 ---
 
