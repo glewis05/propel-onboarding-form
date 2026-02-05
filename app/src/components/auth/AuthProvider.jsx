@@ -14,6 +14,36 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Handle auth redirect (magic link, OAuth callback)
+        const handleAuthRedirect = async () => {
+            const url = new URL(window.location.href);
+            const code = url.searchParams.get('code');
+            const error = url.searchParams.get('error');
+            const errorDescription = url.searchParams.get('error_description');
+
+            // Handle error from OAuth/magic link
+            if (error) {
+                console.error('[AuthProvider] Auth redirect error:', error, errorDescription);
+                return;
+            }
+
+            // Exchange code for session (PKCE flow)
+            if (code) {
+                debugLog('[AuthProvider] Exchanging code for session...');
+                const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+                if (exchangeError) {
+                    console.error('[AuthProvider] Code exchange failed:', exchangeError);
+                } else {
+                    debugLog('[AuthProvider] Session established:', data.user?.email);
+                    // Clean URL (remove code param)
+                    window.history.replaceState({}, '', window.location.pathname);
+                }
+            }
+        };
+
+        handleAuthRedirect();
+
         // Get initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             debugLog('[AuthProvider] Initial session:', session?.user?.email || 'none');
