@@ -22,9 +22,10 @@
 ## Architecture Notes
 
 ### Authentication
-- Supabase Auth with OTP code entry (6-digit code typed by user, not magic link click)
-- Reason: Enterprise email security scanners (Microsoft Safe Links) pre-click magic links, consuming one-time tokens
-- Magic links in the email still work as a fallback for environments without link scanners
+- Supabase Auth with magic links (PKCE flow)
+- **Critical**: `AuthProvider.jsx` must call `exchangeCodeForSession(code)` on mount to exchange the URL `code` param for a session — without this, users land on login page after clicking magic link
+- OTP code entry does NOT work for Providence (enterprise email systems block the emails)
+- Supabase Dashboard: "Confirm email" is disabled (Auth → Providers → Email) to avoid double-email flow
 - Auth state managed by `AuthProvider.jsx` → `useAuth()` hook
 
 ### Auto-Save
