@@ -2,26 +2,27 @@ import { useState, useEffect } from 'react';
 import FormContext from './context/FormContext';
 import FormWizard from './components/FormWizard';
 import ErrorBoundary from './components/ErrorBoundary';
+import LoginPage from './components/auth/LoginPage';
+import { useAuth } from './components/auth/AuthProvider';
 import { fetchProgramsFromSupabase } from './services/supabase';
 import { debugLog } from './utils/debug';
 
 /**
  * App - Root component that loads configuration and provides context
- *
- * NOTE: Authentication is temporarily disabled for UAT testing.
- * To re-enable: restore useAuth, isAuthenticated checks, and LoginPage import.
+ * Gates access behind authentication (admin-generated codes)
  */
 function App() {
-    // AUTH DISABLED FOR UAT - uncomment to re-enable:
-    // const { loading: authLoading, isAuthenticated } = useAuth();
+    const { loading: authLoading, isAuthenticated } = useAuth();
     const [formDefinition, setFormDefinition] = useState(null);
     const [referenceData, setReferenceData] = useState(null);
     const [testCatalog, setTestCatalog] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Load configuration on mount
+    // Load configuration on mount (only when authenticated)
     useEffect(() => {
+        if (!isAuthenticated) return;
+
         debugLog('[App] Loading configuration files...');
 
         Promise.all([
@@ -53,7 +54,24 @@ function App() {
                 setError(`Failed to load configuration: ${err.message}`);
                 setLoading(false);
             });
-    }, []);
+    }, [isAuthenticated]);
+
+    // Auth loading state
+    if (authLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-propel-navy">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+                    <p className="text-white/60">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Not authenticated - show login page
+    if (!isAuthenticated) {
+        return <LoginPage />;
+    }
 
     // Loading form configuration
     if (loading) {

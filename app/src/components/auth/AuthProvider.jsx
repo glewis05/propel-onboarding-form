@@ -5,8 +5,15 @@ import { debugLog } from '../../utils/debug';
 // Create auth context
 const AuthContext = createContext(null);
 
+// Local storage key for manual auth
+const MANUAL_AUTH_KEY = 'propel_manual_auth';
+
 /**
  * AuthProvider - Manages authentication state and provides auth context
+ *
+ * Supports two auth modes:
+ * 1. Supabase Auth (magic links) - when working
+ * 2. Manual code auth - admin generates code, user enters it
  */
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
@@ -14,20 +21,36 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Handle auth redirect (magic link, OAuth callback)
+        // Check for manual auth first
+        const manualAuth = localStorage.getItem(MANUAL_AUTH_KEY);
+        if (manualAuth) {
+            try {
+                const parsed = JSON.parse(manualAuth);
+                if (parsed.email && parsed.expiresAt > Date.now()) {
+                    debugLog('[AuthProvider] Restored manual auth:', parsed.email);
+                    setUser({ email: parsed.email, id: null, isManualAuth: true });
+                    setLoading(false);
+                    return;
+                } else {
+                    localStorage.removeItem(MANUAL_AUTH_KEY);
+                }
+            } catch (e) {
+                localStorage.removeItem(MANUAL_AUTH_KEY);
+            }
+        }
+
+        // Handle Supabase auth redirect (magic link, OAuth callback)
         const handleAuthRedirect = async () => {
             const url = new URL(window.location.href);
             const code = url.searchParams.get('code');
             const error = url.searchParams.get('error');
             const errorDescription = url.searchParams.get('error_description');
 
-            // Handle error from OAuth/magic link
             if (error) {
                 console.error('[AuthProvider] Auth redirect error:', error, errorDescription);
                 return;
             }
 
-            // Exchange code for session (PKCE flow)
             if (code) {
                 debugLog('[AuthProvider] Exchanging code for session...');
                 const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
@@ -36,7 +59,6 @@ export function AuthProvider({ children }) {
                     console.error('[AuthProvider] Code exchange failed:', exchangeError);
                 } else {
                     debugLog('[AuthProvider] Session established:', data.user?.email);
-                    // Clean URL (remove code param)
                     window.history.replaceState({}, '', window.location.pathname);
                 }
             }
@@ -44,7 +66,7 @@ export function AuthProvider({ children }) {
 
         handleAuthRedirect();
 
-        // Get initial session
+        // Get initial Supabase session
         supabase.auth.getSession().then(({ data: { session } }) => {
             debugLog('[AuthProvider] Initial session:', session?.user?.email || 'none');
             setSession(session);
@@ -52,7 +74,7 @@ export function AuthProvider({ children }) {
             setLoading(false);
         });
 
-        // Listen for auth changes
+        // Listen for Supabase auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
                 debugLog('[AuthProvider] Auth state changed:', event);
@@ -65,52 +87,73 @@ export function AuthProvider({ children }) {
         return () => subscription.unsubscribe();
     }, []);
 
-    // Sign in with Google
-    const signInWithGoogle = async () => {
-        debugLog('[AuthProvider] Initiating Google sign-in');
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: window.location.origin
-            }
-        });
+    // Verify manual login code against our table
+    const verifyManualCode = async (email, code) => {
+        debugLog('[AuthProvider] Verifying manual code for:', email);
+
+        const { data, error } = await supabase
+            .from('manual_login_codes')
+            .select('*')
+            .eq('email', email.toLowerCase())
+            .eq('code', code)
+            .is('used_at', null)
+            .gt('expires_at', new Date().toISOString())
+            .maybeSingle();
+
         if (error) {
-            console.error('[AuthProvider] Google sign-in error:', error);
-            throw error;
+            console.error('[AuthProvider] Code verification error:', error);
+            throw new Error('Failed to verify code');
         }
+
+        if (!data) {
+            throw new Error('Invalid or expired code');
+        }
+
+        // Mark code as used
+        await supabase
+            .from('manual_login_codes')
+            .update({ used_at: new Date().toISOString() })
+            .eq('id', data.id);
+
+        // Store manual auth in localStorage (24 hour session)
+        const authData = {
+            email: email.toLowerCase(),
+            expiresAt: Date.now() + (24 * 60 * 60 * 1000),
+            verifiedAt: Date.now()
+        };
+        localStorage.setItem(MANUAL_AUTH_KEY, JSON.stringify(authData));
+
+        // Set user state
+        setUser({ email: email.toLowerCase(), id: null, isManualAuth: true });
+        debugLog('[AuthProvider] Manual auth successful:', email);
+
+        return { success: true, email: email.toLowerCase() };
     };
 
-    // Sign in with email magic link
-    const signInWithEmail = async (email) => {
-        debugLog('[AuthProvider] Sending magic link to:', email);
-        const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-                emailRedirectTo: window.location.origin
-            }
-        });
-        if (error) {
-            console.error('[AuthProvider] Magic link error:', error);
-            throw error;
-        }
-    };
-
-    // Sign out
+    // Sign out (handles both Supabase and manual auth)
     const signOut = async () => {
         debugLog('[AuthProvider] Signing out');
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error('[AuthProvider] Sign out error:', error);
-            throw error;
+
+        // Clear manual auth
+        localStorage.removeItem(MANUAL_AUTH_KEY);
+
+        // Clear Supabase session if exists
+        if (session) {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error('[AuthProvider] Sign out error:', error);
+            }
         }
+
+        setUser(null);
+        setSession(null);
     };
 
     const value = {
         user,
         session,
         loading,
-        signInWithGoogle,
-        signInWithEmail,
+        verifyManualCode,
         signOut,
         isAuthenticated: !!user
     };

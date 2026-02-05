@@ -22,11 +22,12 @@
 ## Architecture Notes
 
 ### Authentication
-- **TEMPORARILY DISABLED** for UAT testing (Supabase magic link flow has issues)
-- To re-enable: restore `useAuth`, `isAuthenticated` checks, and `LoginPage` import in `App.jsx`
-- When enabled: Magic link only (no OTP code entry — Providence enterprise email blocks OTP emails)
-- `AuthProvider.jsx` has `exchangeCodeForSession(code)` for PKCE flow
-- Cloud sync requires authenticated user; currently disabled with auth off
+- **Admin-generated codes** — bypasses email delivery issues with enterprise security
+- Flow: Admin generates code via SQL → shares via Slack/Teams → user enters email + code
+- `manual_login_codes` table stores codes with expiry (default 24 hours)
+- Generate code: `SELECT generate_login_code('user@example.com');`
+- Auth state stored in localStorage (24 hour session)
+- Cloud sync uses `user_id = null` for manual auth users (RLS allows this)
 
 ### Auto-Save
 - **Local**: localStorage, 2-second debounce, always active
