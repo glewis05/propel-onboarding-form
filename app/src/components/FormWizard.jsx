@@ -109,7 +109,9 @@ function FormWizard({ formDefinition }) {
 
     // Supabase auto-save
     useEffect(() => {
-        const submitterEmail = formData.submitter_email
+        // Use authenticated user's email first, then fall back to form fields
+        const submitterEmail = user?.email
+            || formData.submitter_email
             || formData.clinic_champion?.email
             || formData.contact_primary?.email
             || formData.genetic_counselor?.email;
@@ -149,11 +151,13 @@ function FormWizard({ formDefinition }) {
         }, 2000);
 
         return () => clearTimeout(timeoutId);
-    }, [formData, currentStep, isTabVisible]);
+    }, [formData, currentStep, isTabVisible, user, supabaseDraftId]);
 
     // Manual retry for cloud sync
     const handleRetryCloudSync = async () => {
-        const submitterEmail = formData.submitter_email
+        // Use authenticated user's email first, then fall back to form fields
+        const submitterEmail = user?.email
+            || formData.submitter_email
             || formData.clinic_champion?.email
             || formData.contact_primary?.email
             || formData.genetic_counselor?.email;
