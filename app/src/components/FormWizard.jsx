@@ -133,7 +133,8 @@ function FormWizard({ formDefinition }) {
                     program_id: formData.program || '',
                     form_data: { formData, currentStep },
                     status: 'draft',
-                    user_id: user?.id
+                    user_id: user?.id,
+                    submission_id: supabaseDraftId
                 });
 
                 setSupabaseDraftId(result.submission_id);
@@ -173,7 +174,8 @@ function FormWizard({ formDefinition }) {
                 program_id: formData.program || '',
                 form_data: { formData, currentStep },
                 status: 'draft',
-                user_id: user?.id
+                user_id: user?.id,
+                submission_id: supabaseDraftId
             });
 
             setSupabaseDraftId(result.submission_id);

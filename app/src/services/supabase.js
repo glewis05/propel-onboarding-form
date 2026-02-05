@@ -65,9 +65,10 @@ export async function fetchProgramsFromSupabase() {
  * @param {Object} params.form_data - Complete form data as JSON
  * @param {string} params.status - 'draft' or 'submitted'
  * @param {string} params.user_id - Optional user ID for authenticated users
+ * @param {string} params.submission_id - Optional existing submission ID for updates
  * @returns {Promise<Object>} The saved submission record
  */
-export async function saveOnboardingSubmission({ submitter_email, submitter_name, program_id, form_data, status, user_id = null }) {
+export async function saveOnboardingSubmission({ submitter_email, submitter_name, program_id, form_data, status, user_id = null, submission_id = null }) {
     try {
         // If no user_id provided, try to get it from the current session
         if (!user_id) {
@@ -75,13 +76,30 @@ export async function saveOnboardingSubmission({ submitter_email, submitter_name
             user_id = user?.id || null;
         }
 
-        // Check if a draft already exists for this user
+        // Check if we should update an existing submission
         let existing = null;
-        if (user_id) {
+
+        // First, use the provided submission_id if available
+        if (submission_id) {
+            existing = { submission_id };
+        }
+        // Otherwise, look for existing draft by user_id
+        else if (user_id) {
             const { data } = await supabase
                 .from('onboarding_submissions')
                 .select('submission_id')
                 .eq('user_id', user_id)
+                .eq('submission_status', 'draft')
+                .limit(1)
+                .maybeSingle();
+            existing = data;
+        }
+        // For manual auth (no user_id), look for existing draft by email
+        else if (submitter_email) {
+            const { data } = await supabase
+                .from('onboarding_submissions')
+                .select('submission_id')
+                .eq('submitter_email', submitter_email)
                 .eq('submission_status', 'draft')
                 .limit(1)
                 .maybeSingle();
