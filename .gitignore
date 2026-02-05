@@ -27,3 +27,6 @@ npm-debug.log*
 
 # Original repo archive (keep local only)
 original-repo
+
+# Excel temp files
+~$*.xlsx

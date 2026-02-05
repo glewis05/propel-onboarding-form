@@ -8,15 +8,16 @@
 - 151 tests across 11 files
 
 ### UAT Test Cases
+- **Location**: `docs/UAT-TEST-SET.xlsx` and `docs/UAT-TEST-SET.md`
 - **Format: Always generate UAT test cases as Excel (.xlsx), not Markdown.**
   - Excel is human-friendly for testers to fill in results, track pass/fail, and sign off.
   - Use dropdowns for Result columns (PASS/FAIL/SKIP) and conditional formatting (green=PASS, red=FAIL).
   - Include sheets: Test Cases, Summary (with SUM formulas), Sign-off.
-- **Test set**: `UAT-TEST-SET.xlsx` (133 test cases, 12 sections)
 
 ### UAT Validation
-- **Validation log**: `UAT-VALIDATION-LOG.md` — the single source of truth for all UAT findings, root cause analysis, fixes applied, files changed, and retest requirements.
-- When performing validation or retesting, always read `UAT-VALIDATION-LOG.md` first to understand what was fixed and what needs retesting.
+- **Location**: `docs/UAT-VALIDATION-LOG.md`
+- Single source of truth for all UAT findings, root cause analysis, fixes applied, files changed, and retest requirements.
+- When performing validation or retesting, always read the validation log first to understand what was fixed and what needs retesting.
 - After each UAT round, update the validation log with new results, adding a new "UAT Round N" section.
 
 ## Architecture Notes
