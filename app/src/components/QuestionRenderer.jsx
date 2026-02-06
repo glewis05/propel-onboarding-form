@@ -51,6 +51,13 @@ function QuestionRenderer({ question, value, onChange, errors, formData }) {
             options = filterConditionalOptions(options, question.conditional_options, formData);
         }
 
+        // Filter test panels by selected lab partner
+        if ((question.question_id === 'test_panel' || question.question_id === 'test_code') && formData.lab_partner) {
+            const beforeCount = options.length;
+            options = options.filter(opt => !opt.lab || opt.lab === formData.lab_partner);
+            debugLog(`[QuestionRenderer] Filtering tests by lab ${formData.lab_partner}: ${beforeCount} → ${options.length}`);
+        }
+
         // For additional test panels (test_code), exclude the default panel already selected
         if (question.question_id === 'test_code' && formData.test_panel) {
             options = options.filter(opt => opt.value !== formData.test_panel);

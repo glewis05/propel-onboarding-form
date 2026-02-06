@@ -7,7 +7,7 @@
     {"value": "GRX", "display_name": "GenoRx", "description": "Pharmacogenomics program"}
   ],
 
-  "_comment_test_panels": "Ambry Genetics test panel options - 3 base tests with separate RNA checkbox",
+  "_comment_test_panels": "Test panel options by lab - each has a 'lab' field for filtering",
   "_comment_test_codes": "Each test has a base code and RNA code. RNA checkbox adds RNAInsight® and uses test_code_rna",
   "test_panels": [
     {
@@ -17,7 +17,8 @@
       "test_code_rna": "8824-R",
       "description": "Build a custom panel from 90 available cancer-related genes",
       "gene_count": null,
-      "is_custom": true
+      "is_custom": true,
+      "lab": "AMBRY"
     },
     {
       "value": "cancernext_expanded",
@@ -27,7 +28,8 @@
       "description": "Comprehensive hereditary cancer panel (77 genes)",
       "gene_count": 77,
       "is_custom": false,
-      "has_gene_list": true
+      "has_gene_list": true,
+      "lab": "AMBRY"
     },
     {
       "value": "cancernext_expanded_leg",
@@ -38,7 +40,17 @@
       "gene_count": 85,
       "is_custom": false,
       "has_gene_list": true,
-      "includes_limited_evidence": true
+      "includes_limited_evidence": true,
+      "lab": "AMBRY"
+    },
+    {
+      "value": "helix_pgx_panel",
+      "display_name": "Helix PGx Panel",
+      "test_code": "HLX-PGX",
+      "description": "Pharmacogenomics panel for medication response",
+      "gene_count": 15,
+      "is_custom": false,
+      "lab": "HELIX"
     }
   ],
 
@@ -67,14 +79,15 @@
     }
   },
 
-  "_comment_all_test_panels": "FIX 4d: Complete list of ALL available tests for Additional Test Panels (Page 7)",
+  "_comment_all_test_panels": "Complete list of ALL available tests for Additional Test Panels - filtered by lab_partner",
   "all_test_panels": [
     {
       "value": "customnext_cancer",
       "display_name": "CustomNext-Cancer®",
       "test_code": "8824",
       "description": "Build a custom panel from 90 available cancer-related genes",
-      "is_custom": true
+      "is_custom": true,
+      "lab": "AMBRY"
     },
     {
       "value": "cancernext_expanded",
@@ -82,7 +95,8 @@
       "test_code": "8875",
       "description": "Comprehensive hereditary cancer panel (77 genes)",
       "gene_count": 77,
-      "has_gene_list": true
+      "has_gene_list": true,
+      "lab": "AMBRY"
     },
     {
       "value": "cancernext_expanded_rna",
@@ -90,7 +104,8 @@
       "test_code": "8875-R",
       "description": "CancerNext-Expanded (77 genes) with RNA analysis for enhanced variant interpretation",
       "gene_count": 77,
-      "has_gene_list": true
+      "has_gene_list": true,
+      "lab": "AMBRY"
     },
     {
       "value": "cancernext_expanded_leg",
@@ -99,7 +114,8 @@
       "description": "Base panel (77 genes) + limited evidence genes (8 genes) = 85 total",
       "gene_count": 85,
       "has_gene_list": true,
-      "includes_limited_evidence": true
+      "includes_limited_evidence": true,
+      "lab": "AMBRY"
     },
     {
       "value": "cancernext_expanded_leg_rna",
@@ -108,7 +124,16 @@
       "description": "Full expanded panel (85 genes) with RNA analysis",
       "gene_count": 85,
       "has_gene_list": true,
-      "includes_limited_evidence": true
+      "includes_limited_evidence": true,
+      "lab": "AMBRY"
+    },
+    {
+      "value": "helix_pgx_panel",
+      "display_name": "Helix PGx Panel",
+      "test_code": "HLX-PGX",
+      "description": "Pharmacogenomics panel for medication response",
+      "gene_count": 15,
+      "lab": "HELIX"
     }
   ],
 
