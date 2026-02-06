@@ -44,8 +44,9 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
         const outputData = getOutputData();
         debugLog('[ReviewStep] Submitting to Supabase:', outputData.clinic_name);
 
-        // Get submitter info from available contact fields
-        const submitterEmail = formData.submitter_email
+        // Get submitter info - prioritize logged-in user's email for draft association
+        const submitterEmail = user?.email
+            || formData.submitter_email
             || formData.clinic_champion?.email
             || formData.contact_primary?.email
             || formData.genetic_counselor?.email
