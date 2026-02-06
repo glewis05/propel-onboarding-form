@@ -38,5 +38,25 @@
 
 ### Supabase Project
 - Project ID: `royctwjkewpnrcqdyhzd` (propel-operations)
-- Key tables: `programs`, `onboarding_submissions`
+- Key tables: `programs`, `onboarding_submissions`, `manual_login_codes`
 - RLS is enabled on `onboarding_submissions` — INSERT/SELECT policies require `auth.uid() = user_id`
+
+### Test Panel Configuration
+- Test panels have a `lab` field (AMBRY or HELIX) for filtering
+- Lab partner selection filters available test panels automatically
+- Default test panel on Lab Config page is excluded from Additional Test Panels
+- P4M/PR4M → Ambry Genetics tests
+- GRX → Helix PGx tests
+
+### Resume Modal
+- Only shows drafts (not submitted forms)
+- Filters by authenticated user's email
+- Auto-restores without verification if user's email matches a contact in the draft
+- Submitted forms protected from accidental overwrite
+
+### Review Page & Word Document
+- Contacts/stakeholders display formatted (not JSON)
+- Checkboxes display "Yes" or "No"
+- Gene lists are expandable (show more/less toggle)
+- Word document has styled tables with borders, shading, and proper spacing
+- Ordering provider auto-populates from stakeholder on any navigation method

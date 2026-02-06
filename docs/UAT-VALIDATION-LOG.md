@@ -1,5 +1,161 @@
 # UAT Validation Log — Propel Onboarding Form
 
+## UAT Round 2
+
+- **Date**: 2026-02-05
+- **Tester**: Glen Lewis
+- **Environment**: Production (propel-onboarding-form.vercel.app)
+- **Focus**: Full form walkthrough, Review page, Word document export, Resume functionality
+
+---
+
+### Bugs Fixed (14 items)
+
+#### BUG 1 — Login Page Focus Jump
+| Field | Detail |
+|-------|--------|
+| **Observed** | After typing "@" in email field, each additional keystroke caused focus to jump to code field |
+| **Root Cause** | `useEffect` ran on every email change, re-triggering focus when email contained "@" |
+| **Fix Applied** | Added `hasAutoFocused` ref to only trigger focus once when email looks complete (contains @ + 2+ char domain) |
+| **Files Changed** | `src/components/auth/LoginPage.jsx` |
+
+#### BUG 2 — Page 8 (Filtering) Next Button Non-Functional
+| Field | Detail |
+|-------|--------|
+| **Observed** | Next button wouldn't work despite all required fields filled |
+| **Root Cause** | `provider_filter_list` validation treated array as object, causing false errors. `validateField` didn't handle array types properly. |
+| **Fix Applied** | Added proper `provider_filter_list` validation in `validateField()`. Excluded from generic composite validation. |
+| **Files Changed** | `src/utils/validation.js` |
+
+#### BUG 3 — Review Page Shows Raw JSON
+| Field | Detail |
+|-------|--------|
+| **Observed** | IT Contact, Program Champion, Providers in Filter displayed as `{"name":"Lance Anderson"}` |
+| **Root Cause** | `getDisplayValue()` only handled objects with both `name` AND `email`; fell through to `JSON.stringify` |
+| **Fix Applied** | Updated `getDisplayValue()` to handle objects with just `name`, arrays of `{first_name, last_name}`, and booleans |
+| **Files Changed** | `src/components/ReviewStep.jsx` |
+
+#### BUG 4 — Review Page Checkbox Shows Blank
+| Field | Detail |
+|-------|--------|
+| **Observed** | "Clinic Champion is also Primary Contact" field blank on Review page |
+| **Root Cause** | `if (!value)` check treated `false` as "Not provided" |
+| **Fix Applied** | Changed to `if (value === null || value === undefined || value === '')` and added boolean handling |
+| **Files Changed** | `src/components/ReviewStep.jsx` |
+
+#### BUG 5 — Word Document Shows Raw JSON
+| Field | Detail |
+|-------|--------|
+| **Observed** | Same JSON display issue in Word export |
+| **Fix Applied** | Updated `formatValue()` helper with same fixes as `getDisplayValue()` |
+| **Files Changed** | `src/components/ReviewStep.jsx` |
+
+#### BUG 6 — Resume Modal Shows All Drafts
+| Field | Detail |
+|-------|--------|
+| **Observed** | Resume modal showed all saved forms regardless of logged-in user |
+| **Fix Applied** | Filter drafts by authenticated user's email using `verifyEmailForDraft()` |
+| **Files Changed** | `src/components/ResumeModal.jsx` |
+
+#### BUG 7 — Final Submit Used Wrong Email
+| Field | Detail |
+|-------|--------|
+| **Observed** | Submit created new record instead of updating draft (email mismatch) |
+| **Root Cause** | `ReviewStep` didn't prioritize `user?.email`, fell back to `clinic_champion.email` |
+| **Fix Applied** | Added `user?.email` as first priority in submitter email lookup |
+| **Files Changed** | `src/components/ReviewStep.jsx` |
+
+---
+
+### Features Added
+
+#### Feature 1 — Remove Providence Branding
+| Field | Detail |
+|-------|--------|
+| **Changes** | Removed Providence logo from header, removed subtitle, changed title to "Propel Clinic Onboarding" |
+| **Files Changed** | `src/components/FormWizard.jsx`, `public/data/form-definition.json`, `src/components/ReviewStep.jsx` |
+
+#### Feature 2 — Test-to-Lab Vendor Filtering
+| Field | Detail |
+|-------|--------|
+| **Changes** | Added `lab` field to test panels. Test options filter by selected `lab_partner`. Added Helix PGx Panel. |
+| **Files Changed** | `public/data/reference-data.json`, `src/components/QuestionRenderer.jsx` |
+
+#### Feature 3 — Exclude Default Test Panel from Additional Panels
+| Field | Detail |
+|-------|--------|
+| **Changes** | Additional Test Panels dropdown excludes the panel already selected as default |
+| **Files Changed** | `src/components/QuestionRenderer.jsx` |
+
+#### Feature 4 — Provider Filter Validation Styling
+| Field | Detail |
+|-------|--------|
+| **Changes** | Added red border/shading to provider filter field on validation error |
+| **Files Changed** | `src/components/question-types/ProviderFilterList.jsx` |
+
+#### Feature 5 — Gene List Expand/Collapse
+| Field | Detail |
+|-------|--------|
+| **Changes** | Added `ExpandableGeneList` component with show more/less toggle, scrollable area |
+| **Files Changed** | `src/components/ReviewStep.jsx` |
+
+#### Feature 6 — Ordering Provider Auto-Populate on Any Navigation
+| Field | Detail |
+|-------|--------|
+| **Changes** | Extracted `autoPopulateOrderingProvider()` helper, called from `handleNext`, `handleStepClick`, `handleEditFromSummary` |
+| **Files Changed** | `src/components/FormWizard.jsx` |
+
+#### Feature 7 — Word Document Formatting Overhaul
+| Field | Detail |
+|-------|--------|
+| **Changes** | Added horizontal divider, summary info table with shading, borders on all tables, cell padding, consistent font sizes |
+| **Files Changed** | `src/components/ReviewStep.jsx` |
+
+#### Feature 8 — Lock Submitted Forms (Partial)
+| Field | Detail |
+|-------|--------|
+| **Changes** | Added protection against overwriting submitted forms. If draft save targets submitted form, creates new draft instead. |
+| **Files Changed** | `src/services/supabase.js` |
+
+#### Feature 9 — Resume Modal Auto-Restore
+| Field | Detail |
+|-------|--------|
+| **Changes** | If logged-in user's email matches a contact in the draft, auto-restore without verification prompt |
+| **Files Changed** | `src/components/ResumeModal.jsx` |
+
+---
+
+### All Files Modified in UAT Round 2
+
+| File | Changes |
+|------|---------|
+| `src/components/auth/LoginPage.jsx` | Fixed focus jump bug |
+| `src/utils/validation.js` | Fixed provider_filter_list validation |
+| `src/components/ReviewStep.jsx` | JSON display fixes, checkbox display, expandable gene list, Word formatting |
+| `src/components/FormWizard.jsx` | Removed Providence branding, ordering provider auto-populate |
+| `src/components/ResumeModal.jsx` | Filter by user email, auto-restore |
+| `src/components/QuestionRenderer.jsx` | Test-to-lab filtering, exclude default panel |
+| `src/components/question-types/ProviderFilterList.jsx` | Validation styling |
+| `src/services/supabase.js` | Submitted form protection |
+| `public/data/form-definition.json` | Updated title |
+| `public/data/reference-data.json` | Added lab field to test panels, Helix PGx |
+
+---
+
+### Retest Checklist (UAT Round 3)
+
+- [ ] Login page — focus stays in email field while typing
+- [ ] Page 8 (Filtering) — Next button works when all fields filled
+- [ ] Review page — contacts/stakeholders display formatted, checkboxes show Yes/No
+- [ ] Word document — formatted tables, no JSON display
+- [ ] Resume modal — only shows current user's drafts, auto-restores
+- [ ] Test panels — filter by selected lab partner
+- [ ] Additional Test Panels — excludes default panel
+- [ ] Ordering providers — auto-populate from stakeholder on direct navigation
+- [ ] Gene list — expand/collapse works on Review page
+
+---
+
 ## UAT Round 1
 
 - **Date**: 2026-02-04
