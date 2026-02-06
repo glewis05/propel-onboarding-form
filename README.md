@@ -51,6 +51,7 @@ Deployed to Vercel. Push to `main` branch triggers automatic deployment.
 
 ## Documentation
 
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - Full architecture reference (component tree, data flow, output schema)
 - [CLAUDE.md](./CLAUDE.md) - AI assistant context and instructions
 - [docs/](./docs/) - UAT test cases, validation logs, schemas
 

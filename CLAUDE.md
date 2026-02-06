@@ -1,5 +1,7 @@
 # Propel Onboarding Form — Project Notes
 
+> For full architecture details (component tree, data flow, service layer, output schema), see [ARCHITECTURE.md](./ARCHITECTURE.md).
+
 ## Testing
 
 ### Unit Tests
