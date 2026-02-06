@@ -99,6 +99,20 @@ export function validateField(value, question) {
                 return `${question.label}: Please select at least one gene`;
             }
         }
+        // For provider_filter_list, check array has items with valid first/last name
+        if (question.type === 'provider_filter_list') {
+            const minItems = question.repeatable_config?.min_items || 1;
+            if (!Array.isArray(value) || value.length < minItems) {
+                return `${question.label}: Please add at least ${minItems} provider(s)`;
+            }
+            // Check that each item has required fields filled
+            const invalidItems = value.filter(item =>
+                !item.first_name?.trim() || !item.last_name?.trim()
+            );
+            if (invalidItems.length > 0) {
+                return `${question.label}: Please fill in first and last name for all providers`;
+            }
+        }
         // For select_with_alternates, check if default value is selected
         if (question.type === 'select_with_alternates') {
             if (typeof value === 'object' && !value.default) {
@@ -196,7 +210,8 @@ export function validateStep(step, formData, compositeTypes) {
             }
 
             // Validate composite type fields
-            if (compositeTypes[question.type]) {
+            // Skip for provider_filter_list - it uses array structure and is validated in validateField
+            if (compositeTypes[question.type] && question.type !== 'provider_filter_list') {
                 const compositeValue = formData[question.question_id] || {};
                 compositeTypes[question.type].fields.forEach(field => {
                     if (field.required && !compositeValue[field.field_id]) {
