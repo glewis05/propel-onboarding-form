@@ -81,7 +81,20 @@ export async function saveOnboardingSubmission({ submitter_email, submitter_name
 
         // First, use the provided submission_id if available
         if (submission_id) {
-            existing = { submission_id };
+            // Verify the submission exists and is not already submitted (locked)
+            const { data: existingRecord } = await supabase
+                .from('onboarding_submissions')
+                .select('submission_id, submission_status')
+                .eq('submission_id', submission_id)
+                .maybeSingle();
+
+            if (existingRecord?.submission_status === 'submitted' && status === 'draft') {
+                // Don't overwrite a submitted form with draft data
+                debugLog('[Supabase] Submission already submitted, creating new draft instead');
+                existing = null; // Force new record creation
+            } else {
+                existing = existingRecord;
+            }
         }
         // Otherwise, look for existing draft by user_id
         else if (user_id) {

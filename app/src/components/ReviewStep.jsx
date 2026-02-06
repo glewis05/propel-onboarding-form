@@ -1,5 +1,42 @@
 import { useState, useContext } from 'react';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle } from 'docx';
+
+/**
+ * ExpandableGeneList - Shows genes with expand/collapse toggle
+ */
+function ExpandableGeneList({ genes }) {
+    const [expanded, setExpanded] = useState(false);
+    const maxDisplay = 10;
+
+    if (genes.length <= maxDisplay) {
+        return (
+            <span>
+                <span className="font-medium">{genes.length} genes:</span>{' '}
+                {genes.join(', ')}
+            </span>
+        );
+    }
+
+    return (
+        <div>
+            <span className="font-medium">{genes.length} genes:</span>{' '}
+            {expanded ? (
+                <span className="block mt-1 p-2 bg-gray-50 rounded text-xs leading-relaxed max-h-32 overflow-y-auto">
+                    {genes.join(', ')}
+                </span>
+            ) : (
+                <span>{genes.slice(0, maxDisplay).join(', ')}</span>
+            )}
+            <button
+                type="button"
+                onClick={() => setExpanded(!expanded)}
+                className="ml-2 text-propel-teal hover:underline text-xs"
+            >
+                {expanded ? 'Show less' : `...and ${genes.length - maxDisplay} more`}
+            </button>
+        </div>
+    );
+}
 import FormContext from '../context/FormContext';
 import { STORAGE_KEY, FORMSPREE_ENDPOINT } from '../constants';
 import { generateOutputJson } from '../utils/output-formatter';
@@ -180,32 +217,71 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
             new Paragraph({
                 text: 'Propel Clinic Onboarding Questionnaire',
                 heading: HeadingLevel.TITLE,
-                spacing: { after: 400 }
-            })
-        );
-
-        // Subtitle with clinic info
-        docChildren.push(
-            new Paragraph({
-                children: [
-                    new TextRun({ text: 'Clinic: ', bold: true }),
-                    new TextRun(output.clinic_name || 'Unknown'),
-                    new TextRun({ text: '  |  Program: ', bold: true }),
-                    new TextRun(output.program || 'Unknown'),
-                ],
                 spacing: { after: 200 }
             })
         );
 
+        // Horizontal line after title
         docChildren.push(
             new Paragraph({
-                children: [
-                    new TextRun({ text: 'Submitted: ', bold: true }),
-                    new TextRun(new Date(output.submitted_at).toLocaleString()),
-                ],
-                spacing: { after: 400 }
+                border: {
+                    bottom: { style: BorderStyle.SINGLE, size: 6, color: '003366' }
+                },
+                spacing: { after: 300 }
             })
         );
+
+        // Summary info box
+        docChildren.push(
+            new Table({
+                rows: [
+                    new TableRow({
+                        children: [
+                            new TableCell({
+                                children: [
+                                    new Paragraph({
+                                        children: [
+                                            new TextRun({ text: 'Clinic: ', bold: true }),
+                                            new TextRun(output.clinic_name || 'Unknown')
+                                        ]
+                                    })
+                                ],
+                                shading: { fill: 'F5F5F5' },
+                                margins: { top: 100, bottom: 100, left: 150, right: 150 }
+                            }),
+                            new TableCell({
+                                children: [
+                                    new Paragraph({
+                                        children: [
+                                            new TextRun({ text: 'Program: ', bold: true }),
+                                            new TextRun(output.program || 'Unknown')
+                                        ]
+                                    })
+                                ],
+                                shading: { fill: 'F5F5F5' },
+                                margins: { top: 100, bottom: 100, left: 150, right: 150 }
+                            }),
+                            new TableCell({
+                                children: [
+                                    new Paragraph({
+                                        children: [
+                                            new TextRun({ text: 'Submitted: ', bold: true }),
+                                            new TextRun(new Date(output.submitted_at).toLocaleString())
+                                        ]
+                                    })
+                                ],
+                                shading: { fill: 'F5F5F5' },
+                                margins: { top: 100, bottom: 100, left: 150, right: 150 }
+                            })
+                        ]
+                    })
+                ],
+                width: { size: 100, type: WidthType.PERCENTAGE }
+            })
+        );
+
+        // Space after summary
+        docChildren.push(new Paragraph({ spacing: { after: 300 } }));
 
         // Process each step from form definition
         formDefinition.steps.forEach(step => {
@@ -245,12 +321,15 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                             return new TableRow({
                                 children: [
                                     new TableCell({
-                                        children: [new Paragraph({ children: [new TextRun({ text: q.label, bold: true })] })],
-                                        width: { size: 35, type: WidthType.PERCENTAGE }
+                                        children: [new Paragraph({ children: [new TextRun({ text: q.label, bold: true, size: 20 })] })],
+                                        width: { size: 35, type: WidthType.PERCENTAGE },
+                                        shading: { fill: 'F9F9F9' },
+                                        margins: { top: 50, bottom: 50, left: 100, right: 100 }
                                     }),
                                     new TableCell({
-                                        children: [new Paragraph(formatValue(item[q.question_id]))],
-                                        width: { size: 65, type: WidthType.PERCENTAGE }
+                                        children: [new Paragraph({ children: [new TextRun({ text: formatValue(item[q.question_id]), size: 20 })] })],
+                                        width: { size: 65, type: WidthType.PERCENTAGE },
+                                        margins: { top: 50, bottom: 50, left: 100, right: 100 }
                                     })
                                 ]
                             });
@@ -259,7 +338,15 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                         docChildren.push(
                             new Table({
                                 rows: rows,
-                                width: { size: 100, type: WidthType.PERCENTAGE }
+                                width: { size: 100, type: WidthType.PERCENTAGE },
+                                borders: {
+                                    top: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                                    bottom: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                                    left: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                                    right: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                                    insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                                    insideVertical: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' }
+                                }
                             })
                         );
                     });
@@ -274,12 +361,15 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                     rows.push(new TableRow({
                         children: [
                             new TableCell({
-                                children: [new Paragraph({ children: [new TextRun({ text: q.label, bold: true })] })],
-                                width: { size: 35, type: WidthType.PERCENTAGE }
+                                children: [new Paragraph({ children: [new TextRun({ text: q.label, bold: true, size: 20 })] })],
+                                width: { size: 35, type: WidthType.PERCENTAGE },
+                                shading: { fill: 'F9F9F9' },
+                                margins: { top: 50, bottom: 50, left: 100, right: 100 }
                             }),
                             new TableCell({
-                                children: [new Paragraph(formatValue(formData[q.question_id]))],
-                                width: { size: 65, type: WidthType.PERCENTAGE }
+                                children: [new Paragraph({ children: [new TextRun({ text: formatValue(formData[q.question_id]), size: 20 })] })],
+                                width: { size: 65, type: WidthType.PERCENTAGE },
+                                margins: { top: 50, bottom: 50, left: 100, right: 100 }
                             })
                         ]
                     }));
@@ -289,7 +379,15 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                     docChildren.push(
                         new Table({
                             rows: rows,
-                            width: { size: 100, type: WidthType.PERCENTAGE }
+                            width: { size: 100, type: WidthType.PERCENTAGE },
+                            borders: {
+                                top: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                                bottom: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                                left: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                                right: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                                insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                                insideVertical: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' }
+                            }
                         })
                     );
                 }
@@ -345,21 +443,12 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
             ));
         }
 
-        // Gene selector type
+        // Gene selector type - use expandable component
         if (questionType === 'gene_selector' && Array.isArray(value)) {
             if (value.length === 0) {
                 return <span className="text-gray-400">No genes selected</span>;
             }
-            const maxDisplay = 10;
-            const displayGenes = value.slice(0, maxDisplay).join(', ');
-            const remaining = value.length - maxDisplay;
-            return (
-                <span>
-                    <span className="font-medium">{value.length} genes:</span>{' '}
-                    {displayGenes}
-                    {remaining > 0 && <span className="text-gray-500"> ...and {remaining} more</span>}
-                </span>
-            );
+            return <ExpandableGeneList genes={value} />;
         }
 
         // Select with alternates type

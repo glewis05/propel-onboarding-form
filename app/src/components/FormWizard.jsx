@@ -326,6 +326,31 @@ function FormWizard({ formDefinition }) {
         return null;
     };
 
+    // Auto-populate ordering provider when navigating to that step
+    const autoPopulateOrderingProvider = (targetStepIndex) => {
+        const targetStep = steps[targetStepIndex];
+        if (targetStep?.step_id !== 'ordering_providers') return;
+
+        const stakeholderProvider = getStakeholderOrderingProvider(formData);
+        if (!stakeholderProvider) return;
+
+        const existingProviders = formData.ordering_providers || [];
+        const firstProvider = existingProviders[0];
+
+        // Only auto-populate if no provider exists or first provider was auto-filled
+        const shouldAutoPopulate = (
+            !firstProvider ||
+            !firstProvider.provider_name ||
+            firstProvider._pre_filled_from_stakeholder === true
+        );
+
+        if (shouldAutoPopulate) {
+            debugLog('[FormWizard] Auto-populating ordering provider from stakeholder');
+            const newProviders = [stakeholderProvider, ...existingProviders.slice(1)];
+            setFormData(prev => ({ ...prev, ordering_providers: newProviders }));
+        }
+    };
+
     const handleNext = () => {
         setAttemptedNext(true);
 
@@ -347,37 +372,9 @@ function FormWizard({ formDefinition }) {
             }
 
             const nextStep = Math.min(currentStep + 1, steps.length - 1);
-            const nextStepDef = steps[nextStep];
 
-            // Auto-populate ordering provider from stakeholder
-            if (nextStepDef.step_id === 'ordering_providers') {
-                const stakeholderProvider = getStakeholderOrderingProvider(formData);
-
-                if (stakeholderProvider) {
-                    const existingProviders = formData.ordering_providers || [];
-                    const firstProvider = existingProviders[0];
-
-                    const shouldAutoPopulate = (
-                        !firstProvider ||
-                        !firstProvider.provider_name ||
-                        firstProvider._pre_filled_from_stakeholder === true
-                    );
-
-                    if (shouldAutoPopulate) {
-                        debugLog('[FormWizard] Auto-populating first provider from stakeholder');
-
-                        const newProviders = [
-                            stakeholderProvider,
-                            ...existingProviders.slice(1)
-                        ];
-
-                        setFormData(prev => ({
-                            ...prev,
-                            ordering_providers: newProviders
-                        }));
-                    }
-                }
-            }
+            // Auto-populate ordering provider from stakeholder (if navigating to that step)
+            autoPopulateOrderingProvider(nextStep);
 
             setCurrentStep(nextStep);
             setHighestCompletedStep(prev => Math.max(prev, nextStep));
@@ -398,6 +395,7 @@ function FormWizard({ formDefinition }) {
 
     const handleStepClick = (index) => {
         if (index <= highestCompletedStep) {
+            autoPopulateOrderingProvider(index);
             setCurrentStep(index);
             setAttemptedNext(false);
             setErrors({});
@@ -406,6 +404,7 @@ function FormWizard({ formDefinition }) {
     };
 
     const handleEditFromSummary = (index) => {
+        autoPopulateOrderingProvider(index);
         setReturnToSummary(true);
         setCurrentStep(index);
         setAttemptedNext(false);
