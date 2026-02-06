@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { fetchRecentDrafts, verifyEmailForDraft } from '../services/supabase';
+import { useAuth } from './auth/AuthProvider';
 
 /**
  * ResumeModal - Allows users to select and resume a previous draft
- * Shows clinics from the last 14 days, requires email verification
+ * Shows only drafts associated with the authenticated user's email
  */
 function ResumeModal({ onRestore, onClose }) {
+    const { user } = useAuth();
     const [drafts, setDrafts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedDraft, setSelectedDraft] = useState(null);
@@ -13,13 +15,22 @@ function ResumeModal({ onRestore, onClose }) {
     const [verifyError, setVerifyError] = useState('');
     const [verifying, setVerifying] = useState(false);
 
-    // Fetch recent drafts on mount
+    // Fetch recent drafts on mount, filtered by authenticated user
     useEffect(() => {
         fetchRecentDrafts().then(data => {
-            setDrafts(data);
+            // Filter to only show drafts where the logged-in user's email appears
+            const userEmail = user?.email?.toLowerCase();
+            const filteredDrafts = userEmail
+                ? data.filter(draft => {
+                    // Check if user's email matches any contact in the draft
+                    return verifyEmailForDraft(draft.form_data, userEmail);
+                })
+                : data; // If not logged in, show all (legacy behavior)
+
+            setDrafts(filteredDrafts);
             setLoading(false);
         });
-    }, []);
+    }, [user]);
 
     // Format date for display
     const formatDate = (dateStr) => {
@@ -44,6 +55,21 @@ function ResumeModal({ onRestore, onClose }) {
 
     // Handle draft selection
     const handleSelectDraft = (draft) => {
+        // If user is logged in and their email matches a contact, skip verification
+        const userEmail = user?.email?.toLowerCase();
+        if (userEmail && verifyEmailForDraft(draft.form_data, userEmail)) {
+            // Auto-restore without verification
+            onRestore({
+                formData: draft.form_data.formData || draft.form_data,
+                currentStep: draft.form_data.currentStep || 0,
+                savedAt: draft.updated_at,
+                source: 'supabase',
+                submission_id: draft.submission_id
+            });
+            return;
+        }
+
+        // Otherwise, require email verification
         setSelectedDraft(draft);
         setVerifyEmail('');
         setVerifyError('');

@@ -441,25 +441,13 @@ function FormWizard({ formDefinition }) {
                 />
             )}
 
-            {/* Header - Providence branded */}
+            {/* Header */}
             <div className="bg-propel-navy rounded-lg p-4 sm:p-6 mb-4 sm:mb-8">
                 <div className="flex items-center justify-between">
-                    <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 flex-1">
-                        <img
-                            src="https://cdn.providence.org/asset/GtV28qX0x6P0DfEBf7sJ7w10/project/psjh/providence/socal/images/logos/providence-logo-svg/svg"
-                            alt="Providence Health"
-                            className="h-8 sm:h-10"
-                        />
-                        <div className="text-center sm:text-left">
-                            <h1 className="text-lg sm:text-2xl font-bold text-white mb-0 sm:mb-1">
-                                {formDefinition.title}
-                            </h1>
-                            <p className="text-xs sm:text-sm text-gray-300 hidden sm:block">{formDefinition.description}</p>
-                        </div>
-                    </div>
-                    <div className="ml-4">
-                        <AuthButton />
-                    </div>
+                    <h1 className="text-lg sm:text-2xl font-bold text-white">
+                        {formDefinition.title}
+                    </h1>
+                    <AuthButton />
                 </div>
             </div>
 

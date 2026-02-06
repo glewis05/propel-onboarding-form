@@ -29,10 +29,11 @@ function ProviderFilterList({ question, value, onChange, errors }) {
     const config = question.repeatable_config || {};
     const minItems = config.min_items || 0;
     const maxItems = config.max_items || 20;
+    const hasError = !!errors[question.question_id];
 
     return (
         <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 ${hasError ? 'text-red-600' : 'text-gray-700'}`}>
                 {question.label}
                 {question.required && <span className="text-red-500 ml-1">*</span>}
             </label>
@@ -41,9 +42,9 @@ function ProviderFilterList({ question, value, onChange, errors }) {
             )}
 
             {/* List of providers */}
-            <div className="space-y-3">
+            <div className={`space-y-3 p-3 rounded-lg border-2 ${hasError ? 'border-red-300 bg-red-50' : 'border-transparent'}`}>
                 {providers.map((provider, index) => (
-                    <div key={index} className="flex gap-3 items-start p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div key={index} className={`flex gap-3 items-start p-3 bg-white rounded-lg border ${hasError ? 'border-red-200' : 'border-gray-200'}`}>
                         <div className="flex-1 grid grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-xs text-gray-500 mb-1">
@@ -87,8 +88,8 @@ function ProviderFilterList({ question, value, onChange, errors }) {
 
                 {/* Empty state */}
                 {providers.length === 0 && (
-                    <div className="text-center py-4 text-gray-500 text-sm">
-                        No providers added yet. Click below to add one.
+                    <div className={`text-center py-4 text-sm ${hasError ? 'text-red-600' : 'text-gray-500'}`}>
+                        {hasError ? 'Please add at least one provider.' : 'No providers added yet. Click below to add one.'}
                     </div>
                 )}
 

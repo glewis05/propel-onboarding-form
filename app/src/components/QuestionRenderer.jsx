@@ -50,6 +50,12 @@ function QuestionRenderer({ question, value, onChange, errors, formData }) {
         if (question.conditional_options) {
             options = filterConditionalOptions(options, question.conditional_options, formData);
         }
+
+        // For additional test panels (test_code), exclude the default panel already selected
+        if (question.question_id === 'test_code' && formData.test_panel) {
+            options = options.filter(opt => opt.value !== formData.test_panel);
+            debugLog(`[QuestionRenderer] Filtering out default panel: ${formData.test_panel}`);
+        }
     }
 
     // Render based on question type

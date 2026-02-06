@@ -128,8 +128,17 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                 if (val.length === 0) return 'None';
                 if (typeof val[0] === 'object') {
                     return val.map((item, i) => {
+                        // Provider filter list format
                         if (item.first_name && item.last_name) {
                             return `${i + 1}. ${item.first_name} ${item.last_name}`;
+                        }
+                        // Contact/stakeholder in array
+                        if (item.name) {
+                            const parts = [item.name];
+                            if (item.title) parts[0] = `${item.name}, ${item.title}`;
+                            if (item.email) parts.push(item.email);
+                            if (item.is_ordering_provider) parts.push('(Ordering Provider)');
+                            return `${i + 1}. ${parts.join(' | ')}`;
                         }
                         return `${i + 1}. ${JSON.stringify(item)}`;
                     }).join('\n');
@@ -137,14 +146,20 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                 return val.join(', ');
             }
             if (typeof val === 'object') {
+                // Address type
                 if (val.street) {
                     return `${val.street}, ${val.city}, ${val.state} ${val.zip}`;
                 }
-                if (val.name && val.email) {
-                    const parts = [val.name, val.email];
+                // Contact/Stakeholder types - handle with or without email
+                if (val.name) {
+                    const parts = [val.name];
+                    if (val.title) parts[0] = `${val.name}, ${val.title}`;
+                    if (val.email) parts.push(val.email);
                     if (val.phone) parts.push(val.phone);
+                    if (val.is_ordering_provider) parts.push('(Ordering Provider)');
                     return parts.join(' | ');
                 }
+                // Select with alternates
                 if ('default' in val) {
                     let result = val.default || 'Not selected';
                     if (val.alternates && val.alternates.length > 0) {
@@ -163,7 +178,7 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
         // Title
         docChildren.push(
             new Paragraph({
-                text: 'Providence Health Onboarding Questionnaire',
+                text: 'Propel Clinic Onboarding Questionnaire',
                 heading: HeadingLevel.TITLE,
                 spacing: { after: 400 }
             })
@@ -307,7 +322,28 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
     };
 
     const getDisplayValue = (value, optionsRef, questionType) => {
-        if (!value) return <span className="text-gray-400">Not provided</span>;
+        // Handle null/undefined but NOT false (booleans)
+        if (value === null || value === undefined || value === '') {
+            return <span className="text-gray-400">Not provided</span>;
+        }
+
+        // Boolean values (checkboxes)
+        if (typeof value === 'boolean') {
+            return value ? 'Yes' : 'No';
+        }
+
+        // Provider filter list (array of {first_name, last_name})
+        if (questionType === 'provider_filter_list' && Array.isArray(value)) {
+            if (value.length === 0) {
+                return <span className="text-gray-400">None added</span>;
+            }
+            return value.map((p, i) => (
+                <span key={i}>
+                    {i > 0 && ', '}
+                    {p.first_name} {p.last_name}
+                </span>
+            ));
+        }
 
         // Gene selector type
         if (questionType === 'gene_selector' && Array.isArray(value)) {
@@ -356,13 +392,21 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
         }
 
         // Composite object types
-        if (typeof value === 'object') {
+        if (typeof value === 'object' && !Array.isArray(value)) {
+            // Address type
             if (value.street) {
                 return `${value.street}, ${value.city}, ${value.state} ${value.zip}`;
             }
-            if (value.name && value.email) {
-                return `${value.name} (${value.email})`;
+            // Contact/Stakeholder types - handle with or without email
+            if (value.name) {
+                const parts = [value.name];
+                if (value.title) parts[0] = `${value.name}, ${value.title}`;
+                if (value.email) parts.push(value.email);
+                if (value.phone) parts.push(value.phone);
+                if (value.is_ordering_provider) parts.push('(Ordering Provider)');
+                return parts.join(' | ');
             }
+            // Fallback for unknown object types
             return JSON.stringify(value);
         }
 
@@ -433,7 +477,7 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
             {!submitted && (
                 <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
                     <p className="text-green-700 font-medium text-sm sm:text-base">
-                        Ready to submit! Review your responses below, then submit to Providence Health.
+                        Ready to submit! Review your responses below, then submit to Propel Health.
                     </p>
                 </div>
             )}
@@ -527,7 +571,7 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                         Submission Received!
                     </h3>
                     <p className="text-green-700">
-                        Thank you! The Providence Health team will review your information
+                        Thank you! The Propel Health team will review your information
                         and contact you within 2 business days.
                     </p>
                     <p className="text-sm text-green-600 mt-4">
