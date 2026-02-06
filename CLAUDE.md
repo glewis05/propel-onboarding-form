@@ -2,6 +2,18 @@
 
 > For full architecture details (component tree, data flow, service layer, output schema), see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
+## Documentation Policy
+
+**This app is preparing for production launch.** All documentation must be kept current with every change:
+
+- **CLAUDE.md** (this file) — Update with any architecture, auth, or workflow changes
+- **ARCHITECTURE.md** — Update when components, data flow, service functions, or business logic change
+- **README.md** — Update when tech stack, project structure, deployment, or quick-start instructions change
+- **docs/UAT-VALIDATION-LOG.md** — Update after every UAT round with bugs found, fixes applied, and retest results
+- **docs/UAT-TEST-SET.xlsx** / **docs/UAT-TEST-SET.md** — Update when new test cases are needed or existing ones change
+
+When making code changes, always check whether any of the above documents need updating and include those updates in the same commit.
+
 ## Testing
 
 ### Unit Tests
@@ -24,13 +36,21 @@
 
 ## Architecture Notes
 
-### Authentication
+### Authentication & Draft Resume Flow
 - **Admin-generated codes** — bypasses email delivery issues with enterprise security
 - Flow: Admin generates code via SQL → shares via Slack/Teams → user enters email + code
 - `manual_login_codes` table stores codes with expiry (default 24 hours)
 - Generate code: `SELECT generate_login_code('user@example.com');`
 - Auth state stored in localStorage (24 hour session)
-- Cloud sync uses `user_id = null` for manual auth users (RLS allows this)
+- The email + code pair together identify the submitter
+- No auto-focus behavior on login — user manually tabs between fields
+
+### Draft Resume Flow
+1. User clicks "Resume Assessment" → system queries drafts by `submitter_email` (DB-level filter)
+2. Modal displays all matching drafts with clinic name, program, and last updated
+3. User selects a draft → prompted to enter a **contact email from within that draft** (not their own)
+4. This serves as lightweight identity verification: only the original creator knows which emails they entered
+5. On successful verification, draft loads and user continues where they left off
 
 ### Auto-Save
 - **Local**: localStorage, 2-second debounce, always active
@@ -49,12 +69,6 @@
 - Default test panel on Lab Config page is excluded from Additional Test Panels
 - P4M/PR4M → Ambry Genetics tests
 - GRX → Helix PGx tests
-
-### Resume Modal
-- Only shows drafts (not submitted forms)
-- Filters by authenticated user's email
-- Auto-restores without verification if user's email matches a contact in the draft
-- Submitted forms protected from accidental overwrite
 
 ### Review Page & Word Document
 - Contacts/stakeholders display formatted (not JSON)

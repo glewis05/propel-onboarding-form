@@ -1,5 +1,66 @@
 # UAT Validation Log — Propel Onboarding Form
 
+## UAT Round 3
+
+- **Date**: 2026-02-06
+- **Tester**: Glen Lewis
+- **Environment**: Production (propel-onboarding-form.vercel.app)
+- **Focus**: Retest of Round 2 fixes, full form walkthrough through submission (GRX program), draft resume flow
+
+---
+
+### Bugs Found & Fixed (2 items)
+
+#### BUG 1 — Login Email Focus Jump (Regression)
+| Field | Detail |
+|-------|--------|
+| **Observed** | Round 2 fix (hasAutoFocused ref with >=2 char domain check) still triggered prematurely — focus jumped to code field after typing ~3 characters into the domain (e.g., after "gma" in "gmail.com"). User had to click back to finish typing. |
+| **Root Cause** | The `hasAutoFocused` ref with `>= 2` domain length check was still too aggressive. Any auto-focus behavior on the email field is unreliable because there's no way to know when the user is "done" typing. |
+| **Fix Applied** | Removed all auto-focus logic entirely — deleted `useRef` imports, `codeInputRef`, `hasAutoFocused` ref, and `handleEmailChange` handler. Email onChange now uses inline `setEmail()`. User tabs or clicks to the code field naturally. |
+| **Files Changed** | `src/components/auth/LoginPage.jsx` |
+
+#### BUG 2 — Resume Modal Shows No Drafts Despite DB Records
+| Field | Detail |
+|-------|--------|
+| **Observed** | "Resume Assessment" modal opened but showed "No recent drafts found" despite 2 draft records in DB for `glenlewis05@gmail.com`. |
+| **Root Cause** | Three compounding issues: (1) `fetchRecentDrafts()` fetched ALL drafts, then `ResumeModal` filtered client-side by calling `verifyEmailForDraft()` which checks if the user's email matches a **contact email inside `form_data`**. But the logged-in user's email (`glenlewis05@gmail.com`) was the **submitter**, not a contact — contacts had different emails (`jane.smith@prov.org`, etc.). (2) The `submitter_email` column had the correct email, but it was never checked at the right level. (3) `verifyEmailForDraft` also checked `form_data.submitter_email` which was `null`. |
+| **Fix Applied** | Redesigned the entire draft resume flow per spec: (1) `fetchRecentDrafts(email)` now takes an email param and filters by `submitter_email` at the DB level using `.ilike()`. (2) Removed client-side `verifyEmailForDraft` filtering from the modal's useEffect. (3) Removed auto-restore bypass — all draft selections now require contact email verification. (4) `verifyEmailForDraft(formData, email, submitterEmail?)` now accepts an optional `submitterEmail` param and **rejects** if the user enters their own sign-in email (verification = knowing a contact email you entered into the form). (5) Updated UI copy to clarify the verification expectation. |
+| **Files Changed** | `src/services/supabase.js`, `src/components/ResumeModal.jsx` |
+
+---
+
+### Full Form Walkthrough Completed
+
+A complete end-to-end submission was performed:
+- **Program**: GenoRx (GRXP)
+- **Clinic**: SoCal GenoRx Clinic
+- **Lab Partner**: Ambry, CancerNext-Expanded test panel
+- **Submission**: Successfully submitted, JSON downloaded (`onboarding-GRXP-20260206T211956.json`)
+- **Output verified**: JSON structure correct with all sections populated
+
+---
+
+### All Files Modified in UAT Round 3
+
+| File | Changes |
+|------|---------|
+| `src/components/auth/LoginPage.jsx` | Removed all auto-focus logic (useRef, codeInputRef, hasAutoFocused, handleEmailChange) |
+| `src/components/ResumeModal.jsx` | DB-level draft filtering by submitter_email, removed auto-restore bypass, updated verification to pass submitterEmail, updated UI copy |
+| `src/services/supabase.js` | `fetchRecentDrafts(email)` with `.ilike()` filter, `verifyEmailForDraft` rejects submitter's own email, includes `submitter_email` in response |
+
+---
+
+### Retest Checklist (UAT Round 4)
+
+- [ ] Login page — focus stays in email field for entire email entry (no jumps at all)
+- [ ] Resume modal — shows drafts for authenticated user's email
+- [ ] Resume modal — identity verification rejects submitter's own email
+- [ ] Resume modal — identity verification accepts a valid contact email from the draft
+- [ ] Full form walkthrough for P4M program (Round 3 tested GRX)
+- [ ] Word document download after submission
+
+---
+
 ## UAT Round 2
 
 - **Date**: 2026-02-05

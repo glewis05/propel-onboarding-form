@@ -1,7 +1,7 @@
 # Propel Onboarding Form — Architecture Reference
 
 > **Purpose**: Comprehensive architecture doc to provide context at the start of new Claude Code sessions.
-> **Last updated**: 2026-02-05
+> **Last updated**: 2026-02-06
 >
 > See also: [README.md](./README.md) for quick start, [CLAUDE.md](./CLAUDE.md) for AI working conventions.
 
@@ -172,9 +172,9 @@ Gene-related: `GeneInfoButton` (opens popup), `GeneListPopup` (displays gene lis
 |----------|---------|
 | `fetchProgramsFromSupabase()` | Fetch active programs for dropdown (excludes Platform, Discover) |
 | `saveOnboardingSubmission({...})` | Upsert draft/submission — finds existing by submission_id > user_id > email |
-| `fetchRecentDrafts()` | All drafts from last 14 days (for ResumeModal) |
+| `fetchRecentDrafts(email)` | Drafts from last 14 days filtered by `submitter_email` at DB level (for ResumeModal) |
 | `fetchUserDrafts()` | Current user's drafts only (RLS-filtered) |
-| `verifyEmailForDraft(formData, email)` | Check if email matches any contact in form data |
+| `verifyEmailForDraft(formData, email, submitterEmail?)` | Check if email matches a contact in form data; rejects submitter's own email |
 | `loadDraftByEmail(email)` | Load most recent draft by submitter email |
 
 **Tables**: `programs`, `onboarding_submissions`, `manual_login_codes`
@@ -229,6 +229,7 @@ Gene-related: `GeneInfoButton` (opens popup), `GeneListPopup` (displays gene lis
 5. **Champion-is-primary**: checkbox copies clinic_champion data to primary contact
 6. **Submitted form protection**: submitted forms cannot be overwritten by draft auto-save
 7. **Tab visibility**: auto-save pauses when tab is hidden
+8. **Draft resume verification**: Resume modal queries by `submitter_email` at DB level; identity verification requires entering a contact email from the draft (not the submitter's own email)
 
 ---
 

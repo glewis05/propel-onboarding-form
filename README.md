@@ -30,13 +30,15 @@ npm install
 npm run dev
 ```
 
-## Authentication
+## Authentication & Draft Resume
 
 Uses admin-generated 6-digit codes (bypasses enterprise email security issues):
 
 1. Admin generates code: `SELECT generate_login_code('user@example.com');`
 2. Admin shares code via Slack/Teams
 3. User enters email + code on login page
+
+**Resuming a draft**: User clicks "Resume Assessment" → sees their drafts (filtered by submitter email) → selects one → verifies identity by entering a contact email from the draft → draft loads.
 
 ## Deployment
 
@@ -57,6 +59,6 @@ Deployed to Vercel. Push to `main` branch triggers automatic deployment.
 
 ## Tech Stack
 
-- **Frontend**: React 18, Vite, Tailwind CSS
+- **Frontend**: React 19, Vite 7, Tailwind CSS 4
 - **Backend**: Supabase (PostgreSQL, Auth, Edge Functions)
 - **Deployment**: Vercel
