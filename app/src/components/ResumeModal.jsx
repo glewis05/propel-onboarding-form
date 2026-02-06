@@ -15,19 +15,11 @@ function ResumeModal({ onRestore, onClose }) {
     const [verifyError, setVerifyError] = useState('');
     const [verifying, setVerifying] = useState(false);
 
-    // Fetch recent drafts on mount, filtered by authenticated user
+    // Fetch recent drafts on mount, filtered by submitter email at the DB level
     useEffect(() => {
-        fetchRecentDrafts().then(data => {
-            // Filter to only show drafts where the logged-in user's email appears
-            const userEmail = user?.email?.toLowerCase();
-            const filteredDrafts = userEmail
-                ? data.filter(draft => {
-                    // Check if user's email matches any contact in the draft
-                    return verifyEmailForDraft(draft.form_data, userEmail);
-                })
-                : data; // If not logged in, show all (legacy behavior)
-
-            setDrafts(filteredDrafts);
+        const userEmail = user?.email;
+        fetchRecentDrafts(userEmail).then(data => {
+            setDrafts(data);
             setLoading(false);
         });
     }, [user]);
@@ -53,35 +45,20 @@ function ResumeModal({ onRestore, onClose }) {
         return programs[prefix] || prefix;
     };
 
-    // Handle draft selection
+    // Handle draft selection — always require contact email verification
     const handleSelectDraft = (draft) => {
-        // If user is logged in and their email matches a contact, skip verification
-        const userEmail = user?.email?.toLowerCase();
-        if (userEmail && verifyEmailForDraft(draft.form_data, userEmail)) {
-            // Auto-restore without verification
-            onRestore({
-                formData: draft.form_data.formData || draft.form_data,
-                currentStep: draft.form_data.currentStep || 0,
-                savedAt: draft.updated_at,
-                source: 'supabase',
-                submission_id: draft.submission_id
-            });
-            return;
-        }
-
-        // Otherwise, require email verification
         setSelectedDraft(draft);
         setVerifyEmail('');
         setVerifyError('');
     };
 
-    // Handle email verification
+    // Handle email verification — user must provide a contact email from the draft (not their own)
     const handleVerify = () => {
         setVerifying(true);
         setVerifyError('');
 
-        // Check if email matches any contact in the draft
-        if (verifyEmailForDraft(selectedDraft.form_data, verifyEmail)) {
+        const submitterEmail = selectedDraft.submitter_email || user?.email;
+        if (verifyEmailForDraft(selectedDraft.form_data, verifyEmail, submitterEmail)) {
             // Success - restore the draft
             onRestore({
                 formData: selectedDraft.form_data.formData || selectedDraft.form_data,
@@ -91,7 +68,7 @@ function ResumeModal({ onRestore, onClose }) {
                 submission_id: selectedDraft.submission_id
             });
         } else {
-            setVerifyError('Email not recognized for this clinic. Please enter an email address that was used when filling out this form.');
+            setVerifyError('Please enter an email address of a contact you added to this form (not your own sign-in email).');
             setVerifying(false);
         }
     };
@@ -144,12 +121,12 @@ function ResumeModal({ onRestore, onClose }) {
                             </div>
 
                             <p className="text-gray-600 mb-4">
-                                Enter the email address you used when filling out this form to verify your access.
+                                To verify your identity, enter one of the contact email addresses you previously added to this form.
                             </p>
 
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Your Email Address
+                                    Contact Email From This Form
                                 </label>
                                 <input
                                     type="email"

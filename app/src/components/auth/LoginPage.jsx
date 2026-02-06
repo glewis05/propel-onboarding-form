@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useAuth } from './AuthProvider';
 
 /**
@@ -16,20 +16,6 @@ function LoginPage() {
     const [code, setCode] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState(null);
-    const codeInputRef = useRef(null);
-    const hasAutoFocused = useRef(false);
-
-    // Handle email change - auto-focus code field once when email looks complete
-    const handleEmailChange = (e) => {
-        const newEmail = e.target.value;
-        setEmail(newEmail);
-
-        // Auto-focus code input once when email contains @ and a domain
-        if (!hasAutoFocused.current && newEmail.includes('@') && newEmail.split('@')[1]?.length >= 2) {
-            hasAutoFocused.current = true;
-            codeInputRef.current?.focus();
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -82,7 +68,7 @@ function LoginPage() {
                                 id="email"
                                 type="email"
                                 value={email}
-                                onChange={handleEmailChange}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="you@example.com"
                                 required
                                 disabled={isLoading}
@@ -99,7 +85,6 @@ function LoginPage() {
                             </label>
                             <input
                                 id="code"
-                                ref={codeInputRef}
                                 type="text"
                                 inputMode="numeric"
                                 autoComplete="one-time-code"

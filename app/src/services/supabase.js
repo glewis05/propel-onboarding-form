@@ -168,21 +168,28 @@ export async function saveOnboardingSubmission({ submitter_email, submitter_name
 }
 
 /**
- * Fetch all recent drafts for the Resume picker.
+ * Fetch recent drafts for the Resume picker, filtered by submitter email.
  * Returns drafts from the last 14 days with clinic name, program, and last updated.
  *
+ * @param {string} email - Submitter email to filter by
  * @returns {Promise<Array>} Array of draft objects for display in picker
  */
-export async function fetchRecentDrafts() {
+export async function fetchRecentDrafts(email) {
     try {
+        if (!email) {
+            debugLog('[Supabase] No email provided, returning empty drafts');
+            return [];
+        }
+
         // Calculate date 14 days ago
         const fourteenDaysAgo = new Date();
         fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
         const { data, error } = await supabase
             .from('onboarding_submissions')
-            .select('submission_id, form_data, program_prefix, updated_at')
+            .select('submission_id, submitter_email, form_data, program_prefix, updated_at')
             .eq('submission_status', 'draft')
+            .ilike('submitter_email', email)
             .gte('updated_at', fourteenDaysAgo.toISOString())
             .order('updated_at', { ascending: false });
 
@@ -191,6 +198,7 @@ export async function fetchRecentDrafts() {
         // Transform data for display - extract clinic name from form_data
         const drafts = (data || []).map(draft => ({
             submission_id: draft.submission_id,
+            submitter_email: draft.submitter_email,
             clinic_name: draft.form_data?.formData?.clinic_name || draft.form_data?.clinic_name || 'Unnamed Clinic',
             program: draft.program_prefix || draft.form_data?.formData?.program || draft.form_data?.program || 'Unknown',
             updated_at: draft.updated_at,
@@ -248,15 +256,25 @@ export async function fetchUserDrafts() {
 /**
  * Verify if an email matches any contact in the saved form data.
  * Checks clinic champion, primary contact, genetic counselor, and other contacts.
+ * Excludes the submitter's own email — verification requires knowing a contact
+ * email that was entered into the draft (lightweight identity check).
  *
  * @param {Object} formData - The saved form data
- * @param {string} email - Email to verify
+ * @param {string} email - Email to verify (a contact email, not the submitter's)
+ * @param {string} [submitterEmail] - The submitter's email to exclude from valid matches
  * @returns {boolean} True if email matches a contact
  */
-export function verifyEmailForDraft(formData, email) {
+export function verifyEmailForDraft(formData, email, submitterEmail) {
     if (!formData || !email) return false;
 
     const normalizedEmail = email.toLowerCase().trim();
+    const normalizedSubmitter = submitterEmail?.toLowerCase().trim();
+
+    // Reject if the user enters their own submitter email
+    if (normalizedSubmitter && normalizedEmail === normalizedSubmitter) {
+        debugLog('[Verify] Rejected — entered own submitter email');
+        return false;
+    }
 
     // Get the actual form data (handle both nested and flat structures)
     const data = formData.formData || formData;
@@ -281,12 +299,6 @@ export function verifyEmailForDraft(formData, email) {
             debugLog('[Verify] Email matched field:', field);
             return true;
         }
-    }
-
-    // Also check submitter_email directly
-    if (data.submitter_email && data.submitter_email.toLowerCase().trim() === normalizedEmail) {
-        debugLog('[Verify] Email matched submitter_email');
-        return true;
     }
 
     debugLog('[Verify] Email did not match any contact');
