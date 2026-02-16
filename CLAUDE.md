@@ -76,3 +76,23 @@ When making code changes, always check whether any of the above documents need u
 - Gene lists are expandable (show more/less toggle)
 - Word document has styled tables with borders, shading, and proper spacing
 - Ordering provider auto-populates from stakeholder on any navigation method
+
+## GitHub Issue Tracking
+
+### Best Practices
+- Create a GitHub issue BEFORE starting work on any feature, bug fix, or refactor
+- Reference issue numbers in commit messages (e.g., "Fix login redirect #42")
+- Every issue needs: title, description, acceptance criteria, labels (at least priority + type)
+- Close issues with a comment explaining what was implemented and where the code lives
+- Reference file paths in close comments for traceability
+- When implementation differs from the original spec, document the deviation
+- Partially completed issues get a status comment, not a close
+
+### Label Taxonomy
+- **Priority**: P0-Critical, P1-High, P2-Medium, P3-Low
+- **Status**: status:backlog, status:blocked, status:in-progress, status:review
+- **Type**: type:feature, type:bug, type:refactor, type:tech-debt, type:docs, type:compliance
+
+### Milestone Usage
+- Sprint milestones: Close when sprint ends, move remaining issues to next milestone
+- Close completed issues BEFORE closing the milestone
