@@ -286,7 +286,6 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
         // Process each step from form definition
         formDefinition.steps.forEach(step => {
             if (step.is_review_step) return;
-            if (step.show_when && !evaluateCondition(step.show_when, formData)) return;
 
             // Section heading
             docChildren.push(
@@ -318,12 +317,7 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                             })
                         );
 
-                        const rows = step.questions
-                            .filter(q => {
-                                const mergedData = { ...formData, ...item };
-                                return !q.show_when || evaluateCondition(q.show_when, mergedData);
-                            })
-                            .map(q => {
+                        const rows = step.questions.map(q => {
                             return new TableRow({
                                 children: [
                                     new TableCell({
@@ -425,7 +419,7 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
         debugLog('[ReviewStep] Downloaded Word doc:', filename);
     };
 
-    const getDisplayValue = (value, optionsRef, questionType, itemData) => {
+    const getDisplayValue = (value, optionsRef, questionType) => {
         // Handle null/undefined but NOT false (booleans)
         if (value === null || value === undefined || value === '') {
             return <span className="text-gray-400">Not provided</span>;
@@ -434,18 +428,6 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
         // Boolean values (checkboxes)
         if (typeof value === 'boolean') {
             return value ? 'Yes' : 'No';
-        }
-
-        // NCCN rule search - look up rule title from reference data
-        if (questionType === 'nccn_rule_search' && typeof value === 'string') {
-            const rules = referenceData?.nccn_rules || [];
-            const rule = rules.find(r => r.id === value);
-            return rule ? `${rule.title} (${rule.category})` : value;
-        }
-
-        // Rule modification editor - show modified text
-        if (questionType === 'rule_modification_editor' && typeof value === 'string') {
-            return <pre className="whitespace-pre-wrap text-xs font-mono bg-gray-50 p-2 rounded">{value}</pre>;
         }
 
         // Provider filter list (array of {first_name, last_name})
@@ -522,7 +504,6 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
 
     const renderSection = (step, index) => {
         if (step.is_review_step) return null;
-        if (step.show_when && !evaluateCondition(step.show_when, formData)) return null;
 
         return (
             <div key={step.step_id} className="mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-gray-200 last:border-0">
@@ -544,18 +525,14 @@ function ReviewStep({ formData, formDefinition, onEdit }) {
                                 <p className="font-medium text-gray-700 mb-2 text-sm sm:text-base">
                                     {step.repeatable_config.item_title_template.replace('{{index}}', itemIndex + 1)}
                                 </p>
-                                {step.questions.map(q => {
-                                    const mergedData = { ...formData, ...item };
-                                    if (q.show_when && !evaluateCondition(q.show_when, mergedData)) return null;
-                                    return (
-                                        <div key={q.question_id} className="flex flex-col sm:flex-row sm:gap-x-6 py-1">
-                                            <span className="sm:w-1/3 sm:flex-shrink-0 text-xs sm:text-sm text-gray-500">{q.label}:</span>
-                                            <span className="sm:w-2/3 text-xs sm:text-sm text-gray-900 mt-0.5 sm:mt-0">
-                                                {getDisplayValue(item[q.question_id], q.options_ref, q.type, mergedData)}
-                                            </span>
-                                        </div>
-                                    );
-                                })}
+                                {step.questions.map(q => (
+                                    <div key={q.question_id} className="flex flex-col sm:flex-row sm:gap-x-6 py-1">
+                                        <span className="sm:w-1/3 sm:flex-shrink-0 text-xs sm:text-sm text-gray-500">{q.label}:</span>
+                                        <span className="sm:w-2/3 text-xs sm:text-sm text-gray-900 mt-0.5 sm:mt-0">
+                                            {getDisplayValue(item[q.question_id], q.options_ref, q.type)}
+                                        </span>
+                                    </div>
+                                ))}
                             </div>
                         ))}
                         {(formData[step.step_id] || []).length === 0 && (

@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { STORAGE_KEY } from '../constants';
-import { validateStep, evaluateCondition } from '../utils/validation';
+import { validateStep } from '../utils/validation';
 import { debugLog } from '../utils/debug';
 import { saveOnboardingSubmission } from '../services/supabase';
 import { useAuth } from './auth/AuthProvider';
@@ -43,17 +43,10 @@ function FormWizard({ formDefinition }) {
     // Return to summary flag
     const [returnToSummary, setReturnToSummary] = useState(false);
 
-    const { steps: allSteps, composite_types } = formDefinition;
-
-    // Filter steps by show_when conditions (e.g., NCCN step only for P4M/PR4M)
-    const visibleSteps = useMemo(() =>
-        allSteps.filter(step => !step.show_when || evaluateCondition(step.show_when, formData)),
-        [allSteps, formData]
-    );
-
-    const currentStepDef = visibleSteps[currentStep];
+    const { steps, composite_types } = formDefinition;
+    const currentStepDef = steps[currentStep];
     const isFirstStep = currentStep === 0;
-    const isLastStep = currentStep === visibleSteps.length - 1;
+    const isLastStep = currentStep === steps.length - 1;
     const isReviewStep = currentStepDef.is_review_step;
 
     debugLog(`[FormWizard] Current step: ${currentStep} (${currentStepDef.title})`);
@@ -71,23 +64,6 @@ function FormWizard({ formDefinition }) {
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
     }, []);
-
-    // Safety clamp: if visible steps shrink (e.g., program change hides NCCN step),
-    // ensure currentStep doesn't point beyond the visible list
-    useEffect(() => {
-        if (currentStep >= visibleSteps.length) {
-            setCurrentStep(visibleSteps.length - 1);
-        }
-    }, [visibleSteps.length, currentStep]);
-
-    // Reset highestCompletedStep when program changes to prevent stale indices
-    const programRef = useRef(formData.program);
-    useEffect(() => {
-        if (formData.program && formData.program !== programRef.current) {
-            programRef.current = formData.program;
-            setHighestCompletedStep(currentStep);
-        }
-    }, [formData.program, currentStep]);
 
     // Debounced auto-save to localStorage
     useEffect(() => {
@@ -352,7 +328,7 @@ function FormWizard({ formDefinition }) {
 
     // Auto-populate ordering provider when navigating to that step
     const autoPopulateOrderingProvider = (targetStepIndex) => {
-        const targetStep = visibleSteps[targetStepIndex];
+        const targetStep = steps[targetStepIndex];
         if (targetStep?.step_id !== 'ordering_providers') return;
 
         const stakeholderProvider = getStakeholderOrderingProvider(formData);
@@ -388,14 +364,14 @@ function FormWizard({ formDefinition }) {
             if (returnToSummary) {
                 debugLog('[FormWizard] Returning to Summary after edit');
                 setReturnToSummary(false);
-                setCurrentStep(visibleSteps.length - 1);
+                setCurrentStep(steps.length - 1);
                 setAttemptedNext(false);
                 setErrors({});
                 window.scrollTo(0, 0);
                 return;
             }
 
-            const nextStep = Math.min(currentStep + 1, visibleSteps.length - 1);
+            const nextStep = Math.min(currentStep + 1, steps.length - 1);
 
             // Auto-populate ordering provider from stakeholder (if navigating to that step)
             autoPopulateOrderingProvider(nextStep);
@@ -427,13 +403,10 @@ function FormWizard({ formDefinition }) {
         }
     };
 
-    const handleEditFromSummary = (formDefIndex) => {
-        const targetStepId = allSteps[formDefIndex].step_id;
-        const visibleIndex = visibleSteps.findIndex(s => s.step_id === targetStepId);
-        if (visibleIndex === -1) return;
-        autoPopulateOrderingProvider(visibleIndex);
+    const handleEditFromSummary = (index) => {
+        autoPopulateOrderingProvider(index);
         setReturnToSummary(true);
-        setCurrentStep(visibleIndex);
+        setCurrentStep(index);
         setAttemptedNext(false);
         setErrors({});
         window.scrollTo(0, 0);
@@ -503,7 +476,7 @@ function FormWizard({ formDefinition }) {
 
             {/* Progress indicator */}
             <ProgressIndicator
-                steps={visibleSteps}
+                steps={steps}
                 currentStep={currentStep}
                 highestCompletedStep={highestCompletedStep}
                 onStepClick={handleStepClick}
