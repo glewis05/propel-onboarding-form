@@ -193,6 +193,31 @@
     {"value": "CLINICAL_JUDGMENT", "display_name": "Clinical Judgment"},
     {"value": "NONE", "display_name": "None of the Above"}
   ],
+  "nccn_change_types": [
+    {"value": "new", "display_name": "New Rule"},
+    {"value": "modified", "display_name": "Modify Existing Rule"},
+    {"value": "deprecated", "display_name": "Deprecate Rule"}
+  ],
+  "nccn_rules": [
+    {
+      "id": "RULE_001",
+      "category": "Prostate",
+      "title": "Prostate Cancer - PHX, FDR, or SDR aggressive",
+      "rule_text": "Prostate Cancer - PHX, FDR, or SDR (any age, any type) and 1 or more Prostate Cancer (PHX, FDR, SDR, TDR) aggressive"
+    },
+    {
+      "id": "RULE_002",
+      "category": "Renal",
+      "title": "Renal/Kidney + Uveal Melanoma",
+      "rule_text": "Condition Group 1: FDR: Renal/Kidney Cancer; Any age\nAND\nCondition Group 2: Additional FDR or SDR: Uveal melanoma; Any age"
+    },
+    {
+      "id": "RULE_003",
+      "category": "Breast",
+      "title": "Breast - PHX + FDR Ovarian",
+      "rule_text": "Condition Group 1: PHX: Breast Cancer; Age <= 50\nAND\nCondition Group 2: FDR: Ovarian Cancer; Any age"
+    }
+  ],
   "communication_channels": [
     {"value": "EMAIL", "display_name": "Email"},
     {"value": "PHONE", "display_name": "Phone"},

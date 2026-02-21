@@ -171,6 +171,40 @@ export function generateOutputJson(formData, formDefinition, referenceData) {
         })),
 
         // =====================================================================
+        // NCCN RULE CHANGES (P4M / PR4M only)
+        // =====================================================================
+        nccn_rule_changes: ['P4M', 'PR4M'].includes(formData.program)
+            ? (formData.nccn_rule_changes || []).map(change => {
+                const base = { change_type: change.change_type };
+                if (change.change_type === 'new') {
+                    return {
+                        ...base,
+                        new_rule_content: change.new_rule_content || null,
+                        new_rule_description: change.new_rule_description || null
+                    };
+                }
+                const rule = referenceData?.nccn_rules?.find(r => r.id === change.target_rule);
+                if (change.change_type === 'modified') {
+                    return {
+                        ...base,
+                        target_rule_id: change.target_rule,
+                        target_rule_title: rule?.title || null,
+                        original_rule_text: rule?.rule_text || null,
+                        modified_rule_text: change.modified_rule_content || null
+                    };
+                }
+                // deprecated
+                return {
+                    ...base,
+                    target_rule_id: change.target_rule,
+                    target_rule_title: rule?.title || null,
+                    original_rule_text: rule?.rule_text || null,
+                    deprecation_reason: change.deprecation_reason || null
+                };
+            })
+            : [],
+
+        // =====================================================================
         // HELPDESK CONFIGURATION
         // =====================================================================
         // Clinic-specific helpdesk phone number that can optionally be included

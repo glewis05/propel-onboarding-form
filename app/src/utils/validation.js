@@ -113,6 +113,18 @@ export function validateField(value, question) {
                 return `${question.label}: Please fill in first and last name for all providers`;
             }
         }
+        // For nccn_rule_search, value must be a rule ID string
+        if (question.type === 'nccn_rule_search') {
+            if (!value || typeof value !== 'string') {
+                return `${question.label}: Please select a rule`;
+            }
+        }
+        // For rule_modification_editor, value must be non-empty modified text
+        if (question.type === 'rule_modification_editor') {
+            if (!value || !value.trim()) {
+                return `${question.label}: Please provide the modified rule text`;
+            }
+        }
         // For select_with_alternates, check if default value is selected
         if (question.type === 'select_with_alternates') {
             if (typeof value === 'object' && !value.default) {

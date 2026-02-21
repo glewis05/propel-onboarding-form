@@ -14,7 +14,9 @@ import {
     AddressGroup,
     ContactGroup,
     StakeholderGroup,
-    ProviderFilterList
+    ProviderFilterList,
+    NCCNRuleSearch,
+    RuleModificationEditor
 } from './question-types';
 
 /**
@@ -194,6 +196,27 @@ function QuestionRenderer({ question, value, onChange, errors, formData }) {
                     onChange={onChange}
                     options={options}
                     error={errors[question.question_id]}
+                />
+            );
+
+        case 'nccn_rule_search':
+            return (
+                <NCCNRuleSearch
+                    question={question}
+                    value={value}
+                    onChange={onChange}
+                    error={errors[question.question_id]}
+                />
+            );
+
+        case 'rule_modification_editor':
+            return (
+                <RuleModificationEditor
+                    question={question}
+                    value={value}
+                    onChange={onChange}
+                    error={errors[question.question_id]}
+                    formData={formData}
                 />
             );
 

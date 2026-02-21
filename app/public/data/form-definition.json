@@ -485,10 +485,103 @@
       ]
     },
     {
+      "step_id": "nccn_rule_changes",
+      "title": "NCCN Rule Changes",
+      "description": "Document any proposed changes to NCCN clinical testing rules",
+      "order": 8,
+      "show_when": {
+        "question_id": "program",
+        "operator": "in",
+        "value": ["P4M", "PR4M"]
+      },
+      "repeatable": true,
+      "repeatable_config": {
+        "min_items": 0,
+        "max_items": 50,
+        "add_button_text": "Add Rule Change",
+        "item_title_template": "Rule Change {{index}}"
+      },
+      "questions": [
+        {
+          "question_id": "change_type",
+          "type": "radio",
+          "label": "Change Type",
+          "required": true,
+          "options_ref": "nccn_change_types",
+          "help_text": "What kind of change is being requested?"
+        },
+        {
+          "question_id": "target_rule",
+          "type": "nccn_rule_search",
+          "label": "Target Rule",
+          "required": true,
+          "options_ref": "nccn_rules",
+          "show_when": {
+            "question_id": "change_type",
+            "operator": "in",
+            "value": ["modified", "deprecated"]
+          },
+          "help_text": "Search for the NCCN rule to modify or deprecate"
+        },
+        {
+          "question_id": "new_rule_content",
+          "type": "textarea",
+          "label": "New Rule Content",
+          "required": true,
+          "rows": 6,
+          "show_when": {
+            "question_id": "change_type",
+            "operator": "equals",
+            "value": "new"
+          },
+          "placeholder": "Condition Group 1: FDR: Cancer Type; Any age\nAND\nCondition Group 2: ...",
+          "help_text": "Write the full rule including condition groups"
+        },
+        {
+          "question_id": "new_rule_description",
+          "type": "textarea",
+          "label": "Rule Description",
+          "required": false,
+          "rows": 3,
+          "show_when": {
+            "question_id": "change_type",
+            "operator": "equals",
+            "value": "new"
+          },
+          "placeholder": "Additional context or rationale for this new rule"
+        },
+        {
+          "question_id": "modified_rule_content",
+          "type": "rule_modification_editor",
+          "label": "Rule Modification",
+          "required": true,
+          "show_when": {
+            "question_id": "change_type",
+            "operator": "equals",
+            "value": "modified"
+          },
+          "help_text": "Review the current rule on the left, enter the modified version on the right"
+        },
+        {
+          "question_id": "deprecation_reason",
+          "type": "textarea",
+          "label": "Reason for Deprecation",
+          "required": true,
+          "rows": 4,
+          "show_when": {
+            "question_id": "change_type",
+            "operator": "equals",
+            "value": "deprecated"
+          },
+          "placeholder": "Explain why this rule should be deprecated..."
+        }
+      ]
+    },
+    {
       "step_id": "extract_filtering",
       "title": "Extract Filtering",
       "description": "Configure which patients and appointments are included in daily extracts",
-      "order": 8,
+      "order": 9,
       "questions": [
         {
           "question_id": "extract_patient_status",
@@ -559,7 +652,7 @@
       "step_id": "review",
       "title": "Review & Download",
       "description": "Review your responses and download the JSON file",
-      "order": 9,
+      "order": 10,
       "is_review_step": true
     }
   ],

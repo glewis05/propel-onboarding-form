@@ -16,6 +16,7 @@ function ProgressIndicator({ steps, currentStep, highestCompletedStep, onStepCli
         "Lab Configuration": "Lab Config",
         "Additional Test Panels": "Add'l Tests",
         "Ordering Providers": "Providers",
+        "NCCN Rule Changes": "NCCN Rules",
         "Extract Filtering": "Filtering",
         "Review & Download": "Review"
     };

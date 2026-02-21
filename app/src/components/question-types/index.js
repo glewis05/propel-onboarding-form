@@ -13,3 +13,5 @@ export { default as AddressGroup } from './AddressGroup';
 export { default as ContactGroup } from './ContactGroup';
 export { default as StakeholderGroup } from './StakeholderGroup';
 export { default as ProviderFilterList } from './ProviderFilterList';
+export { default as NCCNRuleSearch } from './NCCNRuleSearch';
+export { default as RuleModificationEditor } from './RuleModificationEditor';
